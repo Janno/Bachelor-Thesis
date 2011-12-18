@@ -149,7 +149,14 @@ Qed.
 
 Lemma mem_der_Conc r s w1 w2 : mem_der r w1 = true ->  mem_der s w2 = true ->
 mem_der (Conc r s) (w1 ++ w2) = true.
-induction w1. simpl. 
+revert r s w2. induction w1; simpl; intros r s w2 B C.
+revert r s B C. induction w2; simpl; intros r s B C. rewrite B,C. reflexivity.
+simpl in *. rewrite B. apply mem_der_Plus'. eauto.
+case_eq (has_empty r); simpl; intros D.
+apply mem_der_Plus'. left. apply IHw1; assumption.
+apply IHw1; assumption.
+Qed.
+
 
 
 Lemma mem_der_lang_agree r w : mem_der r w = true <-> lang r w.
@@ -206,11 +213,20 @@ intros B. induction B.
 reflexivity.
 (* mem_der (Char a) (a::nil) *)
 simpl. destruct (eqA a a). reflexivity. assert False as []. apply n. reflexivity.
-(* mem_der (Plus r s) w = true *)
+(* mem_der (Plus r s) w *)
 apply mem_der_Plus'. eauto.
 apply mem_der_Plus'. eauto.
-
-
+(* mem_der (Conc r s) (w1 ++ w2) *)
+apply mem_der_Conc; assumption.
+(* mem_der (Star r) nil *)
+reflexivity.
+(* mem_der (Star r) w *)
+induction w. reflexivity.
+inversion B. subst. rewrite H1. simpl.
+simpl in IHB.
+case_eq (has_empty r); intros C; rewrite C in IHB.
+destruct (mem_der_Plus _ _ _ IHB) as [E|E]; assumption.
+assumption.
 Qed.
 
 
