@@ -3,12 +3,6 @@ Require Import Omega.
 
 Set Implicit Arguments.
 
-Section Suffix.
-Variable T:Type.
-Variable eqA: forall a b : T, {a=b} + {~a=b}.
-
-Definition word := list T.
-
 Lemma cons_append : forall (X: Type) (a:X) (l : list X), 
 exists l', exists a', (l' ++ a'::nil) = a::l.
 intros. induction l.
@@ -19,7 +13,6 @@ intros. induction l.
   exists (a::a0::l'). exists a'. trivial.
 Qed.
 
-Print le.
 
 Lemma le_O y : O <= y.
 Proof. induction y. constructor. constructor. trivial. Qed.
@@ -73,11 +66,7 @@ intros. induction x. trivial.
 assert (P x). apply IHx. intros. apply H1. simpl. constructor. exact H2.
 destruct (cons_append a x) as [x' [a' E]]. rewrite <- E.
 assert (length (x' ++ a'::nil) = length(a::x)). rewrite E. trivial.
-rewrite length_app in H3. unfold length in H3 at 2. rewrite <- plus_n_Sm in H3.
-rewrite <- plus_n_O in H3.
+revert H3.
+rewrite length_app. unfold length at 2. rewrite <- plus_n_Sm. rewrite <- plus_n_O. intros H3.
 assert (P x'). apply H1. rewrite <- H3. constructor.
 apply H0. exact H4. Qed.
-
-  
-
-End Suffix.
