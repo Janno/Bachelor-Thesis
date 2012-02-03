@@ -1,4 +1,6 @@
 Require Import Coq.Lists.List.
+Require Import finite_type.
+Require Import props.
 
 Section RE.
 Variable A:Type.
@@ -97,7 +99,8 @@ apply mem_der_Plus'. left. apply IHw1; assumption.
 apply IHw1; assumption.
 Qed.
 
-(* Intuitive, inductive definition of regular expressions *)
+
+(* Intuitive, inductive definition of regular expression matching *)
 Inductive lang : re -> word -> Prop :=
 | langEmpty : lang Empty nil
 | langChar a : lang (Char a) (cons a nil)
@@ -213,5 +216,9 @@ intros B. induction B.
     destruct (mem_der_Plus _ _ _ IHB) as [E|E]; assumption.
     assumption.
 Qed.
+
+
+
+
 
 End RE.
