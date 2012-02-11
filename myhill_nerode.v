@@ -53,7 +53,7 @@ Require Import RE.
 
 Lemma MyhillNerode : R_equiv_classes_finite 
 <-> exists r, forall w, L w -> mem_der Alphabet eqAlphabet r w = true.
-split.
+    Admitted.
 
 
 
