@@ -1,9 +1,12 @@
-Require Import ssreflect ssrbool eqtype ssrnat.
+Require Import ssreflect ssrbool eqtype ssrnat fintype.
 
 Require Import Coq.Lists.List.
+Set Implicit Arguments.
 
 Section RE.
-Variable A:eqType.
+Variable X: Type.
+Definition Alphabet := finType.
+Variable A:Alphabet.
 
 Definition word := list A.
 
@@ -230,7 +233,86 @@ move=>B. induction B => //=.
 Qed.
 
 
+Fixpoint has_star r := 
+match r with
+| Null => false
+| Empty => false
+| Char c => false
+| Plus r r' => has_star r || has_star r'
+| Conc r r' => has_star r || has_star r'
+| Star r => true
+end.
 
+Lemma length_append (w1 w2: word) : length (w1 ++ w2) = length w1 + length w2.
+Proof.
+elim: w1 => [|a w1 IHw1] //=.
+rewrite IHw1 => //=.
+Qed. 
 
+Lemma leq_sum m n p q : m <= p -> n <= q -> m + n <= p + q.
+Proof. admit. Qed.
+ 
+
+Lemma shortest_word r : 
+~(exists w, lang r w) \/ exists w, lang r w /\ forall w', lang r w' -> length w <= length w'.
+elim: r.
+(* Null *)
+  left. move => [w L]. inversion L.
+(* Empty *)
+  right. exists nil. split => //=. constructor.
+(* Char *)
+  right. exists (c::nil). split => //=. 
+    constructor.
+  move => w' L. inversion L => //=.
+(* Conc *)
+  move => r [F|[w1 [L1 S1]]] r' [F'|[w2 [L2 S2]]].
+  (* Conc, no match *)
+    left. move => [u L0]. inversion L0. apply F. exists w1 => //=. 
+  (* Conc, first match *)
+    left. move => [u L0]. inversion L0. apply F. exists w1 => //=.
+  (* Conc, second match *)
+    left. move => [u L0]. inversion L0. apply F'. exists w2 => //=.
+  (* Conc, both match *)
+    right. exists (w1 ++ w2). split. 
+      constructor => //=.
+    move => w' L. inversion L. rewrite length_append. rewrite length_append.
+    move: (S1 w0 H1) (S2 w3 H3). exact: leq_sum.
+(* Plus *)
+  move => r [F|[w1 [L1 S1]]] r' [F'|[w2 [L2 S2]]].
+  (* Plus, no match *)
+    left. move => [u L0]. inversion L0; [apply F | apply F']; exists u => //=.
+  (* Plus, right match *)
+    right. exists w2. split. 
+      apply/langPlusR => //=.
+    move => w' L. inversion L. 
+      destruct F. exists w' => //=.
+    apply S2 => //=.
+  (* Plus, left match *)
+    right. exists w1. split. 
+      apply/langPlusL => //=.
+    move => w' L. inversion L. 
+      apply S1 => //=.
+    destruct F'. exists w' => //=.
+  (* Plus, both match *)
+    case_eq (length w1 <= length w2) => E.
+    (* length w1 <= length w2 *)
+      right. exists w1. split. 
+        apply/langPlusL => //=.
+      move => w' L. inversion L. 
+        apply S1 => //=. 
+      rewrite (leq_trans E (S2 w' H2)) => //=.
+
+    (* length w2 < length w1 *)
+      move: (leq_total (length w1) (length w2)). move/orP => [] E'. rewrite E in E' => //=.
+      right. exists w2. split. 
+        apply/langPlusR => //=.
+      move => w' L. inversion L. 
+        rewrite (leq_trans E' (S1 w' H2)) => //=.
+      apply S2 => //=.
+
+(* Star *)
+  move => r IHr.
+  right. exists nil. split => //=. constructor.
+Qed.
 
 End RE.
