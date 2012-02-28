@@ -8,100 +8,194 @@ Definition word := seq S.
 
 
 Section DFA.
-Inductive dfa (Q: finType) (s0: Q) (f: pred Q) : rel (Q * S * Q)  -> Type :=
-| dfaI  (d: Q -> S -> Q) : dfa Q s0 f 
-(fun x y => 
-  let (t, q) := x in 
-  let (p, s) := t in 
-  let (t', q') := y in 
-  let (p', s') := t' in   
-  q == p'
-).
+Variable Q: finType.
+Definition dfa_rel (d: Q -> S -> Q) := (fun x y => existsb a, d x a == y).
+Inductive dfa (s0: Q) (f: pred Q) : rel Q  -> Type :=
+| dfaI  (d: Q -> S -> Q) : dfa s0 f 
+(dfa_rel d).
 
 Section Acceptance.
-Variable Q: finType.
 Variable s0: Q.
-Variable d: Q -> S -> Q.
 Variable f: pred Q.
-Definition AutR {R} (_: dfa Q s0 f R) := R.
+Definition AutR {R} (_: dfa s0 f R) := R.
 
-Variable R': rel (Q * S * Q).
-Variable A: dfa Q s0 f R'.
+Variable R': rel Q.
+Variable A: dfa s0 f R'.
 
 Let R := AutR A.
+Definition d: Q -> S -> Q. elim: A => //. Defined.
+
 
 (* dfa A accepts word w starting in state q *)
-Fixpoint accept (q: Q) (w: word) :=
-match w with
-| nil => f q
-| a::w' => 
-  existsb q': Q, 
-  existsb a': S, 
-  existsb q'': Q, 
-  R (q, a, q') (q', a', q'') && accept q' w'
-end.
+Fixpoint accept' (q: Q) (w: word): bool.
+Proof. move: q. elim: w => [ | a w IHw ]. 
+  exact: (f).
+move => q. exact: (accept' (d q a) w).
+Defined.
+Print accept'.
+
+Definition accept (w: word) := 
+accept' s0 w.
+
+Lemma d_connect q a: connect R q (d q a).
+Proof. unfold R. rewrite/d. elim: A => /= d0. rewrite/AutR. 
+apply/connect1. apply/existsP. by exists a.
+Qed.
+
+Definition sink q := forallb q', connect R q q' ==> ~~ f q'.
+
+Lemma sink_trans q q' : sink q -> connect R q q' -> sink q'.
+Proof.
+move/forallP => H0 H1.
+apply/forallP => q''.
+move: (H0 q''). case_eq (f q'') => F /=;
+case_eq (connect R q' q'') => //=.
+move => H2. 
+by move: (connect_trans H1 H2) => -> //.
+Qed.
+
+Lemma final_not_sink q: f q -> ~~ sink q.
+Proof. rewrite/sink => H0. rewrite negb_forall. apply/existsP.
+exists q. rewrite negb_imply. apply/andP => //=. split.
+  by apply/connect0. 
+by apply/negPn.
+Qed.
+
+Lemma sink_not_final q: sink q -> ~~ f q.
+Proof. rewrite/sink. move/forallP => H0. 
+move: (H0 q). move: (connect0 R q) => ->.
+move/implyP => H1. exact: H1.
+Qed.
 
 
-Definition step (s: Q) (a: S) (s' : Q) : Prop := d s a = s'.
-Inductive eat : Q -> seq S -> Q -> Prop :=
-| eatNil s : eat s nil s
-| eatCons s s'' s' a w : step s a s'' -> eat s'' w s' -> eat s (a::w) s'.
-Definition acceptance (w: seq S) : Prop := exists s', eat s0 w s' /\ f s'.
-
-
-Fixpoint eatc (s: Q) (w: seq S) : Q :=
-if w is a :: w' then eatc (d s a) w' else s.
-Definition acceptancec (w: seq S) := f (eatc s0 w).
+Lemma sink_dead_end w q : sink q -> ~~ accept' q w.
+move: q. elim: w => [|a w IHw]. 
+  move => q H. apply/sink_not_final. by exact: H.
+move => q H /=. pose q' := (d q a). fold q'.
+apply/IHw. apply/(sink_trans q) => //. apply/d_connect.
+Qed.
 
 End Acceptance.
+
+
+
+
 
 End DFA.
 
-
 Section NFA.
-Inductive nfa (Q: finType) (s0: Q) (d: Q -> S -> pred Q) (f: pred Q) : Type :=
-| nfaI.
-
-Section Acceptance.
-Variable Q: finType.
-Variable s0: Q.
-Variable d: Q -> S -> pred Q.
-Variable f: pred Q.
-Variable A: nfa Q s0 d f.
-
-Definition nstep (s: Q) (a: S) (s' : Q) : Prop := d s a s'.
-Inductive neat : Q -> seq S -> Q -> Prop :=
-| neatNil s : neat s nil s
-| neatCons s s'' s' a w : nstep s a s'' -> neat s'' w s' -> neat s (a::w) s'.
-
-Definition nacceptance (w: seq S) : Prop := exists s', neat s0 w s' /\ f s'.
-
-
-Fixpoint neatc (s: Q) (w: seq S) {struct w} : seq Q :=
-if w is a :: w' then 
-undup (
-  flatten (
-    map (fun s' => neatc s' w') (filter (d s a) (enum Q))
-  )
-)
-else [:: s].
-
-Definition nacceptancec (w: seq S) := existsb q : Q, (q \in (neatc s0 w)) && f q.
-
-End Acceptance.
 End NFA.
 
 
-Section PowersetConstruction.
-Variable Q: finType.
-Variable s0: Q.
-Variable d: Q -> S -> pred Q.
-Variable f: pred Q.
-Variable A: nfa Q s0 d f.
-
-Definition predT (q: Q) := true.
-Definition powerset := pffun_on false A predT.
-End PowersetConstruction.
-
+Implicit Arguments accept [R'].
 
 End FA.
+
+
+Section Operators.
+(* Operations on two automata with the same alphabet *)
+Variable Alph: finType.
+Variable Q1 Q2: finType.
+Variable s01: Q1.
+Variable s02: Q2.
+Variable f1: pred Q1.
+Variable f2: pred Q2.
+
+Variable R1': rel Q1.
+Variable R2': rel Q2.
+Variable A1: dfa Alph Q1 s01 f1 R1'.
+Variable A2: dfa Alph Q2 s02 f2 R2'.
+
+Let R1 := AutR A1.
+Definition d1: Q1 -> Alph -> Q1. elim: A1 => //. Defined.
+Let R2 := AutR A2.
+Definition d2: Q2 -> Alph -> Q2. elim: A2 => //. Defined.
+
+Definition Q_prod := prod_finType Q1 Q2.
+
+Definition d_or (q: Q_prod) a := let (q1, q2) := q in (d1 q1 a, d2 q2 a).
+Definition Aut_or : dfa Alph Q_prod (s01, s02) 
+(fun q => let (q1,q2) := q in f1 q1 || f2 q2)
+(dfa_rel Alph (Q_prod) d_or).
+constructor. Defined.
+
+Lemma Aut_or_correct' w q1 q2 : accept' A1 q1 w || accept' A2 q2 w = accept' Aut_or (q1, q2) w.
+Proof. elim: w q1 q2 => [|a w IHw].
+  rewrite/accept => //.
+rewrite/accept => /=. move => q1 q2. 
+by exact: IHw.
+Qed.
+
+Lemma Aut_or_correct w: accept A1 w || accept A2 w = accept Aut_or w.
+Proof. exact: Aut_or_correct'. Qed.
+
+
+Definition d_and (q: Q_prod) a := let (q1, q2) := q in (d1 q1 a, d2 q2 a).
+Definition Aut_and : dfa Alph Q_prod (s01, s02) 
+(fun q => let (q1,q2) := q in f1 q1 && f2 q2)
+(dfa_rel Alph (Q_prod) d_or).
+constructor. Defined.
+
+Lemma Aut_and_correct' w q1 q2 : accept' A1 q1 w && accept' A2 q2 w = accept' Aut_and (q1, q2) w.
+Proof. elim: w q1 q2 => [|a w IHw].
+  rewrite/accept => //.
+rewrite/accept => /=. move => q1 q2. 
+by exact: IHw.
+Qed.
+
+Lemma Aut_and_correct w: accept A1 w && accept A2 w = accept Aut_and w.
+Proof. exact: Aut_and_correct'. Qed.
+
+Definition Q_sum := sum_finType Q1 Q2.
+Definition Q_sum_option := option_finType Q_sum.
+
+Definition bla := predPredType {ffun Q1 -> bool}.
+
+(*
+Definition d_con (q: Q_prod) a := match q with None => 
+Lemma Aut_con : 
+*)
+
+End Operators.
+
+
+
+
+
+(* Example *)
+(* 2-state 2-character automaton, accepting (true)* *)
+Definition Bool := [ finType of bool ].
+
+Definition A := dfaI Bool Bool false id (andb).
+
+Lemma false_to_false q : connect (AutR A) false q -> q = false.
+Proof. elim: q => //=. 
+move/connectP => [p]. elim: p => [| q' p IHp] //=.
+move/andP => []. rewrite {1}/AutR. move/existsP => [] x. rewrite andFb.
+rewrite eq_sym. move/eqP => ->. 
+by exact: IHp.
+Qed.
+
+Lemma false_not_to_true q : ~~ connect (AutR A) false q -> q = true.
+Proof. elim: q => //=.
+by move: (connect0 (AutR A) false) => ->.
+Qed.
+
+Lemma sink_false: sink A false.
+Proof. rewrite/sink. apply/forallP => q.
+case_eq (connect (AutR A) false q). 
+  by move/false_to_false => ->.
+move/negbT. by move/false_not_to_true => ->.
+Qed.
+
+
+Goal forall w q, accept' A q w -> ~~(false \in w).
+Proof. move => w. elim: w => [ | a w IHw ] //=. rewrite in_cons negb_or.
+move => q H.
+apply/andP. case: q H; case a; split; move: H => //=; try by exact: IHw.
+  move: sink_false => S; by move: (sink_dead_end A w false S) => /negbTE => -> //.
+move: sink_false => S; by move: (sink_dead_end A w false S) => /negbTE => -> //.
+Qed.
+
+
+
