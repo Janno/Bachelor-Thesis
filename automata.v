@@ -76,18 +76,29 @@ apply/IHw. apply/(sink_trans q) => //. apply/d_connect.
 Qed.
 
 End Acceptance.
-
-
-
+Implicit Arguments accept [R'].
 
 
 End DFA.
 
 Section NFA.
+Variable Q: finType.
+Variable s0: Q.
+Variable f: pred Q.
+Variable d: Q -> S -> pred Q.
+Definition Q' := [ finType of {ffun Q -> bool_eqType} ].
+Definition f' (q': Q') := existsb q:Q, q' q && f q.
+Let s0' : Q' := finfun (fun q:Q => q==s0).
+
+Definition d_det (q': Q') (a: S) : Q' :=
+finfun (
+ fun (q: Q) => existsb p: Q, q' p && d p a q
+).
+
+Definition to_dfa : dfa Q' s0' f' (dfa_rel Q' d_det). constructor. Defined.
 End NFA.
 
 
-Implicit Arguments accept [R'].
 
 End FA.
 
@@ -149,12 +160,42 @@ Proof. exact: Aut_and_correct'. Qed.
 Definition Q_sum := sum_finType Q1 Q2.
 Definition Q_sum_option := option_finType Q_sum.
 
-Definition bla := predPredType {ffun Q1 -> bool}.
+Definition Q1_conc (q1: Q1) : Q_sum. constructor. exact q1. Defined.
+Definition Q2_conc (q2: Q2) : Q_sum. apply/inr. exact q2. Defined.
+Definition s0_conc : Q_sum. constructor. exact: s01. Defined.
 
-(*
-Definition d_con (q: Q_prod) a := match q with None => 
-Lemma Aut_con : 
-*)
+Definition d_conc (q: Q_sum) a (q': Q_sum) := 
+match q with
+| inl q1 => 
+  match q' with
+  | inl q1' => d1 q1 a == q1'
+  | inr q2' => f1 q1 && (q2' == s02)
+  end
+| inr q2 =>
+  match q' with
+  | inr q2' => d2 q2 a == q2'
+  | _ => false
+  end
+end.
+
+Definition f_conc (q: Q_sum) :=
+match q with
+| inr q2 => f2 q2
+| _ => false
+end.
+Definition Aut_conc := to_dfa Alph Q_sum (s0_conc) f_conc d_conc. 
+
+
+
+Lemma Aut_conc_correct q1 w1 w2: 
+accept' A1 q1 w1 && accept A2 w2 
+= accept' Aut_conc (finfun (fun q=> match q with | inl q1 => q1==q1 | _ => false end)) (w1 ++ w2).
+elim: w1 q1 w2 => [|a w1 IHw1] q1 w2 //=.
+  rewrite/accept. elim: w2 => /=.
+Admitted.
+
+Lemma Aut_conc_correct w1 w2: accept A1 w1 && accept A2 w2 = accept Aut_conc (w1 ++ w2).
+
 
 End Operators.
 
