@@ -26,14 +26,26 @@ Let R := AutR A.
 Definition d: Q -> S -> Q. elim: A => //. Defined.
 
 
+Fixpoint accept_state' (q: Q) (w: word): Q. 
+Proof. move: q. elim: w => [ | a w IHw ]. 
+  by [].
+move => q. move: (d q a) w. exact: accept_state'. 
+Defined.
+Hint Resolve accept_state'.
+  
 (* dfa A accepts word w starting in state q *)
 Fixpoint accept' (q: Q) (w: word): bool.
+(* := f (accept_state' q w). *)
 Proof. move: q. elim: w => [ | a w IHw ]. 
   exact: (f).
 move => q. exact: (accept' (d q a) w).
 Defined.
-Print accept'.
 
+Lemma accept_correct q w : accept' q w = f (accept_state' q w).
+Proof. elim: w q => [ | a w IHw ] q //=. Qed.
+
+Definition accept_state (w: word) := accept_state' s0 w.
+  
 Definition accept (w: word) := 
 accept' s0 w.
 
@@ -71,7 +83,7 @@ Qed.
 Lemma sink_dead_end w q : sink q -> ~~ accept' q w.
 move: q. elim: w => [|a w IHw]. 
   move => q H. apply/sink_not_final. by exact: H.
-move => q H /=. pose q' := (d q a). fold q'.
+move => q H /=. pose q' := (d q a). rewrite/accept'. simpl. fold q'.
 apply/IHw. apply/(sink_trans q) => //. apply/d_connect.
 Qed.
 
@@ -123,6 +135,25 @@ Definition d1 := d A1.
 Let R2 := AutR A2.
 (*Definition d2: Q2 -> Alph -> Q2. elim: A2 => //. Defined.*)
 Definition d2 := d A2.
+
+Definition f_not q1 := ~~ f1 q1.
+Definition Aut_not : dfa Alph Q1 s01 f_not (dfa_rel Alph Q1 d1). constructor. Defined.
+
+Lemma Aut_not_correct w q: accept' A1 q w = ~~ accept' Aut_not q w.
+Proof. elim: w q => [| a w IHw] q //=.
+  rewrite/f_not. by apply/idP/negPn.
+Qed.
+
+Definition f_star q1 := f1 q1 || (q1 == s01).
+Definition Q_star := Q_ndet Q1.
+Definition d_star q1 a q2 : bool := (q2 == d1 q1 a) || (f1 q1 && (q2 == s01)).
+Definition Aut_star := to_dfa Alph Q1 s01 f_star d_star.
+
+Lemma Aut_star_correct' : accept Aut_star [::].
+Proof. rewrite/accept/accept'/f'/f_star => /=. apply/existsP. exists s01.
+by rewrite ffunE eq_refl andTb orbT. Qed.
+  
+
 
 Definition Q_prod := prod_finType Q1 Q2.
 
@@ -268,7 +299,8 @@ Proof. elim: w2 q1 => [|a w2 IHw2] q1 H0 /=.
 apply: Aut_conc_expand1. apply: Aut_conc_end1. by exact: H0.
 Qed.
 
-Lemma Aut_conc_correct1 q1 w1 w2: (accept' A1 q1 w1 && accept A2 w2) -> accept' Aut_conc [ffun q => q == Q1_conc q1] (w1 ++ w2).
+Lemma Aut_conc_correct1 q1 w1 w2: (accept' A1 q1 w1 && accept A2 w2) ->
+  accept' Aut_conc [ffun q => q == Q1_conc q1] (w1 ++ w2).
 Proof. elim: w1 w2 q1 => [|a w1 IHw1] w2 q1.
   rewrite/accept => /andP [] /= H0. rewrite/s0_conc. move/(Aut_conc_correct2').
   rewrite/Q2_conc. apply: Aut_conc_correct3'. by exact: H0.
@@ -277,15 +309,6 @@ rewrite /d_det /d_conc ffunE => /eqP -> /=. rewrite ffunE. apply/existsP.
 exists (Q1_conc q1). by rewrite ffunE eq_refl andTb eq_refl.
 Qed.
 
-
-Lemma Aut_conc_correct4' w1 w2:
-accept A1 w1 -> 
-accept' Aut_conc [ffun q => q == Q1_conc s01] (w1 ++ w2) ->
-accept A2 w2 \/ accept A1 (w1 ++ w2).
-Proof. elim: w1 w2 => [| a w1 IHw1 ] w2 => /=.
-  rewrite /accept => /=. apply: Aut_conc_correct3'. 
-
-
 Lemma Aut_conc_correct2 w: 
 accept' Aut_conc [ffun q => q == Q1_conc s01] w -> 
 exists w1, exists w2, w = w1 ++ w2 /\ accept A1 w1 && accept A2 w2.
@@ -293,11 +316,20 @@ Proof. move: w.
 apply: last_ind => [| w a IHw ].
   rewrite /f' /f_conc => /existsP [] q /andP []. rewrite ffunE => /eqP -> /= /andP [] H0 H1.
   exists [::]. exists [::]. rewrite/accept => /=. by rewrite H0 H1.
-case_eq (accept' Aut_conc [ffun q => q == Q1_conc s01] w). 
+case_eq (accept A1 (rcons w a)); case_eq (accept A2 [::]); move => H0 H1.
+      exists (rcons w a). exists [::]. by rewrite cats0 H0 H1.
+    case_eq (accept' Aut_conc [ffun q => q == Q1_conc s01] w).
+      move/IHw => [] w1 [] w2 [] -> /andP [] H2 H3. rewrite rcons_cat.
+      case_eq (accept A2 (rcons w2 a)) => H4.
+        exists w1. exists (rcons w2 a). split.
+          by [].
+        by rewrite H2 H4.
+      
   move/IHw => [] w1 [] w2 [] ->. rewrite rcons_cat.
   move => /andP [] H0 H1 H2. exists w1. exists (rcons w2 a). split.
     by [].
   rewrite H0 andTb.
+  
 
 
 elim: w => [| a w IHw] /=.
