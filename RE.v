@@ -1,14 +1,12 @@
-Require Import ssreflect ssrbool eqtype ssrnat fintype.
+Require Import ssreflect ssrbool eqtype ssrnat fintype seq.
 
-Require Import Coq.Lists.List.
 Set Implicit Arguments.
 
 Section RE.
-Variable X: Type.
 Definition Alphabet := finType.
 Variable A:Alphabet.
 
-Definition word := list A.
+Definition word := seq A.
 
 Inductive re : Type :=
 | Null : re
@@ -59,7 +57,7 @@ Proof. induction w => //. move => B. destruct (mem_der_Null _ B). Qed.
 Lemma mem_der_Char a w : mem_der (Char a) w = true -> w = cons a nil.
 Proof.
 induction w => //=.
-case_eq (a0 == a); move/eqP.
+case_eq (t == a); move/eqP.
   by move => -> /mem_der_Empty -> //.
 by move => F /mem_der_Null => //.
 Qed.
@@ -113,7 +111,7 @@ Inductive lang : re -> word -> Prop :=
 Lemma lang_nil_w r w : lang r (nil ++ w) -> lang r w.
 Proof. by []. Qed.
 
-Lemma append_nil w : (w ++ @nil A) = w.
+Lemma append_nil (w: word) : (w ++ [::]) = w.
 Proof. induction w => //=. by rewrite IHw => //. Qed.
 
 Lemma lang_w_nil r w : lang r (w ++ nil) -> lang r w. 
@@ -155,15 +153,15 @@ Qed.
 
 Lemma mem_der_lang_agree r w : mem_der r w = true <-> lang r w.
 Proof. split.
-move: r. induction w => r /=. 
+move: r. elim: w => [|a w IHw] r /=. 
 exact: lang_empty_nil.
 
-remember (der r a) as s. induction s.
+move Heqs: (der r a) => s. move: Heqs. induction s => Heqs.
 (* der r a = Null *) 
-  by move => /mem_der_Null.
+  by move/mem_der_Null.
 
 (* der r a = Empty *) 
-  move => /mem_der_Empty. destruct r; try by [].
+  move/mem_der_Empty. destruct r; try by [].
   (* r = Char c *)
     move : Heqs => /=. case_eq (a==c). 
       move/eqP => -> _ ->. by constructor.
@@ -178,7 +176,7 @@ remember (der r a) as s. induction s.
   by move/der_not_Char.
 
 (* der r a = Conc s1 s2 *)
-  rewrite Heqs. move/IHw. 
+  rewrite <- Heqs. move/IHw. 
   destruct r; move: Heqs => //=.
   (* r = Char c *)
     by case_eq (a == c).
@@ -243,18 +241,12 @@ match r with
 | Star r => true
 end.
 
-Lemma length_append (w1 w2: word) : length (w1 ++ w2) = length w1 + length w2.
-Proof.
-elim: w1 => [|a w1 IHw1] //=.
-rewrite IHw1 => //=.
-Qed. 
-
 Lemma leq_sum m n p q : m <= p -> n <= q -> m + n <= p + q.
 Proof. admit. Qed.
  
 
 Lemma shortest_word r : 
-~(exists w, lang r w) \/ exists w, lang r w /\ forall w', lang r w' -> length w <= length w'.
+~(exists w, lang r w) \/ exists w, lang r w /\ forall w', lang r w' -> size w <= size w'.
 elim: r.
 (* Null *)
   left. move => [w L]. inversion L.
@@ -275,7 +267,7 @@ elim: r.
   (* Conc, both match *)
     right. exists (w1 ++ w2). split. 
       constructor => //=.
-    move => w' L. inversion L. rewrite length_append. rewrite length_append.
+    move => w' L. inversion L. rewrite size_cat. rewrite size_cat.
     move: (S1 w0 H1) (S2 w3 H3). exact: leq_sum.
 (* Plus *)
   move => r [F|[w1 [L1 S1]]] r' [F'|[w2 [L2 S2]]].
@@ -294,7 +286,7 @@ elim: r.
       apply S1 => //=.
     destruct F'. exists w' => //=.
   (* Plus, both match *)
-    case_eq (length w1 <= length w2) => E.
+    case_eq (size w1 <= size w2) => E.
     (* length w1 <= length w2 *)
       right. exists w1. split. 
         apply/langPlusL => //=.
@@ -303,7 +295,7 @@ elim: r.
       rewrite (leq_trans E (S2 w' H2)) => //=.
 
     (* length w2 < length w1 *)
-      move: (leq_total (length w1) (length w2)). move/orP => [] E'. rewrite E in E' => //=.
+      move: (leq_total (size w1) (size w2)). move/orP => [] E'. rewrite E in E' => //=.
       right. exists w2. split. 
         apply/langPlusR => //=.
       move => w' L. inversion L. 
