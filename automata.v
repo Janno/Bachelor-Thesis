@@ -136,6 +136,15 @@ Let R2 := AutR A2.
 (*Definition d2: Q2 -> Alph -> Q2. elim: A2 => //. Defined.*)
 Definition d2 := d A2.
 
+
+Definition q_leq {X} (q1' q2': Q_ndet X) := forall q, q1' q -> q2' q.
+
+Notation "q1' ===> q2'" := (q_leq q1' q2') (at level 70).
+
+Lemma q_leq_trans {X} (q1' q2' q3': Q_ndet X) : q1' ===> q2' -> q2' ===> q3' -> q1' ===> q3'.
+Proof. rewrite/q_leq. move => H0 H1 q. by move/H0/H1. Qed.
+
+
 Definition f_not q1 := ~~ f1 q1.
 Definition Aut_not : dfa Alph Q1 s01 f_not (dfa_rel Alph Q1 d1). constructor. Defined.
 
@@ -146,13 +155,37 @@ Qed.
 
 Definition f_star q1 := f1 q1 || (q1 == s01).
 Definition Q_star := Q_ndet Q1.
-Definition d_star q1 a q2 : bool := (q2 == d1 q1 a) || (f1 q1 && (q2 == s01)).
+Definition d_star q1 a q2 : bool := (q2 == d1 q1 a) || (f1 q1 && (q2 == d1 s01 a)).
 Definition Aut_star := to_dfa Alph Q1 s01 f_star d_star.
 
 Lemma Aut_star_correct' : accept Aut_star [::].
 Proof. rewrite/accept/accept'/f'/f_star => /=. apply/existsP. exists s01.
 by rewrite ffunE eq_refl andTb orbT. Qed.
-  
+
+Lemma q_star_leq_d_trans (q1' q2' : Q_star) a : 
+q1' ===> q2' -> d_det Alph d_star q1' a ===> d_det Alph d_star q2' a.
+Proof. move => H0 q. rewrite/d_det. rewrite 2!ffunE. 
+move/existsP => [] p /andP [] /H0 H1 H2. apply/existsP. exists p. 
+by rewrite H1 H2. Qed.
+
+Lemma q_star_leq_eq w1 (q1' q2' : Q_star) : q1' ===> q2' -> accept' Aut_star q1' w1 -> accept' Aut_star q2' w1.
+Proof. elim: w1 q1' q2' => [|a w IHw] q1' q2'.
+  move => /=. rewrite/f'/f_star => H0 /existsP [] p /andP [] H1 /orP [] H2.
+    apply/existsP. exists p. apply/andP. split.
+      by apply: H0.
+    apply/orP. left. by exact: H2.
+  apply/existsP. exists p. apply/andP. split.
+    by apply: H0.
+  apply/orP. right. by exact: H2.
+move => H0 /=. apply: IHw.
+move: H0. exact: q_star_leq_d_trans.
+Qed.
+
+Lemma Aut_star_correct w1 w2 q1 :
+  accept' A1 q1 w1 && accept Aut_star w2 -> accept' Aut_star [ffun q => q==q1] (w1++w2).
+Proof. elim: w1 w2 q1 => [| a w1 IHw1 ] w2 q1 /andP [].
+  move => H0. apply: q_star_leq_eq.
+Admitted.
 
 
 Definition Q_prod := prod_finType Q1 Q2.
@@ -218,13 +251,6 @@ match q with
 | inr q2 => f2 q2
 end.
 Definition Aut_conc := to_dfa Alph Q_sum (s0_conc) f_conc d_conc. 
-
-Definition q_conc_leq (q1' q2': Q_conc) := forall q, q1' q -> q2' q.
-
-Notation "q1' ===> q2'" := (q_conc_leq q1' q2') (at level 70).
-
-Lemma q_conc_leq_trans (q1' q2' q3': Q_conc) : q1' ===> q2' -> q2' ===> q3' -> q1' ===> q3'.
-Proof. rewrite/q_conc_leq. move => H0 H1 q. by move/H0/H1. Qed.
 
 Lemma q_conc_leq_d_trans (q1' q2' : Q_conc) a : 
 q1' ===> q2' -> d_det Alph d_conc q1' a ===> d_det Alph d_conc q2' a.
