@@ -1,4 +1,4 @@
-Require Import ssreflect ssrbool eqtype fintype finfun seq fingraph ssrfun.
+Require Import ssreflect ssrbool eqtype fintype finfun seq fingraph ssrfun ssrnat.
 
 Set Implicit Arguments.
 
@@ -67,9 +67,9 @@ Definition accept := [fun w => accept' s0 w].
 (* A lemma that helps us avoid cumbersome unfolding of accept' *)
 Lemma accept'S x a w : accept' x (a::w) = accept' (step x a) w.
 Proof. elim: w x a => [|b w IHw] x a //=. Qed.
-(* Same for accept. *)
-Lemma acceptS a w : accept (a::w) = accept' (step s0 a) w.
-Proof. elim: w a => [|b w IHw] a //=. Qed.
+(* Same for run' *)
+Lemma run'S x a w : run' x (a::w) = (step x a) :: run' (step x a) w.
+Proof. by []. Qed.
   
 (* The size of a run is the size of the input word. *)
 Lemma run_size x w : size (run' x w) = size w.
@@ -77,10 +77,31 @@ Proof. elim: w x => [|a w IHw] x //=.
   by rewrite IHw.
 Qed.
 
+(* take lemma. *)
+Lemma run'_take x w n: take n (run' x w) = run' x (take n w).
+Proof. elim: w x n => [|a w IHw] x n //.
+rewrite run'S 2!take_cons. case: n => [|n] //.
+by rewrite IHw run'S.
+Qed.
+
+(* rcons and cat lemmas. *)
+Lemma run'_cat x w1 w2 : run' x (w1 ++ w2) = run' x w1 ++ run' (last x (run' x w1)) w2.
+Proof. elim: w1 w2 x => [|a w1 IHw1] w2 x //.
+simpl. by rewrite IHw1.
+Qed.
+
+Lemma run'_rcons x w a : run' x (rcons w a) = rcons (run' x w) (step (last x (run' x w)) a).
+Proof. move: w a x. apply: last_ind => [|w b IHw] a x //.
+rewrite -3!cats1. rewrite 2!run'_cat. by [].
+Qed.
+
+  
+
 (* Predicate to distinguish between accepting
    and non-accepting runs. *)
-Definition run_accepts x xs := fin (last x xs).
+Definition run_accepting := [fun x xs => fin (last x xs)].
 
+Definition run_accepts x xs w := xs = run' x w.
 
 End Acceptance.
 
@@ -100,18 +121,18 @@ Variable fin: pred state.
 Variable step_rel: state -> char -> pred state.
 
 (* Type of states after powerset construction. *)
-Definition state_ndet := [ finType of {ffun state -> bool_eqType} ].
+Definition state_det := [ finType of {ffun state -> bool_eqType} ].
 
 (* Finality predicate after powerset construction. *)
-Definition fin_det := [ fun q': state_ndet => existsb q:state, q' q && fin q ].
-Definition s0_det : state_ndet := [ ffun q:state => q==s0 ].
+Definition fin_det := [ fun q': state_det => existsb q:state, q' q && fin q ].
+Definition s0_det : state_det := [ ffun q:state => q==s0 ].
 
 (* Functional step after powerset construction. *)
-Definition step_det := [ fun (x': state_ndet) (a: char) => 
+Definition step_det := [ fun (x': state_det) (a: char) => 
 [ ffun x => existsb y: state, x' y && step_rel y a x ] ].
 
 (* Conversion from a non-functional transitions to a DFA. *)
-Definition to_dfa := dfaI state_ndet s0_det fin_det step_det.
+Definition to_dfa := dfaI state_det s0_det fin_det step_det.
 
 End NFA.
 
@@ -157,7 +178,7 @@ Qed.
    state will be accepting. *)
 Definition fin_star' := [ pred x | x == s01 ].
 (* The type of states in the star automaton. *)
-Definition state_star := state_ndet state1.
+Definition state_star := state_det state1.
 (* We construct a non-functional relation which is 
    the new transitions of the star automaton.
    Whenever we enter a former final state, we
@@ -165,10 +186,11 @@ Definition state_star := state_ndet state1.
    acceptance. *)
 Definition step_rel_star : state1 -> char -> pred state1 := (fun x1 a => [ pred x2 | (x2 == step1 x1 a) || (fin1 (step1 x1 a) && (x2 == s01)) ] ).
 (* We construct the star automaton. *)
-Definition Aut_star := to_dfa char state1 s01 fin_star' step_rel_star.
+(* Definition Aut_star := to_dfa char state1 s01 fin_star' step_rel_star. *)
 Definition step_star := step_det char step_rel_star.
 Definition s0_star := s0_det state1 s01.
 Definition fin_star := fin_det state1 fin_star'.
+Definition Aut_star := dfaI char (state_det state1) s0_star fin_star step_star.
 
 (* We proof that membership in state powerset is
    preserved by step and step_star. *)
@@ -207,6 +229,157 @@ Proof. elim: w a X x => [| b w IHw ] a X x H0.
 rewrite accept'S. apply: IHw. rewrite ffunE. apply/existsP. exists x.
 by rewrite H0 andTb /step_rel_star /= eq_refl.
 Qed.
+
+(* We show that every accepting run of the
+   star automaton ends in a state Y s.t. Y s01. *)
+Lemma Aut_star_end X w: accept' Aut_star X w -> last X (run' Aut_star X w) s01.
+Proof. elim: w X => [|a w IHw] X.
+  by move => /= /existsP [] q /andP [] H0 /eqP <-.
+rewrite accept'S. by apply: IHw.
+Qed.
+
+(* We define a predicate on star runs and
+   normal runs, which decides if the normal run
+   is contained in the star run, i.e. for
+   every X_i and x_i: X_i x_i *) 
+Fixpoint Aut_star_run_contains (Xs: seq state_star) (xs: seq state1) : bool :=
+match Xs, xs with
+  | [::] , [::]  => true
+  | X::Xs, x::xs => X x && Aut_star_run_contains Xs xs
+  | _    , _     => false
+end.
+
+(* We define the notion of a shortest, non-empty, accepting prefix *)
+Definition Aut_star_prefix (X: state_star) (w: word char) (n: nat) : bool :=
+      (n > 0) && (n <= size w) && (accept' Aut_star X (take n w)) &&
+  forallb n': ordinal n, (n' > 0) ==> ~~ accept' Aut_star X (take n' w).
+
+(* We proof that there are no shorter prefixes than the shortest prefix. *)
+Definition Auf_star_prefix_shortest (X: state_star) (w: word char) (n: nat) :
+  Aut_star_prefix X w n -> forallb n' : 'I_n, ~~ Aut_star_prefix X w n'.
+Proof. move: w X. apply: last_ind => [| w b IHw ] X.
+  rewrite /Aut_star_prefix => /andP [] /andP [] /andP []. rewrite lt0n => H0.
+  rewrite leqn0 => H1. by move: H1 H0 => ->.
+rewrite /Aut_star_prefix => /andP [] /andP [] /andP [] H0 H1 H2 /forallP H3.
+apply/forallP => m. rewrite 3!negb_and. apply/orP. left.
+case_eq (nat_of_ord m == 0).
+  by move/eqP => ->.
+move/neq0_lt0n => H4. apply/orP. right.
+move: (H3 m) => /implyP. move => H5. apply: H5. by [].
+Qed.
+
+(* We proof that there is a shortest, non-empty, accepting prefix
+   for every non-empty word accept by the star automaton. *)
+Lemma Aut_star_run_shortest (X: state_star) (a: char) w:
+  accept' Aut_star X (rcons w a) ->
+  exists n,
+    Aut_star_prefix X (rcons w a) n.
+Proof. move: w a X. apply: last_ind => [| w b IHw] a X.
+  move => H0. 
+  exists 1. apply/andP. split.
+    rewrite andTb. by exact: H0. 
+  apply/forallP => x. apply/implyP. move: (ltn_ord x).
+  rewrite leq_eqVlt => /andP [] /eqP H1.
+  (* this is a very convoluted way of proving that x=0. *)
+  case_eq (nat_of_ord x) => [|x'].
+    by [].
+  move/(f_equal S). rewrite H1. move/(f_equal predn). by [].
+ 
+move => H0.
+(* See if there already is a prefix: *)
+case_eq (existsb m : 'I_ (size (rcons w b)), Aut_star_prefix X (rcons w b) m).
+  move/existsP => [] m /andP [] /andP [] /andP [] H1 H2 H3 /forallP H4.
+  pose n:=nat_of_ord m.
+  exists n. apply/andP. split.
+    apply/andP. split.
+      apply/andP. split => //.
+      rewrite size_rcons. move: H2. by apply: leqW.
+    rewrite -cats1 (takel_cat H2). by exact: H3.
+  apply/forallP => k. apply/implyP => H5.
+  rewrite -cats1 takel_cat. move: H5. apply/implyP. by exact: H4.
+  apply: leq_trans. apply ltnW. apply ltn_ord. by [].
+
+move/negbT. rewrite negb_exists => /forallP H1. exists (size (rcons (rcons w b) a)).
+apply/andP. split.
+  apply/andP. split.
+    by rewrite size_rcons ltn0Sn ltnSn.
+  rewrite take_size. by exact: H0.
+apply/forallP.
+
+  
+      
+
+
+
+(* We proof that there is a shortest, non-empty, accepting prefix
+   for every non-empty word accept by the star automaton. *)
+Lemma Aut_star_run_shortest X a w:
+  accept' Aut_star X (rcons w a) ->
+  exists n,
+    Aut_star_prefix X (rcons w a) n.
+Proof. move: w a X. apply: last_ind => [| w b IHw] a X.
+  move => H0. 
+  exists 1. apply/andP. split.
+    rewrite andTb. by exact: H0. 
+  apply/forallP => x. apply/implyP. move: (ltn_ord x).
+  rewrite leq_eqVlt => /andP [] /eqP H1.
+  (* this is a very convoluted way of proving that x=0. *)
+  case_eq (nat_of_ord x) => [|x'].
+    by [].
+  move/(f_equal S). rewrite H1. move/(f_equal predn). by [].
+ 
+move => H0.
+(* 2 cases: - Aut_star accepts (rcons w b) and IHw can be used to
+              find the shortest prefix.
+            - Aut_star does not accept rcons w b
+              *)
+case_eq (accept' Aut_star X (rcons w b)) => H1; [move: (IHw b X H1)|].
+  move => [] n.
+  rewrite /Aut_star_prefix => /andP [] /andP [] /andP [] H2 H3 H4 /forallP H5.
+  exists n. apply/andP. split.
+    apply/andP. split.
+      apply/andP. split => //.
+      rewrite size_rcons. move: H3. by apply leqW.
+    rewrite -2!cats1 takel_cat.
+      by rewrite cats1.
+    rewrite cats1. by exact H3.
+  apply/forallP => n'. 
+  rewrite -{1}cats1 take_cat.
+  move: (leq_trans (ltn_ord n') H3) => ->.
+  apply: H5.
+(* 2 cases:  *)  
+  
+  
+  
+Lemma Aut_star_help : seq state_star -> seq (state1 -> bool).
+Proof. rewrite /state_star /state_ndet. move => xs. elim: xs => [|x xs IHxs].
+  exact: nil.
+apply: cons. move: x. move/finfun. by [].
+exact IHxs.
+Qed.
+
+Lemma Aut_star_det_run (X: state_star) Xs :
+  (exists x, fin1 x) ->
+  X s01 ->
+  run_accepting Aut_star X (X::Xs) ->
+  last X (X::Xs) s01 ->
+  all [fun X' => ~~X' s01] (Aut_star_help Xs) ->
+  exists x, exists xs,
+    size (x::xs) = size (X::Xs)
+    /\ run_accepting A1 x (x::xs)
+    /\ all (fun (t: state_star * state1) => let (X,x) := t in X x) (zip (X::Xs) (x::xs)).
+Proof. move => [] z H0. elim: Xs X => [|x Xs IHXs] X.
+  move => H1 /existsP [] x /andP [] /= H2 /eqP H3 H4 _.
+  exists z. exists nil. split => //=. rewrite andbT.
+  split => //.
+
+(* Next, we show that every non-empty word accepted
+   by the star automaton generates a run which
+   has a non-empty prefix ending in X s.t. X s01. *)
+Lemma Aut_star_correct' (X: state_star) a w :
+  accept' Aut_star X (a::w) -> let xs := run' Aut_star X (a::w) in exists n.
+Proof.
+
 
 (* We proof that (step_star s0_star a) is a subset
    of all (step_star X a) s.t. fin_star X. *)
