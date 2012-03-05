@@ -268,13 +268,160 @@ move/neq0_lt0n => H4. apply/orP. right.
 move: (H3 m) => /implyP. move => H5. apply: H5. by [].
 Defined.
 
-(* We proof that there is a shortest, non-empty, accepting prefix
+
+(* This should go somewhere else. *)
+Lemma ltn_trans_tight m n p : m < n -> n < p -> m < p.-1.
+Proof. elim: p n m => [|p IHp ] n m.
+  by [].
+move => H0. rewrite leq_eqVlt => /orP [].
+  move/eqP => <-. exact: H0.
+rewrite ltnS => H1. move: (IHp _ _ H0 H1) => /=.
+case: p IHp H1 => [|p] IHp H1.
+  by [].
+by exact: ltnW.
+Qed.
+
+Lemma ltn_trans_tight' m n p : m < n -> n < p.-1 -> m < p.-1.
+Proof. elim: p n m => [|p IHp ] n m.
+  by [].
+move => H0. rewrite leq_eqVlt => /orP [].
+  move/eqP => <-. apply: leqW. by [].
+move/leqW. apply: ltn_trans_tight. by apply: leqW.
+Qed.
+
+Lemma size_induction (X : Type) (f : X -> nat) (p: X ->Prop) :
+( forall x, ( forall y, f y < f x -> p y) -> p x) -> forall x, p x.
+Proof. intros A x. apply A. induction (f x). by [].
+intros y B. apply A. intros z C. apply IHn.
+move: C B. apply: ltn_trans_tight. Qed.
+
+Lemma size_take_bound (w: word char) n : size (take n w) <= size w.
+Proof. elim: n w => [|n IHn] w.
+  by rewrite take0.
+rewrite size_take.
+case_eq (n.+1 < size w).
+  apply: leq_trans. apply: leqW. exact: ltnSn.
+by [].
+Qed.
+
+Lemma size_take_bound' (w: word char) n : size (take n w) <= n.
+Proof. elim: n w => [|n IHn] w.
+  by rewrite take0.
+rewrite size_take.
+case_eq (n.+1 < size w).
+  move => _. exact: ltnSn.
+move/negbT. by rewrite -leqNgt.
+Qed.
+
+Lemma size_take_underflow (w: word char) n : size (take n w) < n -> size w < n.
+Proof. elim: n w => [|n IHn] w.
+  by rewrite take0.
+rewrite size_take.
+case_eq (n.+1 < size w).
+  move => _. by rewrite ltnn.
+move/negbT. by rewrite -leqNgt.
+Qed.
+
+Lemma take_undersize (w: word char) n k : n <= k -> take n (take k w) = take n w.
+Proof. elim: w k n => [|a w IHw] k n.
+  by [].
+rewrite take_cons. destruct k. 
+  by rewrite leqn0 => /eqP ->.
+rewrite take_cons. destruct n.
+  by [].
+move => H0. rewrite IHw.
+  by [].
+move: H0. rewrite -{1}(addn1 n) -(addn1 k).
+by rewrite leq_add2r.
+Qed.
+
+(* This, too. *)
+Lemma word_expand (w: word char) : 0 < (size w) -> exists a, w = rcons (take (size w).-1 w) a.
+Proof. move: w. apply: last_ind => [| w a IHw].
+  by [].
+move => H0. exists a.
+rewrite -cats1 takel_cat.
+  rewrite -cats1 size_cat. rewrite addn1. by rewrite take_size.
+by rewrite size_cat addn1.
+Qed.
+
+(* We proof that Aut_star_prefix is "transitive" regarding
+   additional suffixes. *)
+Lemma Aut_star_prefix_trans X w k m:
+k >= m -> Aut_star_prefix X (take k w) m -> Aut_star_prefix X w m.
+Proof. move: w m k. apply: last_ind => [|w b IHw] m k.
+  by [].
+move => H0.
+case_eq (k < size (rcons w b)) => H1.
+  rewrite -cats1 takel_cat.
+    move/andP => [] /andP [] /andP [] H2 H3 H4 /forallP H5.
+    (* we'll need this a few times: *)
+    have: m <= size w.
+      apply: leq_trans.
+        by apply H3.
+      exact: size_take_bound.
+    move => H6.
+    rewrite /Aut_star_prefix. rewrite H2.
+    have: m <= size (w++ [::b]).
+      apply: leq_trans.
+          by apply H6.
+        rewrite cats1 size_rcons.
+        by apply: ltnW.
+      move => ->.
+    rewrite take_undersize in H4 => //.
+    rewrite takel_cat => //.
+    rewrite H4.
+    rewrite 2!andTb.
+    apply/forallP => n'.
+    rewrite takel_cat.
+      move: (H5 n').
+      rewrite take_undersize => //.
+      apply: leq_trans.
+        apply ltnW.
+        by apply (ltn_ord n').
+      by [].
+    apply: leq_trans.
+      apply ltnW.
+      by apply (ltn_ord n').
+    exact: H6.
+  move: H1.
+  rewrite size_rcons. by rewrite ltnS.
+move: (negbT H1). rewrite -leqNgt => H2.
+by rewrite take_oversize.
+Qed.
+
+(* We proof that there are no accepted prefixes < n if there is
+   no shortest, non-empty, accepting prefix < n *)
+Lemma Aut_star_prefix_none X w n: 
+  (forallb m : 'I_n, (0 < m) ==> ~~ Aut_star_prefix X w m) -> (forallb m : 'I_n, (0 < m) ==> ~~ accept' Aut_star X (take m w)).
+Proof. elim: n X w => [|n IHn] X w;
+move/forallP => H0; apply/forallP => m; apply/implyP => H1;
+move: (ltn_ord m).
+  by [].
+move: (H0 m). move/implyP => H2. move: (H2 H1).
+rewrite 3!negb_and. move/orP => [].
+  move/orP => [].
+    move/orP => [].
+      rewrite ltnNge. move/negbNE.
+      rewrite leq_eqVlt => /orP [].
+      move/eqP => [] H3. by move: H3 H1 => ->.
+    by [].
+  
+  
+  
+
+
+(* We proof that there is a shortest, non-empty, accepting prefkx
    for every non-empty word accept by the star automaton. *)
 Lemma Aut_star_shortest_prefix (X: state_star) (a: char) w:
   accept' Aut_star X (rcons w a) ->
   exists n,
     Aut_star_prefix X (rcons w a) n.
-Proof. move: w a X. apply: last_ind => [| w b IHw] a X.
+Proof.
+(* We use size_induction to get a helpful IH. *)
+move: w a X. apply: (size_induction size) => w IHw a X.
+case_eq (size w) => [|s] Hs.
+  rewrite (size0nil Hs).
   move => H0. 
   exists 1. apply/andP. split.
     rewrite andTb. by exact: H0. 
@@ -284,22 +431,29 @@ Proof. move: w a X. apply: last_ind => [| w b IHw] a X.
   case_eq (nat_of_ord x) => [|x'].
     by [].
   move/(f_equal S). rewrite H1. move/(f_equal predn). by [].
- 
+
+(* We use word_expand to get separate prefix and the 1-suffix *)
+have: 0 < size w.
+  by rewrite Hs.
+move/word_expand => [] b Hw. rewrite Hw.
+move Ew: (take (size w).-1 w) => w'.
 move => H0.
 (* See if there already is a prefix: *)
-case_eq (existsb m : 'I_ (size (rcons (rcons w b) a)), Aut_star_prefix X (rcons w b) m).
+case_eq (existsb m : 'I_ (size (rcons (rcons w' b) a)), Aut_star_prefix X (rcons w' b) m).
   move/existsP => [] m /andP [] /andP [] /andP [] H1 H2 H3 /forallP H4.
   pose n:=nat_of_ord m.
   exists n. apply/andP. split.
     apply/andP. split.
       apply/andP. split => //.
-      rewrite size_rcons. move: H2. by apply: leqW.
-    rewrite -cats1 (takel_cat H2). by exact: H3.
+      rewrite size_rcons.
+        move: H2. by exact: leqW.
+      rewrite -{}cats1. rewrite {1}(takel_cat H2). 
+      by exact: H3.
   apply/forallP => k. apply/implyP => H5.
   rewrite -cats1 takel_cat. move: H5. apply/implyP. by exact: H4.
   apply: leq_trans. apply ltnW. apply ltn_ord. by [].
 
-move/negbT. rewrite negb_exists => /forallP H1. exists (size (rcons (rcons w b) a)).
+move/negbT. rewrite negb_exists => /forallP H1. exists (size (rcons (rcons w' b) a)).
 apply/andP. split.
   apply/andP. split.
     by rewrite size_rcons ltn0Sn ltnSn.
@@ -307,8 +461,8 @@ apply/andP. split.
 apply/forallP => n'. apply/implyP => H2.
 move: (H1 n').
 (* We'll need this a few times. *)
-have: (n' <= size (rcons w b)).
-    rewrite -{1}ltnS -(size_rcons (rcons w b ) a).
+have: (n' <= size (rcons w' b)).
+    rewrite -{1}ltnS -(size_rcons (rcons w' b ) a).
     exact: (ltn_ord n').
 move => H3.
 
@@ -321,151 +475,33 @@ rewrite negb_and H2 => /orP [].
   by rewrite cats1.
 rewrite negb_forall => /existsP [] m.
 rewrite negb_imply.
-(* m would be the shortest, non-empty, accepting prefix
+(* take m w' would be the shortest, non-empty, accepting prefix
    but there is no such prefix. *)
-
-
-   
-  
-(* This should go somewhere else. *)
-Lemma ltn_trans_tight m n p : m < n -> n < p -> m < p.-1.
-Proof. elim: p n m => [|p IHp ] n m.
-  by [].
-move => H0.
-rewrite leq_eqVlt => /orP [].
-  move/eqP => <-. exact: H0.
-rewrite ltnS => H1. move: (IHp _ _ H0 H1) => /=.
-case: p IHp H1 => [|p] IHp H1.
-  by [].
-by exact: ltnW.
-Qed.
-
-Lemma size_induction (X : Type) (f : X -> nat) (p: X ->Prop) :
-( forall x, ( forall y, f y < f x -> p y) -> p x) -> forall x, p x.
-Proof. intros A x. apply A. induction (f x). by [].
-intros y B. apply A. intros z C. apply IHn.
-move: C B. apply: ltn_trans_tight. Qed.
-     
-(* This, too. *)
-Lemma word_expand (w: word char) : 0 < (size w) -> exists a, w = rcons (take (size w).-1 w) a.
-Proof. move: w. apply: last_ind => [| w a IHw].
-  by [].
-move => H0. exists a.
-rewrite -cats1 takel_cat.
-  rewrite -cats1 size_cat. rewrite addn1. by rewrite take_size.
-by rewrite size_cat addn1.
-Qed.
-
-
-(* We proof that there is a shortest, non-empty, accepting prefix
-   for every non-empty word accept by the star automaton. *)
-Lemma Aut_star_run_shortest X a w:
-  accept' Aut_star X (rcons w a) ->
-  exists n,
-    Aut_star_prefix X (rcons w a) n.
-Proof. move: w a X. apply: last_ind => [| w b IHw] a X.
-  move => H0. 
-  exists 1. apply/andP. split.
-    rewrite andTb. by exact: H0. 
-  apply/forallP => x. apply/implyP. move: (ltn_ord x).
-  rewrite leq_eqVlt => /andP [] /eqP H1.
-  (* this is a very convoluted way of proving that x=0. *)
-  case_eq (nat_of_ord x) => [|x'].
-    by [].
-  move/(f_equal S). rewrite H1. move/(f_equal predn). by [].
- 
-move => H0.
-(* 2 cases: - Aut_star accepts (rcons w b) and IHw can be used to
-              find the shortest prefix.
-            - Aut_star does not accept rcons w b
-              *)
-case_eq (accept' Aut_star X (rcons w b)) => H1; [move: (IHw b X H1)|].
-  move => [] n.
-  rewrite /Aut_star_prefix => /andP [] /andP [] /andP [] H2 H3 H4 /forallP H5.
-  exists n. apply/andP. split.
-    apply/andP. split.
-      apply/andP. split => //.
-      rewrite size_rcons. move: H3. by apply leqW.
-    rewrite -2!cats1 takel_cat.
-      by rewrite cats1.
-    rewrite cats1. by exact H3.
-  apply/forallP => n'. 
-  rewrite -{1}cats1 take_cat.
-  move: (leq_trans (ltn_ord n') H3) => ->.
-  apply: H5.
-(* 2 cases:  *)  
-  
-  
+move/andP => [] H4 /negbNE H5.
+have: Aut_star_prefix X (rcons w' b) m.
+  have: size (take m (rcons w' b)) < size w.
+    have: size w = (size w').+1.
+      rewrite -Ew. rewrite size_take.
+      by rewrite Hs ltnSn.
+    move => ->.
+    rewrite -(size_rcons w' b).
+    rewrite size_take.
+    have: m < size (rcons w' b).
+      move: (ltn_ord m) H3.
+      exact: leq_trans.
+    move => ->. move: (ltn_ord m) H3.
+    exact: leq_trans.
+  move => H6.
+  apply: Aut_star_prefix_trans.
+    apply ltnW. by apply ltn_ord.
   
 
 
-(* We proof that (step_star s0_star a) is a subset
-   of all (step_star X a) s.t. fin_star X. *)
-Lemma Aut_star_s0_sub X a :
-  fin_star X -> subpred (step_star s0_star a) (step_star X a).
-Proof. rewrite /fin_star/fin_det/fin_star' /s0_star/s0_det => /=. move/existsP => [] x /andP [] H0 /orP []; [ move => H1 y | move/eqP => <- y ]; rewrite ffunE;
-move/existsP => [] z; rewrite 2!ffunE /step_rel_star;
-move/andP => [] /eqP -> /= H2.
-      apply/existsP. exists s01. rewrite H2 andbT /=.
-      
-      right. by rewrite H1 andTb eq_refl.
-    move/andP => [] H2 /eqP ->. apply/existsP. exists x. rewrite H0 andTb. apply/orP.
-    right. by rewrite H1 andTb eq_refl.
-  move/eqP => ->. apply/ existsP. exists x. rewrite H0 andTb. apply/orP.
-  left. by rewrite eq_refl.
-move/andP => [] H1 /eqP ->. apply/existsP. exists x. rewrite H0 andTb.
-apply/orP. right. by rewrite H1 eq_refl.
-Qed.
 
-(* We proof that the subset relation is transitive
-   under step_star. *)
-Lemma Aut_star_subpred_trans (X Y: state_star) a : subpred X Y -> subpred (step_star X a) (step_star Y a).
-simpl. move => H0 x. rewrite 2!ffunE. move/existsP => [] y /andP [] /H0 H1 H2.
-apply/existsP. exists y. by rewrite H1 H2.
-Qed.
 
-(* We proof that powerset states accept
-   all words of all subsets *)
-Lemma Aut_star_subpred (X Y: state_star) w:
- subpred X Y ->
-   (accept' Aut_star X) w -> (accept' Aut_star Y) w.
-Proof. elim: w X Y => [|a w IHw] X Y.
-  move => H0 /existsP [] x /andP [] /= H1 H2.
-  apply/existsP. exists x. rewrite H2 andbT.
-  apply: H0. by [].
-rewrite 2!accept'S. move => H0. apply: IHw. move: H0. by exact: Aut_star_subpred_trans.
-Qed.
 
- 
-(* We proof that final states accept all words
-   accepted by the inital state. *) 
-Lemma Aut_star_correct' w (X: state_star) : fin_star X -> accept Aut_star w -> accept' Aut_star X w.
-Proof. elim: w X => [| a w IHw ] X. 
-  rewrite/fin_star/fin_det/ffunE. move => H0 _. simpl. rewrite /fin_star' in H0.
-  by move: H0 => /=. 
-move/(@Aut_star_s0_sub X a).
-apply: Aut_star_subpred.
-Qed.
 
-Lemma Aut_star_correct'' a w: accept Aut_star (a::w) -> exists w1, exists w2, w = w1 ++ w2 /\ accept A1 (a::w1) /\ accept Aut_star w2.
-Proof. rewrite {1}/accept {1}/accept' => /existsP [] x /andP [] H0 H1. simpl in H0.
-elim: w H0 => [|b w IHw].
-  move => H0. rewrite ffunE in H0. move/existsP: H0 => [] y /andP [] H0 H2.
-  exists [::]. exists [::]. split. by [].
-  split. simpl. rewrite/step_rel_star in H2. rewrite /s0_det ffunE in H0.
-  move/eqP: H0 H2 => H0 /=.
-  move/orP => []. move => H2. move: H1. move/eqP: H2 => ->. move: H0 => ->.
-  rewrite /fin_star' => /orP [] //.  
-  
-  rewrite Aut_star_correct0. 
-  
 
-  rewrite {1}/accept/accept' {1}[[fun _ => _] _]/=.
-elim: w => [|b w IHw].
-  simpl.
-
-  
-  
 
 
 Definition state_prod := prod_finType state1 state2.
