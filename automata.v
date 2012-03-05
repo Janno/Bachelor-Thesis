@@ -266,11 +266,11 @@ case_eq (nat_of_ord m == 0).
   by move/eqP => ->.
 move/neq0_lt0n => H4. apply/orP. right.
 move: (H3 m) => /implyP. move => H5. apply: H5. by [].
-Qed.
+Defined.
 
 (* We proof that there is a shortest, non-empty, accepting prefix
    for every non-empty word accept by the star automaton. *)
-Lemma Aut_star_run_shortest (X: state_star) (a: char) w:
+Lemma Aut_star_shortest_prefix (X: state_star) (a: char) w:
   accept' Aut_star X (rcons w a) ->
   exists n,
     Aut_star_prefix X (rcons w a) n.
@@ -287,7 +287,7 @@ Proof. move: w a X. apply: last_ind => [| w b IHw] a X.
  
 move => H0.
 (* See if there already is a prefix: *)
-case_eq (existsb m : 'I_ (size (rcons w b)), Aut_star_prefix X (rcons w b) m).
+case_eq (existsb m : 'I_ (size (rcons (rcons w b) a)), Aut_star_prefix X (rcons w b) m).
   move/existsP => [] m /andP [] /andP [] /andP [] H1 H2 H3 /forallP H4.
   pose n:=nat_of_ord m.
   exists n. apply/andP. split.
@@ -304,11 +304,57 @@ apply/andP. split.
   apply/andP. split.
     by rewrite size_rcons ltn0Sn ltnSn.
   rewrite take_size. by exact: H0.
-apply/forallP.
+apply/forallP => n'. apply/implyP => H2.
+move: (H1 n').
+(* We'll need this a few times. *)
+have: (n' <= size (rcons w b)).
+    rewrite -{1}ltnS -(size_rcons (rcons w b ) a).
+    exact: (ltn_ord n').
+move => H3.
 
+rewrite negb_and H2 => /orP [].
+  rewrite negb_and => /orP [].
+    rewrite negb_and => /orP [].
+      by [].
+    by rewrite H3. 
+  rewrite -(takel_cat H3 [::a]).
+  by rewrite cats1.
+rewrite negb_forall => /existsP [] m.
+rewrite negb_imply.
+(* m would be the shortest, non-empty, accepting prefix
+   but there is no such prefix. *)
+
+
+   
   
-      
+(* This should go somewhere else. *)
+Lemma ltn_trans_tight m n p : m < n -> n < p -> m < p.-1.
+Proof. elim: p n m => [|p IHp ] n m.
+  by [].
+move => H0.
+rewrite leq_eqVlt => /orP [].
+  move/eqP => <-. exact: H0.
+rewrite ltnS => H1. move: (IHp _ _ H0 H1) => /=.
+case: p IHp H1 => [|p] IHp H1.
+  by [].
+by exact: ltnW.
+Qed.
 
+Lemma size_induction (X : Type) (f : X -> nat) (p: X ->Prop) :
+( forall x, ( forall y, f y < f x -> p y) -> p x) -> forall x, p x.
+Proof. intros A x. apply A. induction (f x). by [].
+intros y B. apply A. intros z C. apply IHn.
+move: C B. apply: ltn_trans_tight. Qed.
+     
+(* This, too. *)
+Lemma word_expand (w: word char) : 0 < (size w) -> exists a, w = rcons (take (size w).-1 w) a.
+Proof. move: w. apply: last_ind => [| w a IHw].
+  by [].
+move => H0. exists a.
+rewrite -cats1 takel_cat.
+  rewrite -cats1 size_cat. rewrite addn1. by rewrite take_size.
+by rewrite size_cat addn1.
+Qed.
 
 
 (* We proof that there is a shortest, non-empty, accepting prefix
@@ -351,34 +397,6 @@ case_eq (accept' Aut_star X (rcons w b)) => H1; [move: (IHw b X H1)|].
   
   
   
-Lemma Aut_star_help : seq state_star -> seq (state1 -> bool).
-Proof. rewrite /state_star /state_ndet. move => xs. elim: xs => [|x xs IHxs].
-  exact: nil.
-apply: cons. move: x. move/finfun. by [].
-exact IHxs.
-Qed.
-
-Lemma Aut_star_det_run (X: state_star) Xs :
-  (exists x, fin1 x) ->
-  X s01 ->
-  run_accepting Aut_star X (X::Xs) ->
-  last X (X::Xs) s01 ->
-  all [fun X' => ~~X' s01] (Aut_star_help Xs) ->
-  exists x, exists xs,
-    size (x::xs) = size (X::Xs)
-    /\ run_accepting A1 x (x::xs)
-    /\ all (fun (t: state_star * state1) => let (X,x) := t in X x) (zip (X::Xs) (x::xs)).
-Proof. move => [] z H0. elim: Xs X => [|x Xs IHXs] X.
-  move => H1 /existsP [] x /andP [] /= H2 /eqP H3 H4 _.
-  exists z. exists nil. split => //=. rewrite andbT.
-  split => //.
-
-(* Next, we show that every non-empty word accepted
-   by the star automaton generates a run which
-   has a non-empty prefix ending in X s.t. X s01. *)
-Lemma Aut_star_correct' (X: state_star) a w :
-  accept' Aut_star X (a::w) -> let xs := run' Aut_star X (a::w) in exists n.
-Proof.
 
 
 (* We proof that (step_star s0_star a) is a subset
