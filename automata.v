@@ -1,5 +1,7 @@
 Require Import ssreflect ssrbool eqtype fintype finfun seq fingraph ssrfun ssrnat.
 
+Require Import misc.
+
 Set Implicit Arguments.
 
 (* Finite automata. *)
@@ -158,7 +160,8 @@ Variable A2: dfa char state2 s02 fin2 step2.
 
 
 (* Complement automaton *)
-
+Section Complement.
+  
 (* The only change needed is to negate the finality predicate. *)
 Definition fin_not := [ fun q1 => ~~ fin1 q1 ].
 (* We construct the resulting automaton. *)
@@ -171,45 +174,104 @@ Proof.
   by apply/idP/negPn.
 Qed.
 
+End Complement.
+
+
+(* Cross product of the two state sets *)
+Definition state_prod := prod_finType state1 state2.
+
+
+(* Disjunction automaton *)
+Section Disjunction.
+
+Definition step_or (q: state_prod) a := let (q1, q2) := q in (step1 q1 a, step2 q2 a).
+Definition Aut_or := dfaI char state_prod (s01, s02) 
+(fun q => let (q1,q2) := q in fin1 q1 || fin2 q2)
+step_or.
+
+(* Correctness w.r.t. any state. *)
+Lemma Aut_or_correct' w q1 q2 : accept' A1 q1 w || accept' A2 q2 w = accept' Aut_or (q1, q2) w.
+Proof. elim: w q1 q2 => [|a w IHw].
+  rewrite/accept => //.
+rewrite/accept => /=. move => q1 q2. 
+by exact: IHw.
+Qed.
+
+(* Language correctness. *)
+Lemma Aut_or_correct w: accept A1 w || accept A2 w = accept Aut_or w.
+Proof. exact: Aut_or_correct'. Qed.
+
+End Disjunction.
+  
+
+(* Conjunction *) 
+Section Conjunction.
+  
+Definition step_and (q: state_prod) a := let (q1, q2) := q in (step1 q1 a, step2 q2 a).
+Definition Aut_and := dfaI char state_prod (s01, s02) 
+(fun q => let (q1,q2) := q in fin1 q1 && fin2 q2)
+step_or.
+
+(* Correctness w.r.t. any state. *)
+Lemma Aut_and_correct' w q1 q2 : accept' A1 q1 w && accept' A2 q2 w = accept' Aut_and (q1, q2) w.
+Proof. elim: w q1 q2 => [|a w IHw].
+  rewrite/accept => //.
+rewrite/accept => /=. move => q1 q2. 
+by exact: IHw.
+Qed.
+
+(* Language correctness. *)
+Lemma Aut_and_correct w: accept A1 w && accept A2 w = accept Aut_and w.
+Proof. exact: Aut_and_correct'. Qed.
+
+End Conjunction.
+
 
 (* Star automaton. *)
-
-(* We change the finality predicate s.t. only the starthing
-   state will be accepting. *)
-Definition fin_star' := [ pred x | x == s01 ].
+Section Star.
+  
+(* We need to add a new state. *)
+Definition state_star' := option_finType state1.
+Definition s0_star' : state_star' := None.
+(* We only accept the empty state. *)
+Definition fin_star' := [ pred x | x == s0_star' ].
 (* The type of states in the star automaton. *)
-Definition state_star := state_det state1.
+Definition state_star := state_det state_star'.
 (* We construct a non-functional relation which is 
    the new transitions of the star automaton.
    Whenever we enter a former final state, we
-   also enter the starting state, thereby ensuring
-   acceptance. *)
-Definition step_rel_star : state1 -> char -> pred state1 := (fun x1 a => [ pred x2 | (x2 == step1 x1 a) || (fin1 (step1 x1 a) && (x2 == s01)) ] ).
+   also enter the new starting state, thereby
+   ensuring acceptance. *)
+Definition step_rel_star : state_star' -> char -> pred state_star' :=
+  (fun x1 a =>
+    match x1 with
+      (* any old state *)
+      | Some x1 => [ pred x2 |
+                       (x2 == Some (step1 x1 a))
+                    || (fin1 (step1 x1 a) && (x2 == s0_star'))
+                   ]
+      (* the new state s0_sta *)
+      | s0_star' => [ pred x2 | x2 == Some (step1 s01 a) ]
+    end
+  ).
 (* We construct the star automaton. *)
 (* Definition Aut_star := to_dfa char state1 s01 fin_star' step_rel_star. *)
 Definition step_star := step_det char step_rel_star.
-Definition s0_star := s0_det state1 s01.
-Definition fin_star := fin_det state1 fin_star'.
-Definition Aut_star := dfaI char (state_det state1) s0_star fin_star step_star.
-
-(* We proof that membership in state powerset is
-   preserved by step and step_star. *)
-Lemma step_step_star x (X: state_star) a : X x -> (step_star X a) (step1 x a).
-move => H0 /=. rewrite /step_rel_star ffunE. apply/existsP. exists x.
-rewrite H0 andTb. rewrite /SimplPred => /=. by rewrite eq_refl orTb.
-Qed.
+Definition s0_star := s0_det state_star' s0_star'.
+Definition fin_star := fin_det state_star' fin_star'.
+Definition Aut_star := dfaI char (state_det state_star') s0_star fin_star step_star.
 
 (* Starting state correctness. *)
-Lemma Aut_star_s0 : s0_star s01. by rewrite /s0_star /s0_det ffunE eq_refl. Qed.
+Lemma Aut_star_s0 : s0_star s0_star'. by rewrite /s0_star /s0_det ffunE eq_refl. Qed.
 
 (* step_star_rel invariant. *)
-Lemma Aut_star_step_rel (X: state_star) a: fin_star (step_star X a) -> (step_star X a) s01.
+Lemma Aut_star_step_rel (X: state_star) a: fin_star (step_star X a) -> (step_star X a) s0_star'.
 Proof. simpl. move/existsP => [] x. by rewrite andbC => /andP [] /eqP ->. Qed.
   
 (* We proof that the empty word is contained in the
    language of the star automaton. *)
 Lemma Aut_star_correct0 : accept Aut_star [::].
-Proof. rewrite/accept/accept'/fin_star => /=. apply/existsP. exists s01.
+Proof. rewrite/accept/accept'/fin_star => /=. apply/existsP. exists s0_star'.
 by rewrite /s0_det ffunE eq_refl. Qed.
 
 (* We proof that all non-empty words accepted by the
@@ -221,33 +283,22 @@ by rewrite /s0_det ffunE eq_refl. Qed.
    to start from any set of states containing x.
    *)
 Lemma Aut_star_correctS (X: state_star) a w x :
-  X x -> accept' A1 x (a::w) -> accept' Aut_star X (a::w).
+  X (Some x) -> accept' A1 x (a::w) -> accept' Aut_star X (a::w).
 Proof. elim: w a X x => [| b w IHw ] a X x H0.
-  move => /= H1. apply/existsP. exists s01. rewrite ffunE eq_refl andbT.
-  apply/existsP. exists x. rewrite H0 andTb /step_rel_star /=.
-  by rewrite H1 eq_refl orbT.
-rewrite accept'S. apply: IHw. rewrite ffunE. apply/existsP. exists x.
+  move => /= H1. apply/existsP. exists s0_star'. rewrite ffunE eq_refl andbT.
+  apply/existsP. exists (Some x). rewrite H0 andTb /step_rel_star /=.
+  by rewrite H1 eq_refl.
+rewrite accept'S. apply: IHw. rewrite ffunE. apply/existsP. exists (Some x).
 by rewrite H0 andTb /step_rel_star /= eq_refl.
 Qed.
 
 (* We show that every accepting run of the
-   star automaton ends in a state Y s.t. Y s01. *)
-Lemma Aut_star_end X w: accept' Aut_star X w -> last X (run' Aut_star X w) s01.
+   star automaton ends in a state Y s.t. Y s0_star'. *)
+Lemma Aut_star_end X w: accept' Aut_star X w -> last X (run' Aut_star X w) s0_star'.
 Proof. elim: w X => [|a w IHw] X.
   by move => /= /existsP [] q /andP [] H0 /eqP <-.
 rewrite accept'S. by apply: IHw.
 Qed.
-
-(* We define a predicate on star runs and
-   normal runs, which decides if the normal run
-   is contained in the star run, i.e. for
-   every X_i and x_i: X_i x_i *) 
-Fixpoint Aut_star_run_contains (Xs: seq state_star) (xs: seq state1) : bool :=
-match Xs, xs with
-  | [::] , [::]  => true
-  | X::Xs, x::xs => X x && Aut_star_run_contains Xs xs
-  | _    , _     => false
-end.
 
 (* We define the notion of a shortest, non-empty, accepting prefix *)
 Definition Aut_star_prefix (X: state_star) (w: word char) (n: nat) : bool :=
@@ -267,85 +318,6 @@ case_eq (nat_of_ord m == 0).
 move/neq0_lt0n => H4. apply/orP. right.
 move: (H3 m) => /implyP. move => H5. apply: H5. by [].
 Defined.
-
-
-(* This should go somewhere else. *)
-Lemma ltn_trans_tight m n p : m < n -> n < p -> m < p.-1.
-Proof. elim: p n m => [|p IHp ] n m.
-  by [].
-move => H0. rewrite leq_eqVlt => /orP [].
-  move/eqP => <-. exact: H0.
-rewrite ltnS => H1. move: (IHp _ _ H0 H1) => /=.
-case: p IHp H1 => [|p] IHp H1.
-  by [].
-by exact: ltnW.
-Qed.
-
-Lemma ltn_trans_tight' m n p : m < n -> n < p.-1 -> m < p.-1.
-Proof. elim: p n m => [|p IHp ] n m.
-  by [].
-move => H0. rewrite leq_eqVlt => /orP [].
-  move/eqP => <-. apply: leqW. by [].
-move/leqW. apply: ltn_trans_tight. by apply: leqW.
-Qed.
-
-Lemma size_induction (X : Type) (f : X -> nat) (p: X ->Prop) :
-( forall x, ( forall y, f y < f x -> p y) -> p x) -> forall x, p x.
-Proof. intros A x. apply A. induction (f x). by [].
-intros y B. apply A. intros z C. apply IHn.
-move: C B. apply: ltn_trans_tight. Qed.
-
-Lemma size_take_bound (w: word char) n : size (take n w) <= size w.
-Proof. elim: n w => [|n IHn] w.
-  by rewrite take0.
-rewrite size_take.
-case_eq (n.+1 < size w).
-  apply: leq_trans. apply: leqW. exact: ltnSn.
-by [].
-Qed.
-
-Lemma size_take_bound' (w: word char) n : size (take n w) <= n.
-Proof. elim: n w => [|n IHn] w.
-  by rewrite take0.
-rewrite size_take.
-case_eq (n.+1 < size w).
-  move => _. exact: ltnSn.
-move/negbT. by rewrite -leqNgt.
-Qed.
-
-Lemma size_take_underflow (w: word char) n : size (take n w) < n -> size w < n.
-Proof. elim: n w => [|n IHn] w.
-  by rewrite take0.
-rewrite size_take.
-case_eq (n.+1 < size w).
-  move => _. by rewrite ltnn.
-move/negbT. by rewrite -leqNgt.
-Qed.
-
-Lemma take_undersize (w: word char) n k : n <= k -> take n (take k w) = take n w.
-Proof. elim: w k n => [|a w IHw] k n.
-  by [].
-rewrite take_cons. destruct k. 
-  by rewrite leqn0 => /eqP ->.
-rewrite take_cons. destruct n.
-  by [].
-move => H0. rewrite IHw.
-  by [].
-move: H0. rewrite -{1}(addn1 n) -(addn1 k).
-by rewrite leq_add2r.
-Qed.
-
-Lemma take_oversizeS (w: word char) n: size w < n -> take n w = take n.-1 w.
-Proof. move: w n. apply: last_ind => [|w a IHw] n.
-  by [].
-rewrite -cats1 => H0. rewrite take_oversize.
-  rewrite take_oversize.
-    by [].
-  destruct n.
-    by [].
-  by [].
-exact: ltnW.
-Qed.
 
 (* This, too. *)
 Lemma word_expand (w: word char) : 0 < (size w) -> exists a, w = rcons (take (size w).-1 w) a.
@@ -446,11 +418,10 @@ move: (H4 H7). rewrite 3!negb_and. rewrite H7. rewrite orFb.
   move/orP => [].
     by rewrite -H3. 
   rewrite -negb_exists_in. move/negbNE => /existsP [].
- 
      
 Admitted.
 
-(* We proof that there is a shortest, non-empty, accepting prefkx
+(* We proof that there is a shortest, non-empty, accepting prefix
    for every non-empty word accept by the star automaton. *)
 Lemma Aut_star_shortest_prefix (X: state_star) (a: char) w:
   accept' Aut_star X (rcons w a) ->
@@ -522,245 +493,202 @@ move/existsP => [] m.
 (* take m w' would be the shortest, non-empty, accepting prefix
    but there is no such prefix. *)
 move/andP => [] H4 /negbNE H5.
-move: H1 => /forallP. move/Aut_star_prefix_none.
-have: Aut_star_prefix X (rcons w' b) m.
-  have: size (take m (rcons w' b)) < size w.
-    have: size w = (size w').+1.
-      rewrite -Ew. rewrite size_take.
-      by rewrite Hs ltnSn.
-    move => ->.
-    rewrite -(size_rcons w' b).
-    rewrite size_take.
-    have: m < size (rcons w' b).
-      move: (ltn_ord m) H3.
-      exact: leq_trans.
-    move => ->. move: (ltn_ord m) H3.
-    exact: leq_trans.
-  move => H6.
-  apply: Aut_star_prefix_trans.
-    apply ltnW. by apply ltn_ord.
+Admitted.
+
+
+Lemma Aut_star_prefix_det w a n:
+  Aut_star_prefix s0_star (rcons w a) n ->  accept A1 (take n (rcons w a)).
+Proof. move: w a n. apply: last_ind => [|w b IHw] a n.
+  move => /andP [] /andP [] /andP [] H0 H1 H2 /forallP H3.
+  rewrite take_oversize /accept' in H2 => //.
+  rewrite /A_fin /fin_star /s0_star in H2.
+  move: H2 => /existsP [] y /andP [].
+  rewrite /run' ffunE => /existsP [] z.
+  rewrite ffunE => /andP [] /eqP ->.
+  rewrite /step_rel_star /fin_star' => /= /eqP ->. by [].
+
+move => /andP [] /andP [] /andP [] H0 H1 H2 /forallP H3.
+
+case_eq (n < size (rcons (rcons w b) a)).
+  rewrite size_rcons => H4.
+  have: n <= size (rcons w b). by []. move => H5.
+  move: H2. rewrite -cats1. rewrite takel_cat => //.
+  move => H2. apply: IHw.
+  rewrite /Aut_star_prefix H0 H5 H2 2!andTb.
+  apply/forallP. move => m.
+  move: (H3 m). rewrite -cats1 takel_cat.
+    by [].
+  apply: leq_trans.
+    eapply ltnW.
+    by eapply ltn_ord.
+  by [].
+
+Admitted.
   
+End Star.
 
-
-
-
-
-
-
-Definition state_prod := prod_finType state1 state2.
-
-Definition d_or (q: state_prod) a := let (q1, q2) := q in (step1 q1 a, step2 q2 a).
-Definition Aut_or : dfa char state_prod (s01, s02) 
-(fun q => let (q1,q2) := q in fin1 q1 || fin2 q2)
-(dfa_rel char (state_prod) d_or).
-constructor. Defined.
-
-Lemma Aut_or_correct' w q1 q2 : accept' A1 q1 w || accept' A2 q2 w = accept' Aut_or (q1, q2) w.
-Proof. elim: w q1 q2 => [|a w IHw].
-  rewrite/accept => //.
-rewrite/accept => /=. move => q1 q2. 
-by exact: IHw.
-Qed.
-
-Lemma Aut_or_correct w: accept A1 w || accept A2 w = accept Aut_or w.
-Proof. exact: Aut_or_correct'. Qed.
-
-
-Definition d_and (q: state_prod) a := let (q1, q2) := q in (step1 q1 a, step2 q2 a).
-Definition Aut_and : dfa char state_prod (s01, s02) 
-(fun q => let (q1,q2) := q in fin1 q1 && fin2 q2)
-(dfa_rel char (state_prod) d_or).
-constructor. Defined.
-
-Lemma Aut_and_correct' w q1 q2 : accept' A1 q1 w && accept' A2 q2 w = accept' Aut_and (q1, q2) w.
-Proof. elim: w q1 q2 => [|a w IHw].
-  rewrite/accept => //.
-rewrite/accept => /=. move => q1 q2. 
-by exact: IHw.
-Qed.
-
-Lemma Aut_and_correct w: accept A1 w && accept A2 w = accept Aut_and w.
-Proof. exact: Aut_and_correct'. Qed.
-
+(* Concatenation *)
+Section Concatenation.
+  
 Definition state_sum := sum_finType state1 state2.
 Definition state_sum_option := option_finType state_sum.
 
-Definition state1_conc (q1: state1) : state_sum. constructor. exact q1. Defined.
-Definition state2_conc (q2: state2) : state_sum. apply/inr. exact q2. Defined.
-Definition state_conc := state_ndet state_sum.
+Definition state1_conc (x1: state1) : state_sum. constructor. exact x1. Defined.
+Definition state2_conc (x2: state2) : state_sum. apply/inr. exact x2. Defined.
+Definition state_conc := state_det state_sum.
 Definition s0_conc : state_sum. constructor. exact: s01. Defined.
 
-Definition d_conc (q: state_sum) a (q': state_sum) := 
-match q with
-| inl q1 => 
-  match q' with
-  | inl q1' => step1 q1 a == q1'
-  | inr q2' => fin1 q1 && (step2 s02 a == q2')
+Definition step_conc (x: state_sum) a (x': state_sum) := 
+match x with
+| inl x1 => 
+  match x' with
+  | inl x1' => step1 x1 a == x1'
+  | inr x2' => fin1 x1 && (step2 s02 a == x2')
   end
-| inr q2 =>
-  match q' with
-  | inr q2' => step2 q2 a == q2'
+| inr x2 =>
+  match x' with
+  | inr x2' => step2 x2 a == x2'
   | _ => false
   end
 end.
 
-Definition f_conc (q: state_sum) :=
-match q with
-| inl q1 => fin1 q1 && fin2 s02
-| inr q2 => fin2 q2
-end.
-Definition Aut_conc := to_dfa char state_sum (s0_conc) f_conc d_conc. 
+Definition fin_conc := [fun x : state_sum =>
+match x with
+| inl x1 => fin1 x1 && fin2 s02
+| inr x2 => fin2 x2
+end ].
+Definition Aut_conc := to_dfa char state_sum (s0_conc) fin_conc step_conc. 
+
+(* We define a relation (an order) on states. *)
+Definition state_conc_leq (q1' q2': state_conc) := forall q, q1' q -> q2' q.
+
+Notation "q1' ===> q2'" := (state_conc_leq q1' q2') (at level 70).
+
+(* We proof a few interesting properties of this relation. *)
+Lemma q_conc_leq_trans (q1' q2' q3': state_conc) : q1' ===> q2' -> q2' ===> q3' -> q1' ===> q3'.
+Proof. rewrite/state_conc_leq. move => H0 H1 q. by move/H0/H1. Qed.
 
 Lemma q_conc_leq_d_trans (q1' q2' : state_conc) a : 
-q1' ===> q2' -> step_det char d_conc q1' a ===> step_det char d_conc q2' a.
+q1' ===> q2' -> step_det char step_conc q1' a ===> step_det char step_conc q2' a.
 Proof. move => H0 q. rewrite/step_det. rewrite 2!ffunE. 
 move/existsP => [] p /andP [] /H0 H1 H2. apply/existsP. exists p. 
 by rewrite H1 H2. Qed.
 
-Lemma Aut_conc_expanstep1 (q1' q2': state_conc) w:
+Lemma Aut_conc_expand1 (q1' q2': state_conc) w:
 q1' ===> q2' ->
 accept' Aut_conc q1' w ->
 accept' Aut_conc q2' w.
 Proof. elim: w q1' q2' => [|a w IHw]. 
-  rewrite/accept'/f' => /= q1' q2' H. move/existsP => [] q /andP []. 
+  rewrite/accept'/fin_det => /= q1' q2' H. move/existsP => [] q /andP []. 
   move => H0 H1. apply/existsP. move: (H q H0). exists (q). by rewrite H2 H1.
 move => q1' q2'. move/(@q_conc_leq_d_trans _ _ a). simpl. 
 by apply: IHw.
 Qed.
 
+(* We proof that the concatenation automaton accepts
+   all words of the first automaton if the second automaton
+   accepts the empty word. *)
 Lemma Aut_conc_correct1' q1 w1: 
 accept' A1 q1 w1 && accept A2 [::] 
 -> accept' Aut_conc (finfun (fun q=> q == state1_conc q1)) w1.
 Proof.
 elim: w1 q1 => [|a w1 IHw1] q1.
-  rewrite /f' /f_conc /accept /accept' /=.
+  rewrite /fin_det /fin_conc /accept /accept' /=.
   move/andP => [] H0 H1. apply/existsP. exists (state1_conc q1). 
   rewrite ffunE. apply/andP. split.
     by apply/eqP.
   by rewrite H0 H1.
-move => /=. move/andP => [].
-move => H0 H1. move: (IHw1 (d A1 q1 a)). 
-rewrite H0 H1 => /=. move => H2. move: (H2 is_true_true).
-apply Aut_conc_expanstep1. 
+move/andP => [].
+move => H0 H1. move: (IHw1 (step1 q1 a)).
+rewrite accept'S in H0.
+rewrite /accept. rewrite H0 H1. move => H2. move: (H2 is_true_true).
+rewrite accept'S.
+apply Aut_conc_expand1. 
 move => q. rewrite 2!ffunE. move/eqP => ->. apply/existsP. 
 exists (state1_conc q1). rewrite ffunE. apply/andP. split.
   by apply/eq_refl.
-rewrite/d_conc => /=. by apply/eq_refl.
+rewrite/step_conc => /=. by apply/eq_refl.
 Qed.
 
 
-Lemma Aut_conc_correct2' q2 w2: 
-accept' A2 q2 w2
--> accept' Aut_conc (finfun (fun q=> q == state2_conc q2)) w2.
-Proof. elim: w2 q2 => [|a w2 IHw2] q2 /=.
-  move => H0. rewrite/f'/f_conc. apply/existsP. exists (state2_conc q2). apply/andP. split.
+(* We proof that the concatenation automaton accepts
+   all words accepted by the second automaton when if
+   they both start in the same state. *)
+Lemma Aut_conc_correct2' x2 w2: 
+accept' A2 x2 w2
+-> accept' Aut_conc (finfun (fun x=> x == state2_conc x2)) w2.
+Proof. elim: w2 x2 => [|a w2 IHw2] x2 /=.
+  move => H0. rewrite/fin_det/fin_conc. apply/existsP. exists (state2_conc x2). apply/andP. split.
     by rewrite ffunE.
   by exact: H0.
-move/IHw2. apply: Aut_conc_expanstep1 => q. rewrite 2!ffunE. move/eqP => ->.
-apply/existsP. exists (state2_conc q2). apply/andP. split.
+move/IHw2. apply: Aut_conc_expand1 => x. rewrite 2!ffunE. move/eqP => ->.
+apply/existsP. exists (state2_conc x2). apply/andP. split.
   by rewrite ffunE. 
-by rewrite/d_conc => /=.
+by rewrite/step_conc => /=.
 Qed.
 
-Lemma Aut_conc_end1 q1 a:
-fin1 q1 ->
-step_det char d_conc [ffun q => q == state2_conc s02] a ===> step_det char d_conc [ffun q => q == state1_conc q1] a.
+(* We proof that final states of the first automaton have at
+   least all transitions of s02 in the concatenation automaton. *)
+Lemma Aut_conc_end1 x1 a:
+fin1 x1 ->
+step_det char step_conc [ffun x => x == state2_conc s02] a ===> step_det char step_conc [ffun x => x == state1_conc x1] a.
 Proof.
-rewrite /step_det /d_conc => /=. move => H0 [q|q];
-rewrite ffunE => /existsP [] q'; rewrite ffunE => /andP [] /eqP -> /=.
+rewrite /step_det /step_conc => /=. move => H0 [x|x];
+rewrite ffunE => /existsP [] x'; rewrite ffunE => /andP [] /eqP -> /=.
   by [].
-rewrite eq_sym ffunE => /eqP ->. apply/existsP. exists (state1_conc q1).
+rewrite eq_sym ffunE => /eqP ->. apply/existsP. exists (state1_conc x1).
 rewrite ffunE eq_refl andTb. by rewrite H0 eq_refl.
 Qed.
 
-
-Lemma Aut_conc_correct3' q1 w2:
-fin1 q1 ->
-accept' Aut_conc [ffun q => q == state2_conc s02] w2 ->
-accept' Aut_conc [ffun q => q == state1_conc q1] w2.
-Proof. elim: w2 q1 => [|a w2 IHw2] q1 H0 /=.
-  rewrite/f'/f_conc. move/existsP => [] q /andP []. rewrite ffunE => /eqP -> /= H1.
-  apply/existsP. exists (state1_conc q1). by rewrite ffunE eq_refl andTb H0 H1.
-apply: Aut_conc_expand1. apply: Aut_conc_end1. by exact: H0.
+(* We proof that all words accepted by s02 are also accepted
+   by final states of the first automaton in the concatenation
+   automaton. *)
+Lemma Aut_conc_correct3' x1 w2:
+fin1 x1 ->
+accept' Aut_conc [ffun x => x == state2_conc s02] w2 ->
+accept' Aut_conc [ffun x => x == state1_conc x1] w2.
+Proof. elim: w2 x1 => [|a w2 IHw2] x1 H0 /=.
+  rewrite/fin_det/fin_conc. move/existsP => [] x /andP []. rewrite ffunE => /eqP -> /= H1.
+  apply/existsP. exists (state1_conc x1). by rewrite ffunE eq_refl andTb H0 H1.
+apply: Aut_conc_expand1. apply: Aut_conc_end1. exact: H0.
 Qed.
 
-Lemma Aut_conc_correct1 q1 w1 w2: (accept' A1 q1 w1 && accept A2 w2) ->
-  accept' Aut_conc [ffun q => q == state1_conc q1] (w1 ++ w2).
-Proof. elim: w1 w2 q1 => [|a w1 IHw1] w2 q1.
+(* We proof that the concatenation automaton accepts
+   all words that are made up of a prefix accepted by the first automaton
+   and a suffix accepted by the second automaton. *)
+Lemma Aut_conc_correct1 x1 w1 w2: (accept' A1 x1 w1 && accept A2 w2) ->
+  accept' Aut_conc [ffun x => x == state1_conc x1] (w1 ++ w2).
+Proof. elim: w1 w2 x1 => [|a w1 IHw1] w2 x1.
   rewrite/accept => /andP [] /= H0. rewrite/s0_conc. move/(Aut_conc_correct2').
-  rewrite/state2_conc. apply: Aut_conc_correct3'. by exact: H0.
-simpl. move/IHw1. apply: Aut_conc_expand1 => q.
-rewrite /step_det /d_conc ffunE => /eqP -> /=. rewrite ffunE. apply/existsP.
-exists (state1_conc q1). by rewrite ffunE eq_refl andTb eq_refl.
+  rewrite/state2_conc. apply: Aut_conc_correct3'. exact: H0.
+simpl. move/IHw1. apply: Aut_conc_expand1 => x.
+rewrite /step_det /step_conc ffunE => /eqP -> /=. rewrite ffunE. apply/existsP.
+exists (state1_conc x1). by rewrite ffunE eq_refl andTb eq_refl.
 Qed.
 
+(* We proof that the concatenation automaton only accepts
+   words that can be expressed as a prefix accepted by the first automaton
+   and a suffix accepted by the second automaton. *)
 Lemma Aut_conc_correct2 w: 
-accept' Aut_conc [ffun q => q == state1_conc s01] w -> 
+accept' Aut_conc [ffun x => x == state1_conc s01] w -> 
 exists w1, exists w2, w = w1 ++ w2 /\ accept A1 w1 && accept A2 w2.
 Proof. move: w.
 apply: last_ind => [| w a IHw ].
-  rewrite /f' /f_conc => /existsP [] q /andP []. rewrite ffunE => /eqP -> /= /andP [] H0 H1.
+  rewrite /fin_det /fin_conc => /existsP [] x /andP []. rewrite ffunE => /eqP -> /= /andP [] H0 H1.
   exists [::]. exists [::]. rewrite/accept => /=. by rewrite H0 H1.
 case_eq (accept A1 (rcons w a)); case_eq (accept A2 [::]); move => H0 H1.
       exists (rcons w a). exists [::]. by rewrite cats0 H0 H1.
-    case_eq (accept' Aut_conc [ffun q => q == state1_conc s01] w).
+    case_eq (accept' Aut_conc [ffun x => x == state1_conc s01] w).
       move/IHw => [] w1 [] w2 [] -> /andP [] H2 H3. rewrite rcons_cat.
       case_eq (accept A2 (rcons w2 a)) => H4.
         exists w1. exists (rcons w2 a). split.
           by [].
         by rewrite H2 H4.
-      
-  move/IHw => [] w1 [] w2 [] ->. rewrite rcons_cat.
-  move => /andP [] H0 H1 H2. exists w1. exists (rcons w2 a). split.
-    by [].
-  rewrite H0 andTb.
-  
+Admitted.  
 
 
-elim: w => [| a w IHw] /=.
-
-
+End Concatenation.
 
 End Operators.
-
-
-
-
-
-(* Example *)
-(* 2-state 2-character automaton, accepting (true)* *)
-Definition Bool := [ finType of bool ].
-
-Definition A := dfaI Bool Bool false id (andb).
-
-Lemma false_to_false q : connect (AutR A) false q -> q = false.
-Proof. elim: q => //=. 
-move/connectP => [p]. elim: p => [| q' p IHp] //=.
-move/andP => []. rewrite {1}/AutR. move/existsP => [] x. rewrite andFb.
-rewrite eq_sym. move/eqP => ->. 
-by exact: IHp.
-Qed.
-
-Lemma false_not_to_true q : ~~ connect (AutR A) false q -> q = true.
-Proof. elim: q => //=.
-by move: (connect0 (AutR A) false) => ->.
-Qed.
-
-Lemma sink_false: sink A false.
-Proof. rewrite/sink. apply/forallP => q.
-case_eq (connect (AutR A) false q). 
-  by move/false_to_false => ->.
-move/negbT. by move/false_not_to_true => ->.
-Qed.
-
-
-Goal forall w q, accept' A q w -> ~~(false \in w).
-Proof. move => w. elim: w => [ | a w IHw ] //=. rewrite in_cons negb_or.
-move => q H.
-apply/andP. case: q H; case a; split; move: H => //=; try by exact: IHw.
-  move: sink_false => char; by move: (sink_dead_end A w false char) => /negbTE => -> //.
-move: sink_false => char; by move: (sink_dead_end A w false char) => /negbTE => -> //.
-Qed.
-
 
 
