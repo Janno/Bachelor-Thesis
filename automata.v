@@ -253,7 +253,7 @@ end.
 Definition Aut_star_prefix (X: state_star) (w: word char) (n: nat) : bool :=
       (n > 0) && (n <= size w) && (accept' Aut_star X (take n w)) &&
   forallb n': ordinal n, (n' > 0) ==> ~~ accept' Aut_star X (take n' w).
-
+ 
 (* We proof that there are no shorter prefixes than the shortest prefix. *)
 Definition Auf_star_prefix_shortest (X: state_star) (w: word char) (n: nat) :
   Aut_star_prefix X w n -> forallb n' : 'I_n, ~~ Aut_star_prefix X w n'.
@@ -335,6 +335,18 @@ move: H0. rewrite -{1}(addn1 n) -(addn1 k).
 by rewrite leq_add2r.
 Qed.
 
+Lemma take_oversizeS (w: word char) n: size w < n -> take n w = take n.-1 w.
+Proof. move: w n. apply: last_ind => [|w a IHw] n.
+  by [].
+rewrite -cats1 => H0. rewrite take_oversize.
+  rewrite take_oversize.
+    by [].
+  destruct n.
+    by [].
+  by [].
+exact: ltnW.
+Qed.
+
 (* This, too. *)
 Lemma word_expand (w: word char) : 0 < (size w) -> exists a, w = rcons (take (size w).-1 w) a.
 Proof. move: w. apply: last_ind => [| w a IHw].
@@ -361,6 +373,7 @@ case_eq (k < size (rcons w b)) => H1.
         by apply H3.
       exact: size_take_bound.
     move => H6.
+    
     rewrite /Aut_star_prefix. rewrite H2.
     have: m <= size (w++ [::b]).
       apply: leq_trans.
@@ -392,24 +405,50 @@ Qed.
 
 (* We proof that there are no accepted prefixes < n if there is
    no shortest, non-empty, accepting prefix < n *)
-Lemma Aut_star_prefix_none X w n: 
-  (forallb m : 'I_n, (0 < m) ==> ~~ Aut_star_prefix X w m) -> (forallb m : 'I_n, (0 < m) ==> ~~ accept' Aut_star X (take m w)).
-Proof. elim: n X w => [|n IHn] X w;
-move/forallP => H0; apply/forallP => m; apply/implyP => H1;
-move: (ltn_ord m).
+Lemma Aut_star_prefix_none X w a n:
+  0 < n ->
+  (forallb m : 'I_(S n), (0 < m) ==> ~~ Aut_star_prefix X (rcons w a) m) -> ~~ accept' Aut_star X (take n (rcons w a)).
+Proof. elim: n X w a => [|n IHn] X w a;
+move => H0 /forallP H1.
   by [].
-move: (H0 m). move/implyP => H2. move: (H2 H1).
+pose m := (@Ordinal n.+2 n.+1 (ltnSn n.+1)).
+have: n.+1 = nat_of_ord m. by []. move => H3.
+move: (H1 m) => /implyP H4.
+have: (0 < m). rewrite -H3. by [].
+move: (H4 H0).
 rewrite 3!negb_and. move/orP => [].
   move/orP => [].
     move/orP => [].
       rewrite ltnNge. move/negbNE.
       rewrite leq_eqVlt => /orP [].
-      move/eqP => [] H3. by move: H3 H1 => ->.
-    by [].
-  
-  
-  
-
+        rewrite -H3 => /eqP H5. by move : H5 H0 => ->.
+      by [].
+    rewrite leqNgt. move/negbNE. rewrite -{1}H3 => H5 H6.
+    apply/negbT. rewrite take_oversizeS.
+      apply/negbTE.
+      case_eq n => [|n'].
+        move => H7. rewrite H7 in H5. move: H5. rewrite ltnS. rewrite leqn0.
+        rewrite size_rcons. by [].
+      move => H7. rewrite -H7. apply IHn.
+        rewrite H7. by [].
+      apply/forallP. move => k. move: (ltn_ord k). move/leqW => H8.
+      pose k' := (@Ordinal n.+2 k H8).
+      have: nat_of_ord k' = k. by [].
+      move => <-. by apply H1.
+      exact: H5.
+ 
+   move => H5 H6. rewrite H3. exact H5.
+rewrite -negb_exists_in. move/negbNE => /existsP [] k.
+move/andP => [] H5 H6 H7.
+move: (H4 H7). rewrite 3!negb_and. rewrite H7. rewrite orFb.
+  case_eq (m <= size (rcons w a)) => H8.
+    rewrite orFb.
+  move/orP => [].
+    by rewrite -H3. 
+  rewrite -negb_exists_in. move/negbNE => /existsP [].
+ 
+     
+Admitted.
 
 (* We proof that there is a shortest, non-empty, accepting prefkx
    for every non-empty word accept by the star automaton. *)
@@ -440,6 +479,7 @@ move Ew: (take (size w).-1 w) => w'.
 move => H0.
 (* See if there already is a prefix: *)
 case_eq (existsb m : 'I_ (size (rcons (rcons w' b) a)), Aut_star_prefix X (rcons w' b) m).
+(* prefix. *)
   move/existsP => [] m /andP [] /andP [] /andP [] H1 H2 H3 /forallP H4.
   pose n:=nat_of_ord m.
   exists n. apply/andP. split.
@@ -452,6 +492,8 @@ case_eq (existsb m : 'I_ (size (rcons (rcons w' b) a)), Aut_star_prefix X (rcons
   apply/forallP => k. apply/implyP => H5.
   rewrite -cats1 takel_cat. move: H5. apply/implyP. by exact: H4.
   apply: leq_trans. apply ltnW. apply ltn_ord. by [].
+
+(* no prefix. *)
 
 move/negbT. rewrite negb_exists => /forallP H1. exists (size (rcons (rcons w' b) a)).
 apply/andP. split.
@@ -473,11 +515,14 @@ rewrite negb_and H2 => /orP [].
     by rewrite H3. 
   rewrite -(takel_cat H3 [::a]).
   by rewrite cats1.
-rewrite negb_forall => /existsP [] m.
-rewrite negb_imply.
+
+rewrite negb_forall.
+rewrite negb_forall_in.
+move/existsP => [] m.
 (* take m w' would be the shortest, non-empty, accepting prefix
    but there is no such prefix. *)
 move/andP => [] H4 /negbNE H5.
+move: H1 => /forallP. move/Aut_star_prefix_none.
 have: Aut_star_prefix X (rcons w' b) m.
   have: size (take m (rcons w' b)) < size w.
     have: size w = (size w').+1.
@@ -495,8 +540,6 @@ have: Aut_star_prefix X (rcons w' b) m.
   apply: Aut_star_prefix_trans.
     apply ltnW. by apply ltn_ord.
   
-
-
 
 
 
