@@ -1,6 +1,16 @@
-Require Import ssreflect ssrnat seq ssrbool eqtype.
+Require Import ssreflect ssrnat seq ssrbool eqtype fintype.
 
 Set Implicit Arguments.
+
+
+Section Language.
+
+Variable char: finType.
+Definition word := seq char.
+Definition language := pred word.
+
+End Language.
+
 
 Lemma ltn_trans_tight m n p : m < n -> n < p -> m < p.-1.
 Proof. elim: p n m => [|p IHp ] n m.
@@ -26,6 +36,7 @@ Lemma size_induction (X : Type) (f : X -> nat) (p: X ->Prop) :
 Proof. intros A x. apply A. induction (f x). by [].
 intros y B. apply A. intros z C. apply IHn.
 move: C B. apply: ltn_trans_tight. Qed.
+
 
 (* seq X helpers. *)
 Section Seq.
@@ -84,5 +95,4 @@ rewrite -cats1 => H0. rewrite take_oversize.
 exact: ltnW.
 Qed.
 
-Lemma take_oversize_trans (w: seq X) n k : size w < n -> n < k -> take n w = take k w
 End Seq.
