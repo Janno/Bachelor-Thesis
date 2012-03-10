@@ -53,10 +53,15 @@ Definition dfa_run := [fun w => dfa_run' (dfa_s0 A) w].
 (** Acceptance of w in x is defined as
    finality of the last state of a run of w on A
    starting in x. **)
-Definition dfa_accept' := [ fun x w => dfa_fin A (last x (dfa_run' x w) ) ].
+Fixpoint dfa_accept' x w :=
+match w with
+  | [::] => dfa_fin A x
+  | a::w => dfa_accept' (dfa_step A x a) w
+end.
 
-(** Acceptance of w on A starting in s0. **)
-Definition dfa_accept := [fun w => dfa_accept' (dfa_s0 A) w].
+(** We define the language of the deterministic
+   automaton, i.e. acceptance in the starting state. **)
+Definition dfa_lang := [fun w => dfa_accept' (dfa_s0 A) w].
 
 (** A lemma that helps us avoid cumbersome unfolding of accept' **)
 Lemma dfa_accept'S x a w : dfa_accept' x (a::w) = dfa_accept' (dfa_step A x a) w.
@@ -129,6 +134,10 @@ match w with
   | a::w => existsb y, (nfa_step A x a y) && nfa_accept' y w
 end.
 
+(** We define the language of the non-deterministic
+   automaton, i.e. acceptance in the starting state. **)
+Definition nfa_lang := [fun w => nfa_accept' (nfa_s0 A) w].
+
 (** We define labeled paths over the non-deterministic step relation **)
 Fixpoint nfa_lpath x (xs : seq state) (w: word) {struct xs} :=
 match xs,w with
@@ -150,20 +159,20 @@ Qed.
 
 (** We proof that the existence of a path labeled with w
    implies the acceptance of w. **)
-Lemma nfa_lpath_accept x xs w: nfa_lpath x xs w /\ nfa_fin A (last x xs) -> nfa_accept' x w.
+Lemma nfa_lpath_accept x xs w: nfa_lpath x xs w -> nfa_fin A (last x xs) -> nfa_accept' x w.
 Proof. elim: w x xs => [|a w IHw] x xs.
   (* We destruct the path to ensure that it is empty. *)
   case: xs => [|y xs].
-    move/andP => []. by [].
+    by [].
   (* Non-empty paths can not be not be produced by empty words. *)
-  by move/andP.
+  by [].
 case: xs => [|y xs].
   (* Empty paths can not accept non-empty words. *)
-  by move/andP.
+  by [].
 simpl. move => [] /andP [] H0 H1 H2.
 apply/existsP. exists y.
-rewrite H0 andTb. apply: IHw.
-split; eassumption.
+rewrite H0 andTb.
+apply: IHw; by eassumption.
 Qed.
 
 End Acceptance.
@@ -181,31 +190,70 @@ Variable A: nfa state.
    automatons' states. **)
 Definition powerset_state : finType := [finType of {set state}].
 
+(** The new starting state is the singleton set containing
+   the given automaton's starting state. **)
+Definition powerset_s0 : powerset_state := set1 (nfa_s0 A).
 
 Definition nfa_to_dfa :=
   dfaI
     powerset_state
-    (set1 (nfa_s0 A))
+    powerset_s0 
     [ pred X: powerset_state | existsb x: state, (x \in X) && nfa_fin A x]
     [fun X a => cover [set finset (nfa_step A x a) | x <- X] ]
 .
 
-(** We prove that nfa_to_dfa builds an automaton which
-   accepts exactly the language of the given automaton.
-   We first prove that, for every state x, the new automaton
-   accepts the same language when starting in a set containing x. **)
-Lemma nfa_to_dfa_correct (x: state) w (X: powerset_state): x \in X -> (nfa_accept' A x w <-> dfa_accept' nfa_to_dfa X w).
-Proof. move => H0. split.
+(** We prove that for every state x, the new automaton
+   accepts at least the language of the given automaton
+   when starting in a set containing x. **)
+Lemma nfa_to_dfa_correct1 (x: state) w (X: powerset_state):
+  x \in X -> nfa_accept' A x w -> dfa_accept' nfa_to_dfa X w.
+Proof. move => H0.
   (* "->" *)
-  elim: w x H0 => [|a w IHw] x H0.
+  elim: w X x H0 => [|a w IHw] X x H0.
     (* [::] *)
     move => /= H1. apply/existsP. exists x.
     by rewrite H0 H1.
   (* a::w *)
-  move/nfa_accept_lpath => [] y [] H1 H2.
-  move/existsP => [] y /andP [] H1 H2.
-  
+  move/nfa_accept_lpath => [] xs [].
+  (* We destruct xs to eliminate the nil case. *)
+  case: xs => [|y xs] H1 H2.
+    by [].
+  (* move => /andP [] H1 H2 H3. *)
+  apply: (IHw _ y).
+    simpl. rewrite cover_imset.
+    apply/bigcupP. exists x.
+      exact: H0.
+    move: H1 => /andP [] H3 _.
+    rewrite in_set. exact: H3.
+  move: H1 => /andP [] _. move/nfa_lpath_accept => H3.
+  exact: (H3 H2).
+Qed.
 
+(** Next we prove that in any set of states X, for every word w,
+   if the powerset automaton accepts w in X, there exists one
+   representative state of that set in which the given automaton
+   accepts w. **)
+Lemma nfa_to_dfa_correct2 (X: powerset_state) w:
+  dfa_accept' nfa_to_dfa X w -> existsb x, (x \in X) && nfa_accept' A x w.
+Proof. elim: w X => [|a w IHw] X.
+  by [].
+move/IHw => /existsP [] y /andP [].
+rewrite /dfa_step /nfa_to_dfa => /=. rewrite cover_imset.
+move/bigcupP => [] x H0 H1 H2.
+apply/existsP. exists x. rewrite H0 andTb.
+apply/existsP. exists y. move: H1. rewrite in_set => ->.
+exact: H2.
+Qed.
+
+(** Finally, we prove that the language of the powerset
+   automaton is exactle the language of the given
+   automaton. **)
+Lemma nfa_to_dfa_correct w : nfa_lang A w = dfa_lang nfa_to_dfa w.
+Proof. apply/idP/idP => /=.
+  apply: nfa_to_dfa_correct1. by apply/set1P.
+by move/nfa_to_dfa_correct2 => /existsP [] x /andP [] /set1P ->.
+Qed.
+  
 
 End PowersetConstruction.
 
