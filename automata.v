@@ -187,7 +187,7 @@ Variable state: finType.
 Variable A: nfa state.
 
 (** The new automaton's states are sets of the given
-   automatons' states. **)
+   automaton' states. **)
 Definition powerset_state : finType := [finType of {set state}].
 
 (** The new starting state is the singleton set containing
@@ -246,7 +246,7 @@ exact: H2.
 Qed.
 
 (** Finally, we prove that the language of the powerset
-   automaton is exactle the language of the given
+   automaton is exactly the language of the given
    automaton. **)
 Lemma nfa_to_dfa_correct w : nfa_lang A w = dfa_lang nfa_to_dfa w.
 Proof. apply/idP/idP => /=.
@@ -257,11 +257,137 @@ Qed.
 
 End PowersetConstruction.
 
+
+(** Embedding deterministic automata in non-deterministic automata. **)
+Section Embed.
+
+Variable state: finType.
+
+Variable A: dfa state.
+
+Definition dfa_to_nfa : nfa state :=
+  nfaI
+    state
+    (dfa_s0 A)
+    (dfa_fin A)
+    [fun x a => fun y => y == dfa_step A x a ]
+.
+
+(** We proof that dfa_to_nfa accepts the same language as
+   the given automaton in any state. **)
+Lemma dfa_to_nfa_correct' x w : dfa_accept' A x w = nfa_accept' dfa_to_nfa x w.
+Proof. elim: w x => [|b w IHw] x.
+  by [].
+simpl. rewrite IHw.
+apply/idP/existsP.
+  move => H0. exists (dfa_step A x b). by rewrite eq_refl H0.
+by move => [] y /andP [] /eqP ->.
+Qed.
+
+(** We proof that dfa_to_nfa accepts the same language
+   as the given automaton in the starting state, i.e. their
+   languages are equal. **)
+Lemma dfa_to_nfa_correct w : dfa_lang A w = nfa_lang dfa_to_nfa w.
+  exact: dfa_to_nfa_correct'.
+Qed.
+    
+End Embed.
+
+
+
+(** Operations on non-deterministic automata. **)
+Section DFAOps.
+
+Variable state1: finType.
+Variable A1: dfa state1.
+
+
+(** Complement automaton **)
+Section Complement.
+  
+(** The only change needed is to negate the finality predicate. **)
+Definition fin_compl := [ fun x1 => ~~ fin1 x1 ].
+(** We construct the resulting automaton. **)
+Definition dfa_compl :=
+  dfaI
+  state1
+  (s0 A1)
+  fin_compl
+  step1.
+
+(** We proof that the complement automaton accepts exactly
+   the words not accepted by the original automaton. **)
+Lemma dfa_compl_correct' w q: accept' A1 q w = ~~ accept' Aut_not q w.
+Proof.
+  by apply/idP/negPn.
+Qed.
+
+
+End Complement.
+
+(** Operations on two automata. **)
+Section BinaryOps.
+  
+Variable state2: finType.
+Variable A2: dfa state2.
+
+(** Cross product of the two state sets **)
+Definition state_prod := prod_finType state1 state2.
+
+(** Disjunction automaton **)
+
+Definition step_disj (x: state_prod) a := let (x1, x2) := x in (dfa_step A1 x1 a, dfa_step A2 x2 a).
+Definition dfa_disj :=
+  dfaI
+    state_prod
+    (dfa_s0 A1, dfa_s0 A2) 
+    (fun q => let (x1,x2) := q in dfa_fin A1 x1 || dfa_fin A2 x2)
+    step_disj.
+
+(** Correctness w.r.t. any state. **)
+Lemma dfa_disj_correct' w x1 x2 : dfa_accept' A1 x1 w || dfa_accept' A2 x2 w = dfa_accept' dfa_disj (x1, x2) w.
+Proof. elim: w x1 x2 => [|a w IHw].
+  by [].
+move => x1 x2. by exact: IHw.
+Qed.
+
+(** Language correctness. **)
+Lemma dfa_disj_correct w: dfa_lang A1 w || dfa_lang A2 w = dfa_lang dfa_disj w.
+Proof. exact: dfa_disj_correct'. Qed.
+
+(** Conjunction **) 
+  
+Definition step_conj (x: state_prod) a := let (x1, x2) := x in (dfa_step A1 x1 a, dfa_step A2 x2 a).
+Definition dfa_conj :=
+  dfaI
+    state_prod
+    (dfa_s0 A1, dfa_s0 A2) 
+    (fun q => let (x1,x2) := q in dfa_fin A1 x1 && dfa_fin A2 x2)
+    step_disj
+.
+
+(** Correctness w.r.t. any state. **)
+Lemma dfa_conj_correct' w x1 x2 : dfa_accept' A1 x1 w && dfa_accept' A2 x2 w = dfa_accept' dfa_conj (x1, x2) w.
+Proof. elim: w x1 x2 => [|a w IHw].
+  by [].
+move => x1 x2.
+exact: IHw.
+Qed.
+
+(** Language correctness. **)
+Lemma dfa_conj_correct w: dfa_lang A1 w && dfa_lang A2 w = dfa_lang dfa_conj w.
+Proof. exact: dfa_conj_correct'. Qed.
+
+End BinaryOps.
+
+End DFAOps.
+
+
+
 End FA.
 
-Hint Unfold A_step.
-Hint Unfold A_s0.
-Hint Unfold A_fin.
+
+
 
 (** Operations on up to two automata with the same alphabet **)
 Section Operators.
@@ -278,72 +404,12 @@ Variable A1: dfa char state1 s01 fin1 step1.
 Variable A2: dfa char state2 s02 fin2 step2.
 
 
-(** Complement automaton **)
-Section Complement.
-  
-(** The only change needed is to negate the finality predicate. **)
-Definition fin_not := [ fun q1 => ~~ fin1 q1 ].
-(** We construct the resulting automaton. **)
-Definition Aut_not := dfaI char state1 s01 fin_not step1.
-
-(** We proof that the complement automaton accepts exactly
-   the words not accepted by the original automaton. **)
-Lemma Aut_not_correct w q: accept' A1 q w = ~~ accept' Aut_not q w.
-Proof.
-  by apply/idP/negPn.
-Qed.
-
-End Complement.
 
 
-(** Cross product of the two state sets **)
-Definition state_prod := prod_finType state1 state2.
 
 
-(** Disjunction automaton **)
-Section Disjunction.
-
-Definition step_or (q: state_prod) a := let (q1, q2) := q in (step1 q1 a, step2 q2 a).
-Definition Aut_or := dfaI char state_prod (s01, s02) 
-(fun q => let (q1,q2) := q in fin1 q1 || fin2 q2)
-step_or.
-
-(** Correctness w.r.t. any state. **)
-Lemma Aut_or_correct' w q1 q2 : accept' A1 q1 w || accept' A2 q2 w = accept' Aut_or (q1, q2) w.
-Proof. elim: w q1 q2 => [|a w IHw].
-  rewrite/accept => //.
-rewrite/accept => /=. move => q1 q2. 
-by exact: IHw.
-Qed.
-
-(** Language correctness. **)
-Lemma Aut_or_correct w: accept A1 w || accept A2 w = accept Aut_or w.
-Proof. exact: Aut_or_correct'. Qed.
-
-End Disjunction.
   
 
-(** Conjunction **) 
-Section Conjunction.
-  
-Definition step_and (q: state_prod) a := let (q1, q2) := q in (step1 q1 a, step2 q2 a).
-Definition Aut_and := dfaI char state_prod (s01, s02) 
-(fun q => let (q1,q2) := q in fin1 q1 && fin2 q2)
-step_or.
-
-(** Correctness w.r.t. any state. **)
-Lemma Aut_and_correct' w q1 q2 : accept' A1 q1 w && accept' A2 q2 w = accept' Aut_and (q1, q2) w.
-Proof. elim: w q1 q2 => [|a w IHw].
-  rewrite/accept => //.
-rewrite/accept => /=. move => q1 q2. 
-by exact: IHw.
-Qed.
-
-(** Language correctness. **)
-Lemma Aut_and_correct w: accept A1 w && accept A2 w = accept Aut_and w.
-Proof. exact: Aut_and_correct'. Qed.
-
-End Conjunction.
 
 
 (** Star automaton. **)
