@@ -458,7 +458,6 @@ apply: nfa_lpath_accept.
 by rewrite last_map /nfa_fin.
 Qed.
     
-
 Lemma nfa_conc_correct1 x w1 w2:
   nfa_accept A1 x w1 ->
   nfa_lang A2 w2 ->
@@ -480,7 +479,7 @@ apply: IHw1.
   exact: H2.
 exact: H3.
 Qed.
-  
+
 Lemma nfa_conc_correct2 X w :
   nfa_accept nfa_conc X w ->
   match X with
@@ -513,7 +512,7 @@ move: H0 => /= H0 H1.
 apply/existsP. exists y.
 by rewrite H0 H1.
 Qed.
-  
+
 
 End NFAOps.
 
