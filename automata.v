@@ -146,7 +146,7 @@ match xs,w with
   | _       , _     => false
 end.
 
-(** We proof that there is a path labeled with w induced
+(** We prove that there is a path labeled with w induced
    by nfa_accept starting at x and ending in an accepting
    state. **)
 Lemma nfa_accept_lpath x w: nfa_accept x w -> exists xs, nfa_lpath x xs w /\ nfa_fin A (last x xs).
@@ -157,7 +157,7 @@ exists (y::xs) => /=.
 by rewrite H0 H1 H2.
 Qed.
 
-(** We proof that the existence of a path labeled with w
+(** We prove that the existence of a path labeled with w
    implies the acceptance of w. **)
 Lemma nfa_lpath_accept x xs w: nfa_lpath x xs w -> nfa_fin A (last x xs) -> nfa_accept x w.
 Proof. elim: w x xs => [|a w IHw] x xs.
@@ -291,7 +291,7 @@ Definition dfa_to_nfa : nfa state :=
     [fun x a => fun y => y == dfa_step A x a ]
 .
 
-(** We proof that dfa_to_nfa accepts the same language as
+(** We prove that dfa_to_nfa accepts the same language as
    the given automaton in any state. **)
 Lemma dfa_to_nfa_correct' x w : dfa_accept A x w = nfa_accept dfa_to_nfa x w.
 Proof. elim: w x => [|b w IHw] x.
@@ -302,7 +302,7 @@ apply/idP/existsP.
 by move => [] y /andP [] /eqP ->.
 Qed.
 
-(** We proof that dfa_to_nfa accepts the same language
+(** We prove that dfa_to_nfa accepts the same language
    as the given automaton in the starting state, i.e. their
    languages are equal. **)
 Lemma dfa_to_nfa_correct w : dfa_lang A w = nfa_lang dfa_to_nfa w.
@@ -332,15 +332,18 @@ Definition dfa_compl :=
     fin_compl
     (dfa_step A1).
 
-(** We proof that the complement automaton accepts exactly
+(** We prove that the complement automaton accepts exactly
    the words not accepted by the original automaton. **)
-Lemma dfa_compl_correct' w x: dfa_accept A1 x w = ~~ dfa_accept dfa_compl x w.
+Lemma dfa_compl_correct' w x:
+  dfa_accept A1 x w = ~~ dfa_accept dfa_compl x w.
 Proof. elim: w x => [|a w IHw] x.  
   by apply/idP/negPn.
 simpl. by rewrite IHw.
 Qed.
 
-Lemma dfa_compl_correct w: dfa_lang A1 w = ~~ dfa_lang dfa_compl w.
+(** Language correctness for dfa_compl **)
+Lemma dfa_compl_correct w:
+  dfa_lang A1 w = ~~ dfa_lang dfa_compl w.
 Proof. exact: dfa_compl_correct'. Qed.
 
   
@@ -355,7 +358,8 @@ Definition state_prod := prod_finType state1 state2.
 
 (** Disjunction automaton **)
 
-Definition step_disj (x: state_prod) a := let (x1, x2) := x in (dfa_step A1 x1 a, dfa_step A2 x2 a).
+Definition step_disj (x: state_prod) a :=
+  let (x1, x2) := x in (dfa_step A1 x1 a, dfa_step A2 x2 a).
 Definition dfa_disj :=
   dfaI
     state_prod
@@ -364,19 +368,24 @@ Definition dfa_disj :=
     step_disj.
 
 (** Correctness w.r.t. any state. **)
-Lemma dfa_disj_correct' w x1 x2 : dfa_accept A1 x1 w || dfa_accept A2 x2 w = dfa_accept dfa_disj (x1, x2) w.
+Lemma dfa_disj_correct' w x1 x2 :
+  dfa_accept A1 x1 w || dfa_accept A2 x2 w
+    = dfa_accept dfa_disj (x1, x2) w.
 Proof. elim: w x1 x2 => [|a w IHw].
   by [].
 move => x1 x2. by exact: IHw.
 Qed.
 
 (** Language correctness. **)
-Lemma dfa_disj_correct w: dfa_lang A1 w || dfa_lang A2 w = dfa_lang dfa_disj w.
+Lemma dfa_disj_correct w:
+  dfa_lang A1 w || dfa_lang A2 w
+    = dfa_lang dfa_disj w.
 Proof. exact: dfa_disj_correct'. Qed.
 
 (** Conjunction **) 
   
-Definition step_conj (x: state_prod) a := let (x1, x2) := x in (dfa_step A1 x1 a, dfa_step A2 x2 a).
+Definition step_conj (x: state_prod) a :=
+  let (x1, x2) := x in (dfa_step A1 x1 a, dfa_step A2 x2 a).
 Definition dfa_conj :=
   dfaI
     state_prod
@@ -386,7 +395,9 @@ Definition dfa_conj :=
 .
 
 (** Correctness w.r.t. any state. **)
-Lemma dfa_conj_correct' w x1 x2 : dfa_accept A1 x1 w && dfa_accept A2 x2 w = dfa_accept dfa_conj (x1, x2) w.
+Lemma dfa_conj_correct' w x1 x2 :
+  dfa_accept A1 x1 w && dfa_accept A2 x2 w
+  = dfa_accept dfa_conj (x1, x2) w.
 Proof. elim: w x1 x2 => [|a w IHw].
   by [].
 move => x1 x2.
@@ -394,7 +405,9 @@ exact: IHw.
 Qed.
 
 (** Language correctness. **)
-Lemma dfa_conj_correct w: dfa_lang A1 w && dfa_lang A2 w = dfa_lang dfa_conj w.
+Lemma dfa_conj_correct w:
+  dfa_lang A1 w && dfa_lang A2 w
+  = dfa_lang dfa_conj w.
 Proof. exact: dfa_conj_correct'. Qed.
 
 End BinaryOps.
@@ -434,6 +447,8 @@ Definition nfa_conc : nfa state_conc :=
     fin_conc
     step_conc.
 
+(** We prove that every path of A2 can be mapped to a path
+   of nfa_conc. **)
 Lemma nfa_conc_cont x xs w:
   nfa_lpath A2 x xs w
   -> nfa_lpath nfa_conc (inr _ x) (map (@inr state1 state2) xs) w.
@@ -441,6 +456,9 @@ Proof. elim: xs x w => [|y xs IHxs] x w; case: w => [|a w] => //.
 simpl. by move/andP => [] -> /IHxs ->.
 Qed.
 
+(** We prove that every word in the language of A2
+   is also accepted by any final state of A1 in
+   nfa_conc. **)
 Lemma nfa_conc_fin1 x1 w:
   nfa_fin A1 x1 ->
   nfa_lang A2 w ->
@@ -457,7 +475,11 @@ apply: nfa_lpath_accept.
   by eassumption.
 by rewrite last_map /nfa_fin.
 Qed.
-    
+
+(** We prove that for every word w1 accepted by A1 in
+   some state x and for every word w2 in the language of A2
+   w1 ++ w2 will be accepted by the corresponding state in
+   nfa_conc. **)
 Lemma nfa_conc_correct1 x w1 w2:
   nfa_accept A1 x w1 ->
   nfa_lang A2 w2 ->
@@ -480,6 +502,11 @@ apply: IHw1.
 exact: H3.
 Qed.
 
+(** We prove that every word accepted by some state X in nfa_conc is
+   - EITHER a concatenation of two words w1, w2 which are accpeted
+   by A1, A2 (resp.) if X corresponds to one of A1's states
+   - OR accepted by A2 in the state corresponding to X if X
+   corresponds to one of A2's states. **)
 Lemma nfa_conc_correct2 X w :
   nfa_accept nfa_conc X w ->
   match X with
@@ -512,6 +539,89 @@ move: H0 => /= H0 H1.
 apply/existsP. exists y.
 by rewrite H0 H1.
 Qed.
+
+
+(** Plus operator for non-deterministic automata. **)
+
+(** The step relation implements the following rules:
+   - every edge to a final state will also be duplicated
+   to point to s0.
+   **)
+Definition step_plus x a y : bool :=
+nfa_step A1 x a y || (
+                      (y == nfa_s0 A1)
+                      && existsb z, (nfa_fin A1 z) && (nfa_step A1 x a z)
+                    ).
+
+Definition nfa_plus : nfa state1 :=
+  nfaI
+    state1
+    (nfa_s0 A1)
+    (nfa_fin A1)
+    step_plus.
+
+
+
+
+(** We prove that every path of A1 can be mapped to a path
+   of nfa_plus. **)
+Lemma nfa_plus_cont x xs w:
+  nfa_lpath A1 x xs w
+  -> nfa_lpath nfa_plus x xs w.
+Proof. elim: xs x w => [|y xs IHxs] x w; case: w => [|a w] => //.
+move/andP => [] H0 /= /IHxs ->.
+by rewrite /step_plus H0 orTb.
+Qed.
+
+Lemma nfa_plus_lpath x y xs a w:
+  nfa_fin nfa_plus (last x (y::xs)) ->
+  nfa_lpath nfa_plus x (y::xs) (a::w) ->
+  nfa_lpath nfa_plus x (rcons (belast y xs) (nfa_s0 A1)) (a::w).
+Proof. elim: xs x y a w => [|z xs IHxs] x y a [|b w] //=.
+      rewrite 2!andbT.
+      move => H0 /orP [|/andP [] /eqP].
+        move => H1. rewrite/step_plus.
+        apply/orP. right. rewrite eq_refl.
+        apply/existsP. exists y. by rewrite H0 H1.
+      move => H1 /existsP [] z /andP [] H2 H3. move: H1 H0 => -> H4.
+      apply/orP. right. rewrite eq_refl => /=.
+      apply/existsP. exists z. by rewrite H2 H3.
+    by rewrite andbF.
+  by rewrite andbF.
+rewrite -(last_cons y). move => H0 /andP [] H1 /andP [] H3 H4.
+rewrite H1 => /=. apply: IHxs.
+  by rewrite H0.
+simpl. by rewrite H3 H4.
+Qed.
+  
+
+Lemma nfa_plus_correct1' x w1 :
+  nfa_accept A1 x w1 ->
+  nfa_accept nfa_plus x w1.
+Proof.
+move/nfa_accept_lpath => [] xs [].
+move/nfa_plus_cont => H0 H1.
+apply: nfa_lpath_accept; by eassumption.
+Qed.
+
+Lemma nfa_plus_correct w1 w2:
+  nfa_lang A1 w1 ->
+  nfa_lang nfa_plus w2 ->
+  nfa_lang nfa_plus (w1 ++ w2).
+Proof.
+move => /nfa_accept_lpath [] [|x xs] []; case: w1 => [|a w1].
+      by [].
+    by [].
+  by [].
+move => H0 H1 H2.
+apply/(nfa_accept_cat).
+exists (rcons (belast x xs) (nfa_s0 A1)).
+apply/andP. split.
+  apply:nfa_plus_lpath.
+    exact: H1.
+
+Admitted.
+
 
 
 End NFAOps.
