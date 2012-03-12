@@ -1,0 +1,890 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+<link href="coqdoc.css" rel="stylesheet" type="text/css"/>
+<title>automata</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library automata</h1>
+
+<div class="code">
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="library">ssreflect</span> <span class="id" type="library">ssrbool</span> <span class="id" type="library">eqtype</span> <span class="id" type="library">fintype</span> <span class="id" type="library">finfun</span> <span class="id" type="library">seq</span> <span class="id" type="library">fingraph</span> <span class="id" type="library">ssrfun</span> <span class="id" type="library">ssrnat</span> <span class="id" type="library">finset</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="library">misc</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Set</span> <span class="id" type="keyword">Implicit</span> <span class="id" type="var">Arguments</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Finite automata. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Section</span> <a name="FA"><span class="id" type="section">FA</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The finite input alphabet. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Variable</span> <a name="FA.char"><span class="id" type="variable">char</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Type of input sequences 
+</div>
+<div class="code">
+<span class="id" type="keyword">Definition</span> <a name="word"><span class="id" type="definition">word</span></a> := <span class="id" type="definition">misc.word</span> <a class="idref" href="automata.html#FA.char"><span class="id" type="variable">char</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Deterministic finite automata.
+   This is the only actual type of automata.
+   NFAs will be translated on the fly (they
+   never exist as instances of some type). 
+</div>
+<div class="code">
+<span class="id" type="keyword">Section</span> <a name="FA.DFA"><span class="id" type="section">DFA</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The finite type of states 
+</div>
+<div class="code">
+<span class="id" type="keyword">Variable</span> <a name="FA.DFA.state"><span class="id" type="variable">state</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The type of deterministic finite automata. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Record</span> <a name="dfa"><span class="id" type="record">dfa</span></a> : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;<a name="dfaI"><span class="id" type="constructor">dfaI</span></a> {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a name="dfa_s0"><span class="id" type="projection">dfa_s0</span></a>: <a class="idref" href="automata.html#FA.DFA.state"><span class="id" type="variable">state</span></a>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a name="dfa_fin"><span class="id" type="projection">dfa_fin</span></a>: <span class="id" type="definition">pred</span> <a class="idref" href="automata.html#FA.DFA.state"><span class="id" type="variable">state</span></a>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a name="dfa_step"><span class="id" type="projection">dfa_step</span></a>: <a class="idref" href="automata.html#FA.DFA.state"><span class="id" type="variable">state</span></a> -&gt; <a class="idref" href="automata.html#FA.char"><span class="id" type="variable">char</span></a> -&gt; <a class="idref" href="automata.html#FA.DFA.state"><span class="id" type="variable">state</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Acceptance on DFAs 
+</div>
+<div class="code">
+<span class="id" type="keyword">Section</span> <a name="FA.DFA.Acceptance"><span class="id" type="section">Acceptance</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Assume some automaton 
+</div>
+<div class="code">
+<span class="id" type="keyword">Variable</span> <a name="FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a>: <a class="idref" href="automata.html#dfa"><span class="id" type="record">dfa</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We define a run of w on the automaton A
+   to be the list of states x_1 .. x|w|
+   traversed when following the edges labeled
+   w_1 .. w|w| starting in x. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Fixpoint</span> <a name="dfa_run'"><span class="id" type="definition">dfa_run'</span></a> (<span class="id" type="var">x</span>: <a class="idref" href="automata.html#FA.DFA.state"><span class="id" type="variable">state</span></a>) (<span class="id" type="var">w</span>: <a class="idref" href="automata.html#word"><span class="id" type="definition">word</span></a>) : <span class="id" type="inductive">seq</span> <a class="idref" href="automata.html#FA.DFA.state"><span class="id" type="variable">state</span></a> :=<br/>
+<span class="id" type="keyword">match</span> <span class="id" type="var">w</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="notation">[::]</span> =&gt; <span class="id" type="notation">[::]</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">a</span><span class="id" type="notation">::</span><span class="id" type="var">w</span> =&gt; <span class="id" type="notation">(</span><a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span><span class="id" type="notation">)</span> <span class="id" type="notation">::</span><a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> (<a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span>) <span class="id" type="var">w</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+A simplifying function for a "complete" run
+   (i.e. starting at s0). 
+</div>
+<div class="code">
+<span class="id" type="keyword">Definition</span> <a name="dfa_run"><span class="id" type="definition">dfa_run</span></a> := <span class="id" type="notation">[</span><span class="id" type="keyword">fun</span> <span class="id" type="var">w</span> <span class="id" type="notation">=&gt;</span> <a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> (<a class="idref" href="automata.html#dfa_s0"><span class="id" type="projection">dfa_s0</span></a> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a>) <span class="id" type="var">w</span><span class="id" type="notation">]</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Acceptance of w in x is defined as
+   finality of the last state of a run of w on A
+   starting in x. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Fixpoint</span> <a name="dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> :=<br/>
+<span class="id" type="keyword">match</span> <span class="id" type="var">w</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="notation">[::]</span> =&gt; <a class="idref" href="automata.html#dfa_fin"><span class="id" type="projection">dfa_fin</span></a> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">a</span><span class="id" type="notation">::</span><span class="id" type="var">w</span> =&gt; <a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> (<a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span>) <span class="id" type="var">w</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We define the language of the deterministic
+   automaton, i.e. acceptance in the starting state. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Definition</span> <a name="dfa_lang"><span class="id" type="definition">dfa_lang</span></a> := <span class="id" type="notation">[</span><span class="id" type="keyword">fun</span> <span class="id" type="var">w</span> <span class="id" type="notation">=&gt;</span> <a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> (<a class="idref" href="automata.html#dfa_s0"><span class="id" type="projection">dfa_s0</span></a> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a>) <span class="id" type="var">w</span><span class="id" type="notation">]</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+A lemma that helps us avoid cumbersome unfolding of accept 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="dfa_acceptS"><span class="id" type="lemma">dfa_acceptS</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="var">w</span> : <a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <span class="id" type="var">x</span> (<span class="id" type="var">a</span><span class="id" type="notation">::</span><span class="id" type="var">w</span>) <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> (<a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span>) <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">x</span> <span class="id" type="var">a</span> =&gt; [|<span class="id" type="var">b</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>] <span class="id" type="var">x</span> <span class="id" type="var">a</span> //=. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+Same for run' 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="dfa_run'S"><span class="id" type="lemma">dfa_run'S</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="var">w</span> : <a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> <span class="id" type="var">x</span> (<span class="id" type="var">a</span><span class="id" type="notation">::</span><span class="id" type="var">w</span>) <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <span class="id" type="notation">(</span><a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span><span class="id" type="notation">)</span> <span class="id" type="notation">::</span> <a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> (<a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span>) <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">by</span> []. <span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The size of a run is the size of the input word. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="dfa_run_size"><span class="id" type="lemma">dfa_run_size</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> : <span class="id" type="definition">size</span> (<a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span>) <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <span class="id" type="definition">size</span> <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">x</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>] <span class="id" type="var">x</span> //=.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHw</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+take lemma. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="dfa_run'_take"><span class="id" type="lemma">dfa_run'_take</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> <span class="id" type="var">n</span>: <span class="id" type="definition">take</span> <span class="id" type="var">n</span> (<a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span>) <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> <span class="id" type="var">x</span> (<span class="id" type="definition">take</span> <span class="id" type="var">n</span> <span class="id" type="var">w</span>).<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">x</span> <span class="id" type="var">n</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>] <span class="id" type="var">x</span> <span class="id" type="var">n</span> //.<br/>
+<span class="id" type="tactic">rewrite</span> <a class="idref" href="automata.html#dfa_run'S"><span class="id" type="lemma">dfa_run'S</span></a> 2!<span class="id" type="lemma">take_cons</span>. <span class="id" type="tactic">case</span>: <span class="id" type="var">n</span> =&gt; [|<span class="id" type="var">n</span>] //.<br/>
+<span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHw</span> <a class="idref" href="automata.html#dfa_run'S"><span class="id" type="lemma">dfa_run'S</span></a>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+rcons and cat lemmas. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="dfa_run'_cat"><span class="id" type="lemma">dfa_run'_cat</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span> <span class="id" type="var">w2</span> : <a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> <span class="id" type="var">x</span> (<span class="id" type="var">w1</span> <span class="id" type="notation">++</span> <span class="id" type="var">w2</span>) <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span> <span class="id" type="notation">++</span> <a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> (<span class="id" type="definition">last</span> <span class="id" type="var">x</span> (<a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span>)) <span class="id" type="var">w2</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">w1</span> <span class="id" type="var">w2</span> <span class="id" type="var">x</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w1</span> <span class="id" type="var">IHw1</span>] <span class="id" type="var">w2</span> <span class="id" type="var">x</span> //.<br/>
+<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHw1</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <a name="dfa_run'_rcons"><span class="id" type="lemma">dfa_run'_rcons</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> <span class="id" type="var">a</span> : <a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> <span class="id" type="var">x</span> (<span class="id" type="definition">rcons</span> <span class="id" type="var">w</span> <span class="id" type="var">a</span>) <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <span class="id" type="definition">rcons</span> (<a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span>) (<a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a> (<span class="id" type="definition">last</span> <span class="id" type="var">x</span> (<a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span>)) <span class="id" type="var">a</span>).<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">move</span>: <span class="id" type="var">w</span> <span class="id" type="var">a</span> <span class="id" type="var">x</span>. <span class="id" type="tactic">apply</span>: <span class="id" type="lemma">last_ind</span> =&gt; [|<span class="id" type="var">w</span> <span class="id" type="var">b</span> <span class="id" type="var">IHw</span>] <span class="id" type="var">a</span> <span class="id" type="var">x</span> //.<br/>
+<span class="id" type="tactic">rewrite</span> -3!<span class="id" type="lemma">cats1</span>. <span class="id" type="tactic">rewrite</span> 2!<a class="idref" href="automata.html#dfa_run'_cat"><span class="id" type="lemma">dfa_run'_cat</span></a>. <span class="id" type="tactic">by</span> [].<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Predicate to distinguish between accepting
+   and non-accepting runs. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Definition</span> <a name="dfa_run_accepting"><span class="id" type="definition">dfa_run_accepting</span></a> := <span class="id" type="notation">[</span><span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> <span class="id" type="var">xs</span> <span class="id" type="notation">=&gt;</span> <a class="idref" href="automata.html#dfa_fin"><span class="id" type="projection">dfa_fin</span></a> (<span class="id" type="definition">last</span> <span class="id" type="var">x</span> <span class="id" type="var">xs</span>)<span class="id" type="notation">]</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <a name="dfa_run_accepts"><span class="id" type="definition">dfa_run_accepts</span></a> <span class="id" type="var">x</span> <span class="id" type="var">xs</span> <span class="id" type="var">w</span> := <span class="id" type="var">xs</span> <span class="id" type="notation">==</span> <a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <a class="idref" href="automata.html#FA.DFA.Acceptance"><span class="id" type="section">Acceptance</span></a>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <a class="idref" href="automata.html#FA.DFA"><span class="id" type="section">DFA</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Non-deterministic automata. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Section</span> <a name="FA.NFA"><span class="id" type="section">NFA</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The finite type of states 
+</div>
+<div class="code">
+<span class="id" type="keyword">Variable</span> <a name="FA.NFA.state"><span class="id" type="variable">state</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The type of non-deterministic finite automata. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Record</span> <a name="nfa"><span class="id" type="record">nfa</span></a> : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;<a name="nfaI"><span class="id" type="constructor">nfaI</span></a> {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a name="nfa_s0"><span class="id" type="projection">nfa_s0</span></a>: <a class="idref" href="automata.html#FA.NFA.state"><span class="id" type="variable">state</span></a>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a name="nfa_fin"><span class="id" type="projection">nfa_fin</span></a>: <span class="id" type="definition">pred</span> <a class="idref" href="automata.html#FA.NFA.state"><span class="id" type="variable">state</span></a>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a name="nfa_step"><span class="id" type="projection">nfa_step</span></a>: <a class="idref" href="automata.html#FA.NFA.state"><span class="id" type="variable">state</span></a> -&gt; <a class="idref" href="automata.html#FA.char"><span class="id" type="variable">char</span></a> -&gt; <span class="id" type="definition">pred</span> <a class="idref" href="automata.html#FA.NFA.state"><span class="id" type="variable">state</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Acceptance on non-deterministic automata. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Section</span> <a name="FA.NFA.Acceptance"><span class="id" type="section">Acceptance</span></a>.<br/>
+
+<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.NFA.Acceptance.A"><span class="id" type="variable">A</span></a>: <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Non-deterministic acceptance. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Fixpoint</span> <a name="nfa_accept"><span class="id" type="definition">nfa_accept</span></a> (<span class="id" type="var">x</span>: <a class="idref" href="automata.html#FA.NFA.state"><span class="id" type="variable">state</span></a>) <span class="id" type="var">w</span> :=<br/>
+<span class="id" type="keyword">match</span> <span class="id" type="var">w</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="notation">[::]</span> =&gt; <a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a> <a class="idref" href="automata.html#FA.NFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">a</span><span class="id" type="notation">::</span><span class="id" type="var">w</span> =&gt; <span class="id" type="notation">existsb</span> <span class="id" type="var">y</span><span class="id" type="notation">,</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">(</span></a><a class="idref" href="automata.html#nfa_step"><span class="id" type="projection">nfa_step</span></a> <a class="idref" href="automata.html#FA.NFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="var">y</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <span class="id" type="var">y</span> <span class="id" type="var">w</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We define the language of the non-deterministic
+   automaton, i.e. acceptance in the starting state. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Definition</span> <a name="nfa_lang"><span class="id" type="definition">nfa_lang</span></a> := <span class="id" type="notation">[</span><span class="id" type="keyword">fun</span> <span class="id" type="var">w</span> <span class="id" type="notation">=&gt;</span> <a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> (<a class="idref" href="automata.html#nfa_s0"><span class="id" type="projection">nfa_s0</span></a> <a class="idref" href="automata.html#FA.NFA.Acceptance.A"><span class="id" type="variable">A</span></a>) <span class="id" type="var">w</span><span class="id" type="notation">]</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We define labeled paths over the non-deterministic step relation 
+</div>
+<div class="code">
+<span class="id" type="keyword">Fixpoint</span> <a name="nfa_lpath"><span class="id" type="definition">nfa_lpath</span></a> <span class="id" type="var">x</span> (<span class="id" type="var">xs</span> : <span class="id" type="inductive">seq</span> <a class="idref" href="automata.html#FA.NFA.state"><span class="id" type="variable">state</span></a>) (<span class="id" type="var">w</span>: <a class="idref" href="automata.html#word"><span class="id" type="definition">word</span></a>) {<span class="id" type="keyword">struct</span> <span class="id" type="var">xs</span>} :=<br/>
+<span class="id" type="keyword">match</span> <span class="id" type="var">xs</span>,<span class="id" type="var">w</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">y</span> <span class="id" type="notation">::</span> <span class="id" type="var">xs'</span>, <span class="id" type="var">a</span><span class="id" type="notation">::</span><span class="id" type="var">w'</span> =&gt; <a class="idref" href="automata.html#nfa_step"><span class="id" type="projection">nfa_step</span></a> <a class="idref" href="automata.html#FA.NFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="var">y</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_lpath"><span class="id" type="definition">nfa_lpath</span></a> <span class="id" type="var">y</span> <span class="id" type="var">xs'</span> <span class="id" type="var">w'</span><br/>
+&nbsp;&nbsp;| <span class="id" type="notation">[::]</span>    , <span class="id" type="notation">[::]</span>  =&gt; <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#true"><span class="id" type="constructor">true</span></a><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span>       , <span class="id" type="var">_</span>     =&gt; <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#false"><span class="id" type="constructor">false</span></a><br/>
+<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We proof that there is a path labeled with w induced
+   by nfa_accept starting at x and ending in an accepting
+   state. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="nfa_accept_lpath"><span class="id" type="lemma">nfa_accept_lpath</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span>: <a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> -&gt; <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">exists</span></a> <span class="id" type="var">xs</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">,</span></a> <a class="idref" href="automata.html#nfa_lpath"><span class="id" type="definition">nfa_lpath</span></a> <span class="id" type="var">x</span> <span class="id" type="var">xs</span> <span class="id" type="var">w</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'/\'_x"><span class="id" type="notation">/\</span></a> <a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a> <a class="idref" href="automata.html#FA.NFA.Acceptance.A"><span class="id" type="variable">A</span></a> (<span class="id" type="definition">last</span> <span class="id" type="var">x</span> <span class="id" type="var">xs</span>).<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">x</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>] <span class="id" type="var">x</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">by</span> <span class="id" type="var">exists</span> <span class="id" type="notation">[::]</span>.<br/>
+<span class="id" type="tactic">move</span> =&gt; /<span class="id" type="lemma">existsP</span> [] <span class="id" type="var">y</span> /<span class="id" type="lemma">andP</span> [] <span class="id" type="var">H0</span> /<span class="id" type="var">IHw</span> [<span class="id" type="var">xs</span> [<span class="id" type="var">H1</span> <span class="id" type="var">H2</span>]].<br/>
+<span class="id" type="var">exists</span> (<span class="id" type="var">y</span><span class="id" type="notation">::</span><span class="id" type="var">xs</span>) =&gt; /=.<br/>
+<span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H0</span> <span class="id" type="var">H1</span> <span class="id" type="var">H2</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We proof that the existence of a path labeled with w
+   implies the acceptance of w. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="nfa_lpath_accept"><span class="id" type="lemma">nfa_lpath_accept</span></a> <span class="id" type="var">x</span> <span class="id" type="var">xs</span> <span class="id" type="var">w</span>: <a class="idref" href="automata.html#nfa_lpath"><span class="id" type="definition">nfa_lpath</span></a> <span class="id" type="var">x</span> <span class="id" type="var">xs</span> <span class="id" type="var">w</span> -&gt; <a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a> <a class="idref" href="automata.html#FA.NFA.Acceptance.A"><span class="id" type="variable">A</span></a> (<span class="id" type="definition">last</span> <span class="id" type="var">x</span> <span class="id" type="var">xs</span>) -&gt; <a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">x</span> <span class="id" type="var">xs</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>] <span class="id" type="var">x</span> <span class="id" type="var">xs</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">case</span>: <span class="id" type="var">xs</span> =&gt; [|<span class="id" type="var">y</span> <span class="id" type="var">xs</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">by</span> [].<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">by</span> [].<br/>
+<span class="id" type="tactic">case</span>: <span class="id" type="var">xs</span> =&gt; [|<span class="id" type="var">y</span> <span class="id" type="var">xs</span>].<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">by</span> [].<br/>
+<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">move</span> =&gt; [] /<span class="id" type="lemma">andP</span> [] <span class="id" type="var">H0</span> <span class="id" type="var">H1</span> <span class="id" type="var">H2</span>.<br/>
+<span class="id" type="tactic">apply</span>/<span class="id" type="lemma">existsP</span>. <span class="id" type="var">exists</span> <span class="id" type="var">y</span>.<br/>
+<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H0</span> <span class="id" type="lemma">andTb</span>.<br/>
+<span class="id" type="tactic">apply</span>: <span class="id" type="var">IHw</span>; <span class="id" type="tactic">by</span> <span class="id" type="var">eassumption</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Helpful facts 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="nfa_accept_cat"><span class="id" type="lemma">nfa_accept_cat</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span> <span class="id" type="var">w2</span>:<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <span class="id" type="var">x</span> (<span class="id" type="var">w1</span> <span class="id" type="notation">++</span> <span class="id" type="var">w2</span>) <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'<->'_x"><span class="id" type="notation">&lt;-&gt;</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">exists</span></a> <span class="id" type="var">xs</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">,</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lpath"><span class="id" type="definition">nfa_lpath</span></a> <span class="id" type="var">x</span> <span class="id" type="var">xs</span> <span class="id" type="var">w1</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> (<span class="id" type="definition">last</span> <span class="id" type="var">x</span> <span class="id" type="var">xs</span>) <span class="id" type="var">w2</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">elim</span>: <span class="id" type="var">w1</span> <span class="id" type="var">w2</span> <span class="id" type="var">x</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w1</span> <span class="id" type="var">IHw1</span>] <span class="id" type="var">w2</span> <span class="id" type="var">x</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="var">exists</span> <span class="id" type="notation">[::]</span>. <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">exact</span>: <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">move</span>/<span class="id" type="lemma">existsP</span> =&gt; [] <span class="id" type="var">y</span> /<span class="id" type="lemma">andP</span> [] <span class="id" type="var">H0</span> /<span class="id" type="var">IHw1</span> [] <span class="id" type="var">ys</span> /<span class="id" type="lemma">andP</span> [] <span class="id" type="var">H1</span> <span class="id" type="var">H2</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">exists</span> (<span class="id" type="var">y</span><span class="id" type="notation">::</span><span class="id" type="var">ys</span>) =&gt; /=. <span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H0</span> <span class="id" type="var">H1</span> <span class="id" type="var">H2</span>.<br/>
+<span class="id" type="tactic">elim</span>: <span class="id" type="var">w1</span> <span class="id" type="var">w2</span> <span class="id" type="var">x</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w1</span> <span class="id" type="var">IHw1</span>] <span class="id" type="var">w2</span> <span class="id" type="var">x</span>; <span class="id" type="tactic">move</span> =&gt; [] [|<span class="id" type="var">y</span> <span class="id" type="var">ys</span>] /<span class="id" type="lemma">andP</span> [] <span class="id" type="var">H0</span> <span class="id" type="var">H1</span> //.<br/>
+<span class="id" type="tactic">move</span>: <span class="id" type="var">H0</span> =&gt; /= /<span class="id" type="lemma">andP</span> [] <span class="id" type="var">H2</span> <span class="id" type="var">H3</span>.<br/>
+<span class="id" type="tactic">apply</span>/<span class="id" type="lemma">existsP</span>. <span class="id" type="var">exists</span> <span class="id" type="var">y</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H2</span> =&gt; /=.<br/>
+<span class="id" type="tactic">apply</span>: <span class="id" type="var">IHw1</span>.<br/>
+<span class="id" type="var">exists</span> <span class="id" type="var">ys</span>. <span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H3</span> <span class="id" type="var">H1</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <a class="idref" href="automata.html#FA.NFA.Acceptance"><span class="id" type="section">Acceptance</span></a>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <a class="idref" href="automata.html#FA.NFA"><span class="id" type="section">NFA</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We define the powerset construction to obtain
+   a deterministic automaton from a non-deterministic one. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Section</span> <a name="FA.PowersetConstruction"><span class="id" type="section">PowersetConstruction</span></a>.<br/>
+
+<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.PowersetConstruction.state"><span class="id" type="variable">state</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a>: <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> <a class="idref" href="automata.html#FA.PowersetConstruction.state"><span class="id" type="variable">state</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The new automaton's states are sets of the given
+   automaton' states. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Definition</span> <a name="powerset_state"><span class="id" type="definition">powerset_state</span></a> : <span class="id" type="abbreviation">finType</span> := <span class="id" type="notation">[</span><span class="id" type="notation">finType</span> <span class="id" type="notation">of</span> <span class="id" type="notation">{</span><span class="id" type="notation">set</span> <a class="idref" href="automata.html#FA.PowersetConstruction.state"><span class="id" type="variable">state</span></a><span class="id" type="notation">}</span><span class="id" type="notation">]</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The new starting state is the singleton set containing
+   the given automaton's starting state. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Definition</span> <a name="powerset_s0"><span class="id" type="definition">powerset_s0</span></a> : <a class="idref" href="automata.html#powerset_state"><span class="id" type="definition">powerset_state</span></a> := <span class="id" type="definition">set1</span> (<a class="idref" href="automata.html#nfa_s0"><span class="id" type="projection">nfa_s0</span></a> <a class="idref" href="automata.html#FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a>).<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <a name="nfa_to_dfa"><span class="id" type="definition">nfa_to_dfa</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#dfaI"><span class="id" type="constructor">dfaI</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#powerset_state"><span class="id" type="definition">powerset_state</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#powerset_s0"><span class="id" type="definition">powerset_s0</span></a> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="notation">[</span> <span class="id" type="notation">pred</span> <span class="id" type="var">X</span><span class="id" type="notation">:</span> <a class="idref" href="automata.html#powerset_state"><span class="id" type="definition">powerset_state</span></a> <span class="id" type="notation">|</span> <span class="id" type="notation">existsb</span> <span class="id" type="var">x</span><span class="id" type="notation">:</span> <a class="idref" href="automata.html#FA.PowersetConstruction.state"><span class="id" type="variable">state</span></a><span class="id" type="notation">,</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">(</span></a><span class="id" type="var">x</span> <span class="id" type="notation">\</span><span class="id" type="keyword">in</span> <span class="id" type="var">X</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a> <a class="idref" href="automata.html#FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span><span class="id" type="notation">]</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="notation">[</span><span class="id" type="keyword">fun</span> <span class="id" type="var">X</span> <span class="id" type="var">a</span> <span class="id" type="notation">=&gt;</span> <span class="id" type="definition">cover</span> <span class="id" type="notation">[</span><span class="id" type="notation">set</span> <span class="id" type="abbreviation">finset</span> (<a class="idref" href="automata.html#nfa_step"><span class="id" type="projection">nfa_step</span></a> <a class="idref" href="automata.html#FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span>) <span class="id" type="notation">|</span> <span class="id" type="var">x</span> <span class="id" type="notation">&lt;-</span> <span class="id" type="var">X</span><span class="id" type="notation">]</span> <span class="id" type="notation">]</span><br/>
+.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We prove that for every state x, the new automaton
+   accepts at least the language of the given automaton
+   when starting in a set containing x. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="nfa_to_dfa_correct1"><span class="id" type="lemma">nfa_to_dfa_correct1</span></a> (<span class="id" type="var">x</span>: <a class="idref" href="automata.html#FA.PowersetConstruction.state"><span class="id" type="variable">state</span></a>) <span class="id" type="var">w</span> (<span class="id" type="var">X</span>: <a class="idref" href="automata.html#powerset_state"><span class="id" type="definition">powerset_state</span></a>):<br/>
+&nbsp;&nbsp;<span class="id" type="var">x</span> <span class="id" type="notation">\</span><span class="id" type="keyword">in</span> <span class="id" type="var">X</span> -&gt; <a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> -&gt; <a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <a class="idref" href="automata.html#nfa_to_dfa"><span class="id" type="definition">nfa_to_dfa</span></a> <span class="id" type="var">X</span> <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">move</span> =&gt; <span class="id" type="var">H0</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">X</span> <span class="id" type="var">x</span> <span class="id" type="var">H0</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>] <span class="id" type="var">X</span> <span class="id" type="var">x</span> <span class="id" type="var">H0</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">move</span> =&gt; /= <span class="id" type="var">H1</span>. <span class="id" type="tactic">apply</span>/<span class="id" type="lemma">existsP</span>. <span class="id" type="var">exists</span> <span class="id" type="var">x</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H0</span> <span class="id" type="var">H1</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">move</span>/<a class="idref" href="automata.html#nfa_accept_lpath"><span class="id" type="lemma">nfa_accept_lpath</span></a> =&gt; [] <span class="id" type="var">xs</span> [].<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">case</span>: <span class="id" type="var">xs</span> =&gt; [|<span class="id" type="var">y</span> <span class="id" type="var">xs</span>] <span class="id" type="var">H1</span> <span class="id" type="var">H2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">by</span> [].<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span>: (<span class="id" type="var">IHw</span> <span class="id" type="var">_</span> <span class="id" type="var">y</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">cover_imset</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span>/<span class="id" type="lemma">bigcupP</span>. <span class="id" type="var">exists</span> <span class="id" type="var">x</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">exact</span>: <span class="id" type="var">H0</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">move</span>: <span class="id" type="var">H1</span> =&gt; /<span class="id" type="lemma">andP</span> [] <span class="id" type="var">H3</span> <span class="id" type="var">_</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">in_set</span>. <span class="id" type="tactic">exact</span>: <span class="id" type="var">H3</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">move</span>: <span class="id" type="var">H1</span> =&gt; /<span class="id" type="lemma">andP</span> [] <span class="id" type="var">_</span>. <span class="id" type="tactic">move</span>/<a class="idref" href="automata.html#nfa_lpath_accept"><span class="id" type="lemma">nfa_lpath_accept</span></a> =&gt; <span class="id" type="var">H3</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">exact</span>: (<span class="id" type="var">H3</span> <span class="id" type="var">H2</span>).<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Next we prove that in any set of states X, for every word w,
+   if the powerset automaton accepts w in X, there exists one
+   representative state of that set in which the given automaton
+   accepts w. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="nfa_to_dfa_correct2"><span class="id" type="lemma">nfa_to_dfa_correct2</span></a> (<span class="id" type="var">X</span>: <a class="idref" href="automata.html#powerset_state"><span class="id" type="definition">powerset_state</span></a>) <span class="id" type="var">w</span>:<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <a class="idref" href="automata.html#nfa_to_dfa"><span class="id" type="definition">nfa_to_dfa</span></a> <span class="id" type="var">X</span> <span class="id" type="var">w</span> -&gt; <span class="id" type="notation">existsb</span> <span class="id" type="var">x</span><span class="id" type="notation">,</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">(</span></a><span class="id" type="var">x</span> <span class="id" type="notation">\</span><span class="id" type="keyword">in</span> <span class="id" type="var">X</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">X</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>] <span class="id" type="var">X</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">by</span> [].<br/>
+<span class="id" type="tactic">move</span>/<span class="id" type="var">IHw</span> =&gt; /<span class="id" type="lemma">existsP</span> [] <span class="id" type="var">y</span> /<span class="id" type="lemma">andP</span> [].<br/>
+<span class="id" type="tactic">rewrite</span> /<a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> /<a class="idref" href="automata.html#nfa_to_dfa"><span class="id" type="definition">nfa_to_dfa</span></a> =&gt; /=. <span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">cover_imset</span>.<br/>
+<span class="id" type="tactic">move</span>/<span class="id" type="lemma">bigcupP</span> =&gt; [] <span class="id" type="var">x</span> <span class="id" type="var">H0</span> <span class="id" type="var">H1</span> <span class="id" type="var">H2</span>.<br/>
+<span class="id" type="tactic">apply</span>/<span class="id" type="lemma">existsP</span>. <span class="id" type="var">exists</span> <span class="id" type="var">x</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H0</span> <span class="id" type="lemma">andTb</span>.<br/>
+<span class="id" type="tactic">apply</span>/<span class="id" type="lemma">existsP</span>. <span class="id" type="var">exists</span> <span class="id" type="var">y</span>. <span class="id" type="tactic">move</span>: <span class="id" type="var">H1</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">in_set</span> =&gt; -&gt;.<br/>
+<span class="id" type="tactic">exact</span>: <span class="id" type="var">H2</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Finally, we prove that the language of the powerset
+   automaton is exactly the language of the given
+   automaton. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="nfa_to_dfa_correct"><span class="id" type="lemma">nfa_to_dfa_correct</span></a> <span class="id" type="var">w</span> : <a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">w</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <a class="idref" href="automata.html#dfa_lang"><span class="id" type="definition">dfa_lang</span></a> <a class="idref" href="automata.html#nfa_to_dfa"><span class="id" type="definition">nfa_to_dfa</span></a> <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">apply</span>/<span class="id" type="lemma">idP</span>/<span class="id" type="lemma">idP</span> =&gt; /=.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span>: <a class="idref" href="automata.html#nfa_to_dfa_correct1"><span class="id" type="lemma">nfa_to_dfa_correct1</span></a>. <span class="id" type="tactic">by</span> <span class="id" type="tactic">apply</span>/<span class="id" type="lemma">set1P</span>.<br/>
+<span class="id" type="tactic">by</span> <span class="id" type="tactic">move</span>/<a class="idref" href="automata.html#nfa_to_dfa_correct2"><span class="id" type="lemma">nfa_to_dfa_correct2</span></a> =&gt; /<span class="id" type="lemma">existsP</span> [] <span class="id" type="var">x</span> /<span class="id" type="lemma">andP</span> [] /<span class="id" type="lemma">set1P</span> -&gt;.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <a class="idref" href="automata.html#FA.PowersetConstruction"><span class="id" type="section">PowersetConstruction</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Embedding deterministic automata in non-deterministic automata. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Section</span> <a name="FA.Embed"><span class="id" type="section">Embed</span></a>.<br/>
+
+<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.Embed.state"><span class="id" type="variable">state</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.Embed.A"><span class="id" type="variable">A</span></a>: <a class="idref" href="automata.html#dfa"><span class="id" type="record">dfa</span></a> <a class="idref" href="automata.html#FA.Embed.state"><span class="id" type="variable">state</span></a>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <a name="dfa_to_nfa"><span class="id" type="definition">dfa_to_nfa</span></a> : <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> <a class="idref" href="automata.html#FA.Embed.state"><span class="id" type="variable">state</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfaI"><span class="id" type="constructor">nfaI</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#FA.Embed.state"><span class="id" type="variable">state</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="automata.html#dfa_s0"><span class="id" type="projection">dfa_s0</span></a> <a class="idref" href="automata.html#FA.Embed.A"><span class="id" type="variable">A</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="automata.html#dfa_fin"><span class="id" type="projection">dfa_fin</span></a> <a class="idref" href="automata.html#FA.Embed.A"><span class="id" type="variable">A</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="notation">[</span><span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="notation">=&gt;</span> <span class="id" type="keyword">fun</span> <span class="id" type="var">y</span> =&gt; <span class="id" type="var">y</span> <span class="id" type="notation">==</span> <a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.Embed.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="notation">]</span><br/>
+.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We proof that dfa_to_nfa accepts the same language as
+   the given automaton in any state. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="dfa_to_nfa_correct'"><span class="id" type="lemma">dfa_to_nfa_correct'</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> : <a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <a class="idref" href="automata.html#FA.Embed.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#dfa_to_nfa"><span class="id" type="definition">dfa_to_nfa</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">x</span> =&gt; [|<span class="id" type="var">b</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>] <span class="id" type="var">x</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">by</span> [].<br/>
+<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHw</span>.<br/>
+<span class="id" type="tactic">apply</span>/<span class="id" type="lemma">idP</span>/<span class="id" type="lemma">existsP</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">move</span> =&gt; <span class="id" type="var">H0</span>. <span class="id" type="var">exists</span> (<a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.Embed.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">b</span>). <span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">eq_refl</span> <span class="id" type="var">H0</span>.<br/>
+<span class="id" type="tactic">by</span> <span class="id" type="tactic">move</span> =&gt; [] <span class="id" type="var">y</span> /<span class="id" type="lemma">andP</span> [] /<span class="id" type="lemma">eqP</span> -&gt;.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We proof that dfa_to_nfa accepts the same language
+   as the given automaton in the starting state, i.e. their
+   languages are equal. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="dfa_to_nfa_correct"><span class="id" type="lemma">dfa_to_nfa_correct</span></a> <span class="id" type="var">w</span> : <a class="idref" href="automata.html#dfa_lang"><span class="id" type="definition">dfa_lang</span></a> <a class="idref" href="automata.html#FA.Embed.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">w</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#dfa_to_nfa"><span class="id" type="definition">dfa_to_nfa</span></a> <span class="id" type="var">w</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">exact</span>: <a class="idref" href="automata.html#dfa_to_nfa_correct'"><span class="id" type="lemma">dfa_to_nfa_correct'</span></a>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <a class="idref" href="automata.html#FA.Embed"><span class="id" type="section">Embed</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Operations on non-deterministic automata. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Section</span> <a name="FA.DFAOps"><span class="id" type="section">DFAOps</span></a>.<br/>
+
+<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.DFAOps.state1"><span class="id" type="variable">state1</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.DFAOps.A1"><span class="id" type="variable">A1</span></a>: <a class="idref" href="automata.html#dfa"><span class="id" type="record">dfa</span></a> <a class="idref" href="automata.html#FA.DFAOps.state1"><span class="id" type="variable">state1</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Complement automaton 
+</div>
+<div class="code">
+
+<br/>
+</div>
+
+<div class="doc">
+The only change needed is to negate the finality predicate. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Definition</span> <a name="fin_compl"><span class="id" type="definition">fin_compl</span></a> := <span class="id" type="notation">[</span> <span class="id" type="keyword">fun</span> <span class="id" type="var">x1</span> <span class="id" type="notation">=&gt;</span> <span class="id" type="notation">~~</span> <a class="idref" href="automata.html#dfa_fin"><span class="id" type="projection">dfa_fin</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x1</span> <span class="id" type="notation">]</span>.<br/>
+</div>
+
+<div class="doc">
+We construct the resulting automaton. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Definition</span> <a name="dfa_compl"><span class="id" type="definition">dfa_compl</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#dfaI"><span class="id" type="constructor">dfaI</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#FA.DFAOps.state1"><span class="id" type="variable">state1</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="automata.html#dfa_s0"><span class="id" type="projection">dfa_s0</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#fin_compl"><span class="id" type="definition">fin_compl</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We proof that the complement automaton accepts exactly
+   the words not accepted by the original automaton. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="dfa_compl_correct'"><span class="id" type="lemma">dfa_compl_correct'</span></a> <span class="id" type="var">w</span> <span class="id" type="var">x</span>:<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <span class="id" type="notation">~~</span> <a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <a class="idref" href="automata.html#dfa_compl"><span class="id" type="definition">dfa_compl</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">x</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>] <span class="id" type="var">x</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">by</span> <span class="id" type="tactic">apply</span>/<span class="id" type="lemma">idP</span>/<span class="id" type="lemma">negPn</span>.<br/>
+<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHw</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <a name="dfa_compl_correct"><span class="id" type="lemma">dfa_compl_correct</span></a> <span class="id" type="var">w</span>:<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#dfa_lang"><span class="id" type="definition">dfa_lang</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">w</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <span class="id" type="notation">~~</span> <a class="idref" href="automata.html#dfa_lang"><span class="id" type="definition">dfa_lang</span></a> <a class="idref" href="automata.html#dfa_compl"><span class="id" type="definition">dfa_compl</span></a> <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">exact</span>: <a class="idref" href="automata.html#dfa_compl_correct'"><span class="id" type="lemma">dfa_compl_correct'</span></a>. <span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Operations on two automata. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Section</span> <a name="FA.DFAOps.BinaryOps"><span class="id" type="section">BinaryOps</span></a>.<br/>
+
+<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.DFAOps.BinaryOps.state2"><span class="id" type="variable">state2</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.DFAOps.BinaryOps.A2"><span class="id" type="variable">A2</span></a>: <a class="idref" href="automata.html#dfa"><span class="id" type="record">dfa</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.state2"><span class="id" type="variable">state2</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Cross product of the two state sets 
+</div>
+<div class="code">
+<span class="id" type="keyword">Definition</span> <a name="state_prod"><span class="id" type="definition">state_prod</span></a> := <span class="id" type="definition">prod_finType</span> <a class="idref" href="automata.html#FA.DFAOps.state1"><span class="id" type="variable">state1</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.state2"><span class="id" type="variable">state2</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Disjunction automaton 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <a name="step_disj"><span class="id" type="definition">step_disj</span></a> (<span class="id" type="var">x</span>: <a class="idref" href="automata.html#state_prod"><span class="id" type="definition">state_prod</span></a>) <span class="id" type="var">a</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">x1</span>, <span class="id" type="var">x2</span>) := <span class="id" type="var">x</span> <span class="id" type="keyword">in</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">(</span></a><a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x1</span> <span class="id" type="var">a</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">,</span></a> <a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">x2</span> <span class="id" type="var">a</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">)</span></a>.<br/>
+<span class="id" type="keyword">Definition</span> <a name="dfa_disj"><span class="id" type="definition">dfa_disj</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#dfaI"><span class="id" type="constructor">dfaI</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#state_prod"><span class="id" type="definition">state_prod</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">(</span></a><a class="idref" href="automata.html#dfa_s0"><span class="id" type="projection">dfa_s0</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">,</span></a> <a class="idref" href="automata.html#dfa_s0"><span class="id" type="projection">dfa_s0</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.A2"><span class="id" type="variable">A2</span></a><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">)</span></a> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="keyword">fun</span> <span class="id" type="var">q</span> =&gt; <span class="id" type="keyword">let</span> (<span class="id" type="var">x1</span>,<span class="id" type="var">x2</span>) := <span class="id" type="var">q</span> <span class="id" type="keyword">in</span> <a class="idref" href="automata.html#dfa_fin"><span class="id" type="projection">dfa_fin</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x1</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'||'_x"><span class="id" type="notation">||</span></a> <a class="idref" href="automata.html#dfa_fin"><span class="id" type="projection">dfa_fin</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">x2</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#step_disj"><span class="id" type="definition">step_disj</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Correctness w.r.t. any state. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="dfa_disj_correct'"><span class="id" type="lemma">dfa_disj_correct'</span></a> <span class="id" type="var">w</span> <span class="id" type="var">x1</span> <span class="id" type="var">x2</span> :<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x1</span> <span class="id" type="var">w</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'||'_x"><span class="id" type="notation">||</span></a> <a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">x2</span> <span class="id" type="var">w</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <a class="idref" href="automata.html#dfa_disj"><span class="id" type="definition">dfa_disj</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">(</span></a><span class="id" type="var">x1</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">,</span></a> <span class="id" type="var">x2</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">)</span></a> <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">x1</span> <span class="id" type="var">x2</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>].<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">by</span> [].<br/>
+<span class="id" type="tactic">move</span> =&gt; <span class="id" type="var">x1</span> <span class="id" type="var">x2</span>. <span class="id" type="tactic">by</span> <span class="id" type="tactic">exact</span>: <span class="id" type="var">IHw</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Language correctness. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="dfa_disj_correct"><span class="id" type="lemma">dfa_disj_correct</span></a> <span class="id" type="var">w</span>:<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#dfa_lang"><span class="id" type="definition">dfa_lang</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">w</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'||'_x"><span class="id" type="notation">||</span></a> <a class="idref" href="automata.html#dfa_lang"><span class="id" type="definition">dfa_lang</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">w</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <a class="idref" href="automata.html#dfa_lang"><span class="id" type="definition">dfa_lang</span></a> <a class="idref" href="automata.html#dfa_disj"><span class="id" type="definition">dfa_disj</span></a> <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">exact</span>: <a class="idref" href="automata.html#dfa_disj_correct'"><span class="id" type="lemma">dfa_disj_correct'</span></a>. <span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Conjunction 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <a name="step_conj"><span class="id" type="definition">step_conj</span></a> (<span class="id" type="var">x</span>: <a class="idref" href="automata.html#state_prod"><span class="id" type="definition">state_prod</span></a>) <span class="id" type="var">a</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">x1</span>, <span class="id" type="var">x2</span>) := <span class="id" type="var">x</span> <span class="id" type="keyword">in</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">(</span></a><a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x1</span> <span class="id" type="var">a</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">,</span></a> <a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">x2</span> <span class="id" type="var">a</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">)</span></a>.<br/>
+<span class="id" type="keyword">Definition</span> <a name="dfa_conj"><span class="id" type="definition">dfa_conj</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#dfaI"><span class="id" type="constructor">dfaI</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#state_prod"><span class="id" type="definition">state_prod</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">(</span></a><a class="idref" href="automata.html#dfa_s0"><span class="id" type="projection">dfa_s0</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">,</span></a> <a class="idref" href="automata.html#dfa_s0"><span class="id" type="projection">dfa_s0</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.A2"><span class="id" type="variable">A2</span></a><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">)</span></a> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="keyword">fun</span> <span class="id" type="var">q</span> =&gt; <span class="id" type="keyword">let</span> (<span class="id" type="var">x1</span>,<span class="id" type="var">x2</span>) := <span class="id" type="var">q</span> <span class="id" type="keyword">in</span> <a class="idref" href="automata.html#dfa_fin"><span class="id" type="projection">dfa_fin</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x1</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#dfa_fin"><span class="id" type="projection">dfa_fin</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">x2</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#step_disj"><span class="id" type="definition">step_disj</span></a><br/>
+.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Correctness w.r.t. any state. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="dfa_conj_correct'"><span class="id" type="lemma">dfa_conj_correct'</span></a> <span class="id" type="var">w</span> <span class="id" type="var">x1</span> <span class="id" type="var">x2</span> :<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x1</span> <span class="id" type="var">w</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">x2</span> <span class="id" type="var">w</span><br/>
+&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <a class="idref" href="automata.html#dfa_conj"><span class="id" type="definition">dfa_conj</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">(</span></a><span class="id" type="var">x1</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">,</span></a> <span class="id" type="var">x2</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:core_scope:'('_x_','_x_','_'..'_','_x_')'"><span class="id" type="notation">)</span></a> <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">x1</span> <span class="id" type="var">x2</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>].<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">by</span> [].<br/>
+<span class="id" type="tactic">move</span> =&gt; <span class="id" type="var">x1</span> <span class="id" type="var">x2</span>.<br/>
+<span class="id" type="tactic">exact</span>: <span class="id" type="var">IHw</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Language correctness. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="dfa_conj_correct"><span class="id" type="lemma">dfa_conj_correct</span></a> <span class="id" type="var">w</span>:<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#dfa_lang"><span class="id" type="definition">dfa_lang</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">w</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#dfa_lang"><span class="id" type="definition">dfa_lang</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">w</span><br/>
+&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'='_x"><span class="id" type="notation">=</span></a> <a class="idref" href="automata.html#dfa_lang"><span class="id" type="definition">dfa_lang</span></a> <a class="idref" href="automata.html#dfa_conj"><span class="id" type="definition">dfa_conj</span></a> <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">exact</span>: <a class="idref" href="automata.html#dfa_conj_correct'"><span class="id" type="lemma">dfa_conj_correct'</span></a>. <span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps"><span class="id" type="section">BinaryOps</span></a>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <a class="idref" href="automata.html#FA.DFAOps"><span class="id" type="section">DFAOps</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Operations on non-deterministic automata. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Section</span> <a name="FA.NFAOps"><span class="id" type="section">NFAOps</span></a>.<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.NFAOps.state1"><span class="id" type="variable">state1</span></a> <a name="FA.NFAOps.state2"><span class="id" type="variable">state2</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.NFAOps.A1"><span class="id" type="variable">A1</span></a>: <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> <a class="idref" href="automata.html#FA.NFAOps.state1"><span class="id" type="variable">state1</span></a>.<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.NFAOps.A2"><span class="id" type="variable">A2</span></a>: <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> <a class="idref" href="automata.html#FA.NFAOps.state2"><span class="id" type="variable">state2</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Concatenation of two non-deterministic automata. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <a name="state_conc"><span class="id" type="definition">state_conc</span></a> : <span class="id" type="abbreviation">finType</span> := <span class="id" type="definition">sum_finType</span> <a class="idref" href="automata.html#FA.NFAOps.state1"><span class="id" type="variable">state1</span></a> <a class="idref" href="automata.html#FA.NFAOps.state2"><span class="id" type="variable">state2</span></a>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <a name="step_conc"><span class="id" type="definition">step_conc</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="var">y</span> :=<br/>
+<span class="id" type="keyword">match</span> <span class="id" type="var">x</span>,<span class="id" type="var">y</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inl"><span class="id" type="constructor">inl</span></a> <span class="id" type="var">x</span>, <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inl"><span class="id" type="constructor">inl</span></a> <span class="id" type="var">y</span> =&gt; <a class="idref" href="automata.html#nfa_step"><span class="id" type="projection">nfa_step</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="var">y</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inl"><span class="id" type="constructor">inl</span></a> <span class="id" type="var">x</span>, <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inr"><span class="id" type="constructor">inr</span></a> <span class="id" type="var">y</span> =&gt; <a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_step"><span class="id" type="projection">nfa_step</span></a> <a class="idref" href="automata.html#FA.NFAOps.A2"><span class="id" type="variable">A2</span></a> (<a class="idref" href="automata.html#nfa_s0"><span class="id" type="projection">nfa_s0</span></a> <a class="idref" href="automata.html#FA.NFAOps.A2"><span class="id" type="variable">A2</span></a>) <span class="id" type="var">a</span> <span class="id" type="var">y</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inr"><span class="id" type="constructor">inr</span></a> <span class="id" type="var">x</span>, <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inr"><span class="id" type="constructor">inr</span></a> <span class="id" type="var">y</span> =&gt; <a class="idref" href="automata.html#nfa_step"><span class="id" type="projection">nfa_step</span></a> <a class="idref" href="automata.html#FA.NFAOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="var">y</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inr"><span class="id" type="constructor">inr</span></a> <span class="id" type="var">x</span>, <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inl"><span class="id" type="constructor">inl</span></a> <span class="id" type="var">y</span> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#false"><span class="id" type="constructor">false</span></a><br/>
+<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <a name="fin_conc"><span class="id" type="definition">fin_conc</span></a> (<span class="id" type="var">x</span>: <a class="idref" href="automata.html#state_conc"><span class="id" type="definition">state_conc</span></a>) : <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#bool"><span class="id" type="inductive">bool</span></a> :=<br/>
+<span class="id" type="keyword">match</span> <span class="id" type="var">x</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inl"><span class="id" type="constructor">inl</span></a> <span class="id" type="var">x</span> =&gt; <a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a> <a class="idref" href="automata.html#FA.NFAOps.A2"><span class="id" type="variable">A2</span></a> (<a class="idref" href="automata.html#nfa_s0"><span class="id" type="projection">nfa_s0</span></a> <a class="idref" href="automata.html#FA.NFAOps.A2"><span class="id" type="variable">A2</span></a>)<br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inr"><span class="id" type="constructor">inr</span></a> <span class="id" type="var">x</span> =&gt; <a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a> <a class="idref" href="automata.html#FA.NFAOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">x</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <a name="s0_conc"><span class="id" type="definition">s0_conc</span></a> : <a class="idref" href="automata.html#state_conc"><span class="id" type="definition">state_conc</span></a> := <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inl"><span class="id" type="constructor">inl</span></a> <span class="id" type="var">_</span> (<a class="idref" href="automata.html#nfa_s0"><span class="id" type="projection">nfa_s0</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a>).<br/>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <a name="nfa_conc"><span class="id" type="definition">nfa_conc</span></a> : <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> <a class="idref" href="automata.html#state_conc"><span class="id" type="definition">state_conc</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfaI"><span class="id" type="constructor">nfaI</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#state_conc"><span class="id" type="definition">state_conc</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#s0_conc"><span class="id" type="definition">s0_conc</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#fin_conc"><span class="id" type="definition">fin_conc</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#step_conc"><span class="id" type="definition">step_conc</span></a>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <a name="nfa_conc_cont"><span class="id" type="lemma">nfa_conc_cont</span></a> <span class="id" type="var">x</span> <span class="id" type="var">xs</span> <span class="id" type="var">w</span>:<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lpath"><span class="id" type="definition">nfa_lpath</span></a> <a class="idref" href="automata.html#FA.NFAOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">x</span> <span class="id" type="var">xs</span> <span class="id" type="var">w</span><br/>
+&nbsp;&nbsp;-&gt; <a class="idref" href="automata.html#nfa_lpath"><span class="id" type="definition">nfa_lpath</span></a> <a class="idref" href="automata.html#nfa_conc"><span class="id" type="definition">nfa_conc</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inr"><span class="id" type="constructor">inr</span></a> <span class="id" type="var">_</span> <span class="id" type="var">x</span>) (<span class="id" type="definition">map</span> (@<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inr"><span class="id" type="constructor">inr</span></a> <a class="idref" href="automata.html#FA.NFAOps.state1"><span class="id" type="variable">state1</span></a> <a class="idref" href="automata.html#FA.NFAOps.state2"><span class="id" type="variable">state2</span></a>) <span class="id" type="var">xs</span>) <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">xs</span> <span class="id" type="var">x</span> <span class="id" type="var">w</span> =&gt; [|<span class="id" type="var">y</span> <span class="id" type="var">xs</span> <span class="id" type="var">IHxs</span>] <span class="id" type="var">x</span> <span class="id" type="var">w</span>; <span class="id" type="tactic">case</span>: <span class="id" type="var">w</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span>] =&gt; //.<br/>
+<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">by</span> <span class="id" type="tactic">move</span>/<span class="id" type="lemma">andP</span> =&gt; [] -&gt; /<span class="id" type="var">IHxs</span> -&gt;.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <a name="nfa_conc_fin1"><span class="id" type="lemma">nfa_conc_fin1</span></a> <span class="id" type="var">x1</span> <span class="id" type="var">w</span>:<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x1</span> -&gt;<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#FA.NFAOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">w</span> -&gt;<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#nfa_conc"><span class="id" type="definition">nfa_conc</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inl"><span class="id" type="constructor">inl</span></a> <span class="id" type="var">_</span> <span class="id" type="var">x1</span>) <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">move</span> =&gt; <span class="id" type="var">H0</span> /<a class="idref" href="automata.html#nfa_accept_lpath"><span class="id" type="lemma">nfa_accept_lpath</span></a> [] <span class="id" type="var">ys</span>.<br/>
+<span class="id" type="tactic">elim</span>: <span class="id" type="var">ys</span> <span class="id" type="var">w</span> <span class="id" type="var">x1</span> <span class="id" type="var">H0</span> =&gt; [|<span class="id" type="var">y</span> <span class="id" type="var">ys</span> <span class="id" type="var">IHys</span>] [|<span class="id" type="var">a</span> <span class="id" type="var">w</span>] <span class="id" type="var">x1</span> <span class="id" type="var">H0</span> /<span class="id" type="lemma">andP</span> //=.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">by</span> <span class="id" type="tactic">move</span>: <span class="id" type="var">H0</span> =&gt; -&gt; -&gt;.<br/>
+<span class="id" type="tactic">move</span>/<span class="id" type="lemma">andP</span> =&gt; [] /<span class="id" type="lemma">andP</span> [] <span class="id" type="var">H1</span> <span class="id" type="var">H2</span> <span class="id" type="var">H3</span>.<br/>
+<span class="id" type="tactic">apply</span>/<span class="id" type="lemma">existsP</span>. <span class="id" type="var">exists</span> (<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inr"><span class="id" type="constructor">inr</span></a> <span class="id" type="var">_</span> <span class="id" type="var">y</span>).<br/>
+<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H0</span> <span class="id" type="var">H1</span> =&gt; /=.<br/>
+<span class="id" type="tactic">apply</span>: <a class="idref" href="automata.html#nfa_lpath_accept"><span class="id" type="lemma">nfa_lpath_accept</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <a class="idref" href="automata.html#nfa_conc_cont"><span class="id" type="lemma">nfa_conc_cont</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">by</span> <span class="id" type="var">eassumption</span>.<br/>
+<span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">last_map</span> /<a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <a name="nfa_conc_correct1"><span class="id" type="lemma">nfa_conc_correct1</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span> <span class="id" type="var">w2</span>:<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span> -&gt;<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#FA.NFAOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">w2</span> -&gt;<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#nfa_conc"><span class="id" type="definition">nfa_conc</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inl"><span class="id" type="constructor">inl</span></a> <span class="id" type="var">_</span> <span class="id" type="var">x</span>) (<span class="id" type="var">w1</span> <span class="id" type="notation">++</span> <span class="id" type="var">w2</span>).<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">w1</span> <span class="id" type="var">w2</span> <span class="id" type="var">x</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w1</span> <span class="id" type="var">IHw1</span>] <span class="id" type="var">w2</span> <span class="id" type="var">x</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">move</span> =&gt; <span class="id" type="var">H0</span> /<a class="idref" href="automata.html#nfa_accept_lpath"><span class="id" type="lemma">nfa_accept_lpath</span></a> [] <span class="id" type="var">xs</span> [] <span class="id" type="var">H1</span> <span class="id" type="var">H2</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">move</span>: (<a class="idref" href="automata.html#nfa_conc_cont"><span class="id" type="lemma">nfa_conc_cont</span></a> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">H1</span>) =&gt; <span class="id" type="var">H3</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span>/<a class="idref" href="automata.html#nfa_accept_cat"><span class="id" type="lemma">nfa_accept_cat</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">exists</span> <span class="id" type="notation">[::]</span> =&gt; /=.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span>: <a class="idref" href="automata.html#nfa_conc_fin1"><span class="id" type="lemma">nfa_conc_fin1</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">exact</span>: <span class="id" type="var">H0</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span>: <a class="idref" href="automata.html#nfa_lpath_accept"><span class="id" type="lemma">nfa_lpath_accept</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">by</span> <span class="id" type="var">eassumption</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">exact</span>: <span class="id" type="var">H2</span>.<br/>
+<span class="id" type="tactic">move</span> =&gt; /<span class="id" type="lemma">existsP</span> [] <span class="id" type="var">y</span> /<span class="id" type="lemma">andP</span> [] <span class="id" type="var">H1</span> <span class="id" type="var">H2</span> <span class="id" type="var">H3</span> /=.<br/>
+<span class="id" type="tactic">apply</span>/<span class="id" type="lemma">existsP</span>. <span class="id" type="var">exists</span> (<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inl"><span class="id" type="constructor">inl</span></a> <span class="id" type="var">_</span> <span class="id" type="var">y</span>).<br/>
+<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H1</span> =&gt; /=.<br/>
+<span class="id" type="tactic">apply</span>: <span class="id" type="var">IHw1</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">exact</span>: <span class="id" type="var">H2</span>.<br/>
+<span class="id" type="tactic">exact</span>: <span class="id" type="var">H3</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <a name="nfa_conc_correct2"><span class="id" type="lemma">nfa_conc_correct2</span></a> <span class="id" type="var">X</span> <span class="id" type="var">w</span> :<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#nfa_conc"><span class="id" type="definition">nfa_conc</span></a> <span class="id" type="var">X</span> <span class="id" type="var">w</span> -&gt;<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">X</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inl"><span class="id" type="constructor">inl</span></a> <span class="id" type="var">x</span> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">exists</span></a> <span class="id" type="var">w1</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">,</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">exists</span></a> <span class="id" type="var">w2</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">,</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">(</span></a><span class="id" type="var">w</span> <span class="id" type="notation">==</span> <span class="id" type="var">w1</span> <span class="id" type="notation">++</span> <span class="id" type="var">w2</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">(</span></a><a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#FA.NFAOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">w2</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inr"><span class="id" type="constructor">inr</span></a> <span class="id" type="var">x</span> =&gt; <a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#FA.NFAOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">X</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>] [<span class="id" type="var">x</span>|<span class="id" type="var">x</span>] //=.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">move</span> =&gt; /<span class="id" type="lemma">andP</span> [] <span class="id" type="var">H0</span> <span class="id" type="var">H1</span>. <span class="id" type="var">exists</span> <span class="id" type="notation">[::]</span>. <span class="id" type="var">exists</span> <span class="id" type="notation">[::]</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H0</span> <span class="id" type="var">H1</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">move</span>/<span class="id" type="lemma">existsP</span> =&gt; [] [<span class="id" type="var">y</span>|<span class="id" type="var">y</span>] /<span class="id" type="lemma">andP</span> [] <span class="id" type="var">H0</span> /<span class="id" type="var">IHw</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">move</span> =&gt; [] <span class="id" type="var">w1</span> [] <span class="id" type="var">w2</span> /<span class="id" type="lemma">andP</span> [] /<span class="id" type="lemma">andP</span> [] /<span class="id" type="lemma">eqP</span> <span class="id" type="var">H1</span> <span class="id" type="var">H2</span> /= <span class="id" type="var">H3</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">exists</span> (<span class="id" type="var">a</span><span class="id" type="notation">::</span><span class="id" type="var">w1</span>). <span class="id" type="var">exists</span> <span class="id" type="var">w2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H1</span> <span class="id" type="lemma">eq_refl</span> <span class="id" type="var">H3</span> <span class="id" type="lemma">andTb</span> <span class="id" type="lemma">andbT</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span>/<span class="id" type="lemma">existsP</span>. <span class="id" type="var">exists</span> <span class="id" type="var">y</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">move</span>: <span class="id" type="var">H0</span> =&gt; /= -&gt;. <span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">andTb</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">exact</span> <span class="id" type="var">H2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">move</span>: <span class="id" type="var">H0</span> =&gt; /= /<span class="id" type="lemma">andP</span> [] <span class="id" type="var">H0</span> <span class="id" type="var">H1</span> /= <span class="id" type="var">H2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">exists</span> <span class="id" type="notation">[::]</span>. <span class="id" type="var">exists</span> (<span class="id" type="var">a</span><span class="id" type="notation">::</span><span class="id" type="var">w</span>) =&gt; /=.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H0</span> <span class="id" type="lemma">eq_refl</span> 2!<span class="id" type="lemma">andTb</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span>/<span class="id" type="lemma">existsP</span>. <span class="id" type="var">exists</span> <span class="id" type="var">y</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H1</span> <span class="id" type="var">H2</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">move</span>/<span class="id" type="lemma">existsP</span> =&gt; [] [<span class="id" type="var">y</span>|<span class="id" type="var">y</span>] /<span class="id" type="lemma">andP</span> [] <span class="id" type="var">H0</span> /<span class="id" type="var">IHw</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">by</span> [].<br/>
+<span class="id" type="tactic">move</span>: <span class="id" type="var">H0</span> =&gt; /= <span class="id" type="var">H0</span> <span class="id" type="var">H1</span>.<br/>
+<span class="id" type="tactic">apply</span>/<span class="id" type="lemma">existsP</span>. <span class="id" type="var">exists</span> <span class="id" type="var">y</span>.<br/>
+<span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H0</span> <span class="id" type="var">H1</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <a class="idref" href="automata.html#FA.NFAOps"><span class="id" type="section">NFAOps</span></a>.<br/>
+
+<br/>
+<span class="id" type="keyword">End</span> <a class="idref" href="automata.html#FA"><span class="id" type="section">FA</span></a>.<br/>
+
+<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>
