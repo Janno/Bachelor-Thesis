@@ -188,7 +188,7 @@ Proof. split.
   exists (y::ys) => /=. by rewrite H0 H1 H2.
 elim: w1 w2 x => [|a w1 IHw1] w2 x; move => [] [|y ys] /andP [] H0 H1 //.
 move: H0 => /= /andP [] H2 H3. 
-apply/existsP. exists y. rewrite H2 => /=.
+apply/existsP. exists y. rewrite H2 /=.
 apply: IHw1.
 exists ys. by rewrite H3 H1.
 Qed.
@@ -256,7 +256,7 @@ Lemma nfa_to_dfa_correct2 (X: powerset_state) w:
 Proof. elim: w X => [|a w IHw] X.
   by [].
 move/IHw => /existsP [] y /andP [].
-rewrite /dfa_step /nfa_to_dfa => /=. rewrite cover_imset.
+rewrite /dfa_step /nfa_to_dfa /=. rewrite cover_imset.
 move/bigcupP => [] x H0 H1 H2.
 apply/existsP. exists x. rewrite H0 andTb.
 apply/existsP. exists y. move: H1. rewrite in_set => ->.
@@ -469,7 +469,7 @@ elim: ys w x1 H0 => [|y ys IHys] [|a w] x1 H0 /andP //=.
   by move: H0 => -> ->.
 move/andP => [] /andP [] H1 H2 H3.
 apply/existsP. exists (inr _ y).
-rewrite H0 H1 => /=.
+rewrite H0 H1 /=.
 apply: nfa_lpath_accept.
   apply nfa_conc_cont.
   by eassumption.
@@ -496,7 +496,7 @@ Proof. elim: w1 w2 x => [|a w1 IHw1] w2 x.
   exact: H2.
 move => /existsP [] y /andP [] H1 H2 H3 /=.
 apply/existsP. exists (inl _ y).
-rewrite H1 => /=.
+rewrite H1 /=.
 apply: IHw1.
   exact: H2.
 exact: H3.
@@ -584,12 +584,12 @@ Proof. elim: xs x y a w => [|z xs IHxs] x y a [|b w] //=.
         apply/orP. right. rewrite eq_refl.
         apply/existsP. exists y. by rewrite H0 H1.
       move => H1 /existsP [] z /andP [] H2 H3. move: H1 H0 => -> H4.
-      apply/orP. right. rewrite eq_refl => /=.
+      apply/orP. right. rewrite eq_refl /=.
       apply/existsP. exists z. by rewrite H2 H3.
     by rewrite andbF.
   by rewrite andbF.
 rewrite -(last_cons y). move => H0 /andP [] H1 /andP [] H3 H4.
-rewrite H1 => /=. apply: IHxs.
+rewrite H1 /=. apply: IHxs.
   by rewrite H0.
 simpl. by rewrite H3 H4.
 Qed.
@@ -609,18 +609,18 @@ Lemma nfa_plus_correct w1 w2:
   nfa_lang nfa_plus w2 ->
   nfa_lang nfa_plus (w1 ++ w2).
 Proof.
-move => /nfa_accept_lpath [] [|x xs] []; case: w1 => [|a w1].
-      by [].
-    by [].
-  by [].
+move => /nfa_accept_lpath [] [|x xs] []; case: w1 => [|a w1] => //.
 move => H0 H1 H2.
 apply/(nfa_accept_cat).
 exists (rcons (belast x xs) (nfa_s0 A1)).
 apply/andP. split.
-  apply:nfa_plus_lpath.
+  apply: nfa_plus_lpath.
     exact: H1.
-
-Admitted.
+  apply: nfa_plus_cont.
+  exact: H0.
+rewrite last_rcons.
+exact H2.
+Qed.
 
 
 
