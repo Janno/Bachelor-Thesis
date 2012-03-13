@@ -636,7 +636,34 @@ Lemma nfa_plus_correct2 x w :
   nfa_accept nfa_plus x w ->
   ((exists w1, exists w2, (w == w1 ++ w2) && (nfa_accept A1 x w1) && nfa_lang nfa_plus w2
     ) \/ nfa_accept A1 x w ).
-Proof.
+Proof. elim: w x => [|a w IHw] x.
+  move => H0. right.
+  exact: H0.
+case/existsP => y /andP [H0 H1].
+case: (IHw _ H1) => [[w1 [w2 /andP [/andP [/eqP H2 H3] H4]]]|H2].
+  move: H0 => /orP [H5|].
+    left. exists (a::w1). exists w2.
+    rewrite H2 eq_refl H4 andbT /=.
+    apply/existsP. exists y.
+    by rewrite H5 H3.
+  move/andP => [] H5 /existsP [] z /andP [H6 H7].
+  move: H5 H1 H3 => /eqP -> H1 H3.
+  left. exists ([::a]). exists w.
+  rewrite eq_refl /=. apply/andP. split.
+    apply/existsP. exists z. by rewrite H6 H7.
+  exact: H1.
+move: H0 => /orP [H5|].
+  right => /=. apply/existsP. exists y.
+  by rewrite H5 H2.
+move/andP => [/eqP H3 /existsP [z /andP [H4 H5]]].
+move: H3 H1 H2 => -> H1 H2.
+left. exists [::a]. exists w.
+rewrite eq_refl /=. apply/andP. split.
+  apply/existsP. exists z. by rewrite H5 H4.
+exact H1.
+Qed.
+  
+  
 
 
 

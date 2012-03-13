@@ -993,7 +993,7 @@ We prove that every path of A1 can be mapped to a path
 <span class="id" type="keyword">Qed</span>.<br/>
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <a name="nfa_plus_correct1'"><span class="id" type="lemma">nfa_plus_correct1'</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span> :<br/>
+<span class="id" type="keyword">Lemma</span> <a name="nfa_plus_correct0'"><span class="id" type="lemma">nfa_plus_correct0'</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span> :<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span> -&gt;<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
@@ -1003,7 +1003,13 @@ We prove that every path of A1 can be mapped to a path
 <span class="id" type="keyword">Qed</span>.<br/>
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <a name="nfa_plus_correct"><span class="id" type="lemma">nfa_plus_correct</span></a> <span class="id" type="var">w1</span> <span class="id" type="var">w2</span>:<br/>
+<span class="id" type="keyword">Lemma</span> <a name="nfa_plus_correct0"><span class="id" type="lemma">nfa_plus_correct0</span></a> <span class="id" type="var">w</span> :<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">w</span> -&gt;<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> <span class="id" type="var">w</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">exact</span>: <a class="idref" href="automata.html#nfa_plus_correct0'"><span class="id" type="lemma">nfa_plus_correct0'</span></a>. <span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <a name="nfa_plus_correct1"><span class="id" type="lemma">nfa_plus_correct1</span></a> <span class="id" type="var">w1</span> <span class="id" type="var">w2</span>:<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">w1</span> -&gt;<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> <span class="id" type="var">w2</span> -&gt;<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> (<span class="id" type="var">w1</span> <span class="id" type="notation">++</span> <span class="id" type="var">w2</span>).<br/>
@@ -1020,6 +1026,48 @@ We prove that every path of A1 can be mapped to a path
 <span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">last_rcons</span>.<br/>
 <span class="id" type="tactic">exact</span> <span class="id" type="var">H2</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We prove that every word accepted by some state x in nfa_plus
+   is a concatenation of two words w1, w2 which are accpeted by
+   A1 in x and nfa_plus (resp.). 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="nfa_plus_correct2"><span class="id" type="lemma">nfa_plus_correct2</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> :<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> -&gt;<br/>
+&nbsp;&nbsp;(<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'\/'_x"><span class="id" type="notation">(</span></a><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">exists</span></a> <span class="id" type="var">w1</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">,</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">exists</span></a> <span class="id" type="var">w2</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">,</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">(</span></a><span class="id" type="var">w</span> <span class="id" type="notation">==</span> <span class="id" type="var">w1</span> <span class="id" type="notation">++</span> <span class="id" type="var">w2</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">(</span></a><a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> <span class="id" type="var">w2</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'\/'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'\/'_x"><span class="id" type="notation">\/</span></a> <a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> ).<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">x</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>] <span class="id" type="var">x</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">move</span> =&gt; <span class="id" type="var">H0</span>. <span class="id" type="var">right</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">exact</span>: <span class="id" type="var">H0</span>.<br/>
+<span class="id" type="tactic">case</span>/<span class="id" type="lemma">existsP</span> =&gt; <span class="id" type="var">y</span> /<span class="id" type="lemma">andP</span> [<span class="id" type="var">H0</span> <span class="id" type="var">H1</span>].<br/>
+<span class="id" type="tactic">case</span>: (<span class="id" type="var">IHw</span> <span class="id" type="var">_</span> <span class="id" type="var">H1</span>) =&gt; [[<span class="id" type="var">w1</span> [<span class="id" type="var">w2</span> /<span class="id" type="lemma">andP</span> [/<span class="id" type="lemma">andP</span> [/<span class="id" type="lemma">eqP</span> <span class="id" type="var">H2</span> <span class="id" type="var">H3</span>] <span class="id" type="var">H4</span>]]]|<span class="id" type="var">H2</span>].<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">move</span>: <span class="id" type="var">H0</span> =&gt; /<span class="id" type="lemma">orP</span> [<span class="id" type="var">H5</span>|].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">left</span>. <span class="id" type="var">exists</span> (<span class="id" type="var">a</span><span class="id" type="notation">::</span><span class="id" type="var">w1</span>). <span class="id" type="var">exists</span> <span class="id" type="var">w2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H2</span> <span class="id" type="lemma">eq_refl</span> <span class="id" type="var">H4</span> <span class="id" type="lemma">andbT</span> /=.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span>/<span class="id" type="lemma">existsP</span>. <span class="id" type="var">exists</span> <span class="id" type="var">y</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H5</span> <span class="id" type="var">H3</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">move</span>/<span class="id" type="lemma">andP</span> =&gt; [] <span class="id" type="var">H5</span> /<span class="id" type="lemma">existsP</span> [] <span class="id" type="var">z</span> /<span class="id" type="lemma">andP</span> [<span class="id" type="var">H6</span> <span class="id" type="var">H7</span>].<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">move</span>: <span class="id" type="var">H5</span> <span class="id" type="var">H1</span> <span class="id" type="var">H3</span> =&gt; /<span class="id" type="lemma">eqP</span> -&gt; <span class="id" type="var">H1</span> <span class="id" type="var">H3</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">left</span>. <span class="id" type="var">exists</span> (<span class="id" type="notation">[::</span><span class="id" type="var">a</span><span class="id" type="notation">]</span>). <span class="id" type="var">exists</span> <span class="id" type="var">w</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">eq_refl</span> /=. <span class="id" type="tactic">apply</span>/<span class="id" type="lemma">andP</span>. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span>/<span class="id" type="lemma">existsP</span>. <span class="id" type="var">exists</span> <span class="id" type="var">z</span>. <span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H6</span> <span class="id" type="var">H7</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">exact</span>: <span class="id" type="var">H1</span>.<br/>
+<span class="id" type="tactic">move</span>: <span class="id" type="var">H0</span> =&gt; /<span class="id" type="lemma">orP</span> [<span class="id" type="var">H5</span>|].<br/>
+&nbsp;&nbsp;<span class="id" type="var">right</span> =&gt; /=. <span class="id" type="tactic">apply</span>/<span class="id" type="lemma">existsP</span>. <span class="id" type="var">exists</span> <span class="id" type="var">y</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H5</span> <span class="id" type="var">H2</span>.<br/>
+<span class="id" type="tactic">move</span>/<span class="id" type="lemma">andP</span> =&gt; [/<span class="id" type="lemma">eqP</span> <span class="id" type="var">H3</span> /<span class="id" type="lemma">existsP</span> [<span class="id" type="var">z</span> /<span class="id" type="lemma">andP</span> [<span class="id" type="var">H4</span> <span class="id" type="var">H5</span>]]].<br/>
+<span class="id" type="tactic">move</span>: <span class="id" type="var">H3</span> <span class="id" type="var">H1</span> <span class="id" type="var">H2</span> =&gt; -&gt; <span class="id" type="var">H1</span> <span class="id" type="var">H2</span>.<br/>
+<span class="id" type="var">left</span>. <span class="id" type="var">exists</span> <span class="id" type="notation">[::</span><span class="id" type="var">a</span><span class="id" type="notation">]</span>. <span class="id" type="var">exists</span> <span class="id" type="var">w</span>.<br/>
+<span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">eq_refl</span> /=. <span class="id" type="tactic">apply</span>/<span class="id" type="lemma">andP</span>. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span>/<span class="id" type="lemma">existsP</span>. <span class="id" type="var">exists</span> <span class="id" type="var">z</span>. <span class="id" type="tactic">by</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H5</span> <span class="id" type="var">H4</span>.<br/>
+<span class="id" type="tactic">exact</span> <span class="id" type="var">H1</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+
+<br/>
 
 <br/>
 <span class="id" type="keyword">End</span> <a class="idref" href="automata.html#FA.NFAOps"><span class="id" type="section">NFAOps</span></a>.<br/>
