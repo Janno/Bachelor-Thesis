@@ -595,7 +595,7 @@ simpl. by rewrite H3 H4.
 Qed.
   
 
-Lemma nfa_plus_correct1' x w1 :
+Lemma nfa_plus_correct0' x w1 :
   nfa_accept A1 x w1 ->
   nfa_accept nfa_plus x w1.
 Proof.
@@ -604,7 +604,13 @@ move/nfa_plus_cont => H0 H1.
 apply: nfa_lpath_accept; by eassumption.
 Qed.
 
-Lemma nfa_plus_correct w1 w2:
+Lemma nfa_plus_correct0 w :
+  nfa_lang A1 w ->
+  nfa_lang nfa_plus w.
+Proof. exact: nfa_plus_correct0'. Qed.
+  
+
+Lemma nfa_plus_correct1 w1 w2:
   nfa_lang A1 w1 ->
   nfa_lang nfa_plus w2 ->
   nfa_lang nfa_plus (w1 ++ w2).
@@ -621,6 +627,16 @@ apply/andP. split.
 rewrite last_rcons.
 exact H2.
 Qed.
+
+
+(** We prove that every word accepted by some state x in nfa_plus
+   is a concatenation of two words w1, w2 which are accpeted by
+   A1 in x and nfa_plus (resp.). **) 
+Lemma nfa_plus_correct2 x w :
+  nfa_accept nfa_plus x w ->
+  ((exists w1, exists w2, (w == w1 ++ w2) && (nfa_accept A1 x w1) && nfa_lang nfa_plus w2
+    ) \/ nfa_accept A1 x w ).
+Proof.
 
 
 
