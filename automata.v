@@ -81,12 +81,14 @@ by rewrite IHw dfa_run'S.
 Qed.
 
 (** rcons and cat lemmas. **)
-Lemma dfa_run'_cat x w1 w2 : dfa_run' x (w1 ++ w2) = dfa_run' x w1 ++ dfa_run' (last x (dfa_run' x w1)) w2.
+Lemma dfa_run'_cat x w1 w2 :
+  dfa_run' x (w1 ++ w2) = dfa_run' x w1 ++ dfa_run' (last x (dfa_run' x w1)) w2.
 Proof. elim: w1 w2 x => [|a w1 IHw1] w2 x //.
 simpl. by rewrite IHw1.
 Qed.
 
-Lemma dfa_run'_rcons x w a : dfa_run' x (rcons w a) = rcons (dfa_run' x w) (dfa_step A (last x (dfa_run' x w)) a).
+Lemma dfa_run'_rcons x w a :
+  dfa_run' x (rcons w a) = rcons (dfa_run' x w) (dfa_step A (last x (dfa_run' x w)) a).
 Proof. move: w a x. apply: last_ind => [|w b IHw] a x //.
 rewrite -3!cats1. rewrite 2!dfa_run'_cat. by [].
 Qed.
@@ -146,7 +148,8 @@ end.
 (** We prove that there is a path labeled with w induced
    by nfa_accept starting at x and ending in an accepting
    state. **)
-Lemma nfa_accept_lpath x w: nfa_accept x w -> exists xs, nfa_lpath x xs w /\ nfa_fin A (last x xs).
+Lemma nfa_accept_lpath x w:
+  nfa_accept x w -> exists xs, nfa_lpath x xs w /\ nfa_fin A (last x xs).
 Proof. elim: w x => [|a w IHw] x.
   by exists [::].
 move => /existsP [] y /andP [] H0 /IHw [xs [H1 H2]].
@@ -681,6 +684,9 @@ Proof. exact: nfa_plus_correct2'. Qed.
   
 
 End NFAOps.
+
+
+(** NFA minimization **)
 
 End FA.
 
