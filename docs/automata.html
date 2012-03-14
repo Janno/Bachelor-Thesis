@@ -947,6 +947,12 @@ The step relation implements the following rules:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'||'_x"><span class="id" type="notation">)</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+
+</div>
+<div class="code">
 <span class="id" type="keyword">Definition</span> <a name="nfa_plus"><span class="id" type="definition">nfa_plus</span></a> : <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> <a class="idref" href="automata.html#FA.NFAOps.state1"><span class="id" type="variable">state1</span></a> :=<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfaI"><span class="id" type="constructor">nfaI</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="automata.html#FA.NFAOps.state1"><span class="id" type="variable">state1</span></a><br/>
@@ -971,6 +977,14 @@ We prove that every path of A1 can be mapped to a path
 <span class="id" type="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+We prove that every accepting path labeled (a::w) in A1
+   exists in nfa_plus with only the last state changed to
+   A1's starting state. This new path need not be accepting. 
+</div>
+<div class="code">
 <span class="id" type="keyword">Lemma</span> <a name="nfa_plus_lpath"><span class="id" type="lemma">nfa_plus_lpath</span></a> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="var">xs</span> <span class="id" type="var">a</span> <span class="id" type="var">w</span>:<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> (<span class="id" type="definition">last</span> <span class="id" type="var">x</span> (<span class="id" type="var">y</span><span class="id" type="notation">::</span><span class="id" type="var">xs</span>)) -&gt;<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lpath"><span class="id" type="definition">nfa_lpath</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> <span class="id" type="var">x</span> (<span class="id" type="var">y</span><span class="id" type="notation">::</span><span class="id" type="var">xs</span>) (<span class="id" type="var">a</span><span class="id" type="notation">::</span><span class="id" type="var">w</span>) -&gt;<br/>
@@ -993,6 +1007,14 @@ We prove that every path of A1 can be mapped to a path
 <span class="id" type="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+We prove that every word accepted by A1 in
+   some state x is also accepted by nfa_plus in
+   that state. 
+</div>
+<div class="code">
 <span class="id" type="keyword">Lemma</span> <a name="nfa_plus_correct0'"><span class="id" type="lemma">nfa_plus_correct0'</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span> :<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span> -&gt;<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span>.<br/>
@@ -1003,12 +1025,28 @@ We prove that every path of A1 can be mapped to a path
 <span class="id" type="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+We prove that every word accepted by A1 is also
+   accepted by nfa_plus. 
+</div>
+<div class="code">
 <span class="id" type="keyword">Lemma</span> <a name="nfa_plus_correct0"><span class="id" type="lemma">nfa_plus_correct0</span></a> <span class="id" type="var">w</span> :<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">w</span> -&gt;<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> <span class="id" type="var">w</span>.<br/>
 <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">exact</span>: <a class="idref" href="automata.html#nfa_plus_correct0'"><span class="id" type="lemma">nfa_plus_correct0'</span></a>. <span class="id" type="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+We prove that every prefix accpeted by A1 followed
+   by a suffix accepted by nfa_plus is again accepted
+   by nfa_plus. This is the first part of the proof of
+   language correctness for nfa_plus. 
+</div>
+<div class="code">
 <span class="id" type="keyword">Lemma</span> <a name="nfa_plus_correct1"><span class="id" type="lemma">nfa_plus_correct1</span></a> <span class="id" type="var">w1</span> <span class="id" type="var">w2</span>:<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">w1</span> -&gt;<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> <span class="id" type="var">w2</span> -&gt;<br/>
@@ -1036,7 +1074,7 @@ We prove that every word accepted by some state x in nfa_plus
    A1 in x and nfa_plus (resp.). 
 </div>
 <div class="code">
-<span class="id" type="keyword">Lemma</span> <a name="nfa_plus_correct2"><span class="id" type="lemma">nfa_plus_correct2</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> :<br/>
+<span class="id" type="keyword">Lemma</span> <a name="nfa_plus_correct2'"><span class="id" type="lemma">nfa_plus_correct2'</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> :<br/>
 &nbsp;&nbsp;<a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> -&gt;<br/>
 &nbsp;&nbsp;(<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'\/'_x"><span class="id" type="notation">(</span></a><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">exists</span></a> <span class="id" type="var">w1</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">,</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">exists</span></a> <span class="id" type="var">w2</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">,</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">(</span></a><span class="id" type="var">w</span> <span class="id" type="notation">==</span> <span class="id" type="var">w1</span> <span class="id" type="notation">++</span> <span class="id" type="var">w2</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">(</span></a><a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w1</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> <span class="id" type="var">w2</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'\/'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'\/'_x"><span class="id" type="notation">\/</span></a> <a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> ).<br/>
@@ -1068,6 +1106,18 @@ We prove that every word accepted by some state x in nfa_plus
 <span class="id" type="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+We prove the second part of language correctness
+   for nfa_plus. 
+</div>
+<div class="code">
+<span class="id" type="keyword">Lemma</span> <a name="nfa_plus_correct2"><span class="id" type="lemma">nfa_plus_correct2</span></a> <span class="id" type="var">w</span>:<br/>
+&nbsp;&nbsp;<a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> <span class="id" type="var">w</span> -&gt;<br/>
+&nbsp;&nbsp;(<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'\/'_x"><span class="id" type="notation">(</span></a><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">exists</span></a> <span class="id" type="var">w1</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">,</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">exists</span></a> <span class="id" type="var">w2</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:'exists'_x_','_x"><span class="id" type="notation">,</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">(</span></a><span class="id" type="var">w</span> <span class="id" type="notation">==</span> <span class="id" type="var">w1</span> <span class="id" type="notation">++</span> <span class="id" type="var">w2</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">(</span></a><a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">w1</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&&'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#nfa_plus"><span class="id" type="definition">nfa_plus</span></a> <span class="id" type="var">w2</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'\/'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Logic.html#:type_scope:x_'\/'_x"><span class="id" type="notation">\/</span></a> <a class="idref" href="automata.html#nfa_lang"><span class="id" type="definition">nfa_lang</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <span class="id" type="var">w</span> ).<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">exact</span>: <a class="idref" href="automata.html#nfa_plus_correct2'"><span class="id" type="lemma">nfa_plus_correct2'</span></a>. <span class="id" type="keyword">Qed</span>.<br/>
 
 <br/>
 <span class="id" type="keyword">End</span> <a class="idref" href="automata.html#FA.NFAOps"><span class="id" type="section">NFAOps</span></a>.<br/>

@@ -553,6 +553,7 @@ nfa_step A1 x a y || (
                       && existsb z, (nfa_fin A1 z) && (nfa_step A1 x a z)
                     ).
 
+(** **)
 Definition nfa_plus : nfa state1 :=
   nfaI
     state1
@@ -573,6 +574,9 @@ move/andP => [] H0 /= /IHxs ->.
 by rewrite /step_plus H0 orTb.
 Qed.
 
+(** We prove that every accepting path labeled (a::w) in A1
+   exists in nfa_plus with only the last state changed to
+   A1's starting state. This new path need not be accepting. **)
 Lemma nfa_plus_lpath x y xs a w:
   nfa_fin nfa_plus (last x (y::xs)) ->
   nfa_lpath nfa_plus x (y::xs) (a::w) ->
@@ -594,7 +598,9 @@ rewrite H1 /=. apply: IHxs.
 simpl. by rewrite H3 H4.
 Qed.
   
-
+(** We prove that every word accepted by A1 in
+   some state x is also accepted by nfa_plus in
+   that state. **)
 Lemma nfa_plus_correct0' x w1 :
   nfa_accept A1 x w1 ->
   nfa_accept nfa_plus x w1.
@@ -604,12 +610,17 @@ move/nfa_plus_cont => H0 H1.
 apply: nfa_lpath_accept; by eassumption.
 Qed.
 
+(** We prove that every word accepted by A1 is also
+   accepted by nfa_plus. **)
 Lemma nfa_plus_correct0 w :
   nfa_lang A1 w ->
   nfa_lang nfa_plus w.
 Proof. exact: nfa_plus_correct0'. Qed.
-  
 
+(** We prove that every prefix accpeted by A1 followed
+   by a suffix accepted by nfa_plus is again accepted
+   by nfa_plus. This is the first part of the proof of
+   language correctness for nfa_plus. **)
 Lemma nfa_plus_correct1 w1 w2:
   nfa_lang A1 w1 ->
   nfa_lang nfa_plus w2 ->
@@ -632,7 +643,7 @@ Qed.
 (** We prove that every word accepted by some state x in nfa_plus
    is a concatenation of two words w1, w2 which are accpeted by
    A1 in x and nfa_plus (resp.). **) 
-Lemma nfa_plus_correct2 x w :
+Lemma nfa_plus_correct2' x w :
   nfa_accept nfa_plus x w ->
   ((exists w1, exists w2, (w == w1 ++ w2) && (nfa_accept A1 x w1) && nfa_lang nfa_plus w2
     ) \/ nfa_accept A1 x w ).
@@ -662,10 +673,15 @@ rewrite eq_refl /=. apply/andP. split.
   apply/existsP. exists z. by rewrite H5 H4.
 exact H1.
 Qed.
-  
-  
 
-
+(** We prove the second part of language correctness
+   for nfa_plus. **)
+Lemma nfa_plus_correct2 w:
+  nfa_lang nfa_plus w ->
+  ((exists w1, exists w2, (w == w1 ++ w2) && (nfa_lang A1 w1) && nfa_lang nfa_plus w2
+    ) \/ nfa_lang A1 w ).
+Proof. exact: nfa_plus_correct2'. Qed.
+  
 
 End NFAOps.
 
