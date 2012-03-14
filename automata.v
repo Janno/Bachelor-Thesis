@@ -13,10 +13,7 @@ Variable char: finType.
 (** Type of input sequences ***)
 Definition word := misc.word char.
 
-(** Deterministic finite automata.
-   This is the only actual type of automata.
-   NFAs will be translated on the fly (they
-   never exist as instances of some type). ***)
+(** Deterministic finite automata. **)
 Section DFA.
 
 (** The finite type of states ***)
