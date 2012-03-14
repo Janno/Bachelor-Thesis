@@ -2,9 +2,9 @@
 %.vo: %.v
 	coqc $(subst .vo,.v,$@)
 
-all: automata.vo
+all: misc.vo automata.vo
 
-doc: automata.vo
+doc: all 
 	coqdoc -d docs automata.v
 
 clean:
