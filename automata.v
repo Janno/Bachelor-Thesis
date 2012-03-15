@@ -7,7 +7,6 @@ Set Implicit Arguments.
 (** Finite automata. ***)
 Section FA.
 
-(** The finite input alphabet. ***)
 Variable char: finType.
 
 (** Type of input sequences ***)
@@ -16,15 +15,13 @@ Definition word := misc.word char.
 (** Deterministic finite automata. **)
 Section DFA.
 
-(** The finite type of states ***)
-Variable state: finType.
-
 (** The type of deterministic finite automata. ***)
 Record dfa : Type :=
   dfaI {
-    dfa_s0: state;
-    dfa_fin: pred state;
-    dfa_step: state -> char -> state
+    dfa_state :> finType;
+    dfa_s0: dfa_state;
+    dfa_fin: pred dfa_state;
+    dfa_step: dfa_state -> char -> dfa_state
     }.
 
 (** Acceptance on DFAs **)
@@ -37,7 +34,7 @@ Variable A: dfa.
    to be the list of states x_1 .. x_|w|
    traversed when following the edges labeled
    w_1 .. w_|w| starting in x. **)
-Fixpoint dfa_run' (x: state) (w: word) : seq state :=
+Fixpoint dfa_run' (x: A) (w: word) : seq A :=
 match w with
   | [::] => [::]
   | a::w => (dfa_step A x a) ::dfa_run' (dfa_step A x a) w
@@ -97,7 +94,7 @@ Qed.
 
 (** Predicate to distinguish between accepting
    and non-accepting runs. **)
-Definition dfa_run_accepting := [fun x xs => dfa_fin (last x xs)].
+Definition dfa_run_accepting := [fun (x: A) (xs: seq A) => dfa_fin A (last x xs)].
 
 Definition dfa_run_accepts x xs w := xs == dfa_run' x w.
 
@@ -110,12 +107,10 @@ End DFA.
 (** Non-deterministic automata. **)
 Section NFA.
 
-(** The finite type of states ***)
-Variable state: finType.
-  
 (** The type of non-deterministic finite automata. ***)
 Record nfa : Type :=
   nfaI {
+    state :> finType;
     nfa_s0: state;
     nfa_fin: pred state;
     nfa_step: state -> char -> pred state
@@ -127,7 +122,7 @@ Section Acceptance.
 Variable A: nfa.
 
 (** Non-deterministic acceptance. **)
-Fixpoint nfa_accept (x: state) w :=
+Fixpoint nfa_accept (x: A) w :=
 match w with
   | [::] => nfa_fin A x
   | a::w => existsb y, (nfa_step A x a y) && nfa_accept y w
@@ -138,7 +133,7 @@ end.
 Definition nfa_lang := [fun w => nfa_accept (nfa_s0 A) w].
 
 (** We define labeled paths over the non-deterministic step relation **)
-Fixpoint nfa_lpath x (xs : seq state) (w: word) {struct xs} :=
+Fixpoint nfa_lpath x (xs : seq A) (w: word) {struct xs} :=
 match xs,w with
   | y :: xs', a::w' => nfa_step A x a y && nfa_lpath y xs' w'
   | [::]    , [::]  => true
@@ -201,12 +196,11 @@ End NFA.
    a deterministic automaton from a non-deterministic one. **) 
 Section PowersetConstruction.
 
-Variable state: finType.
-Variable A: nfa state.
+Variable A: nfa.
 
 (** The new automaton's states are sets of the given
    automaton' states. **)
-Definition powerset_state : finType := [finType of {set state}].
+Definition powerset_state : finType := [finType of {set A}].
 
 (** The new starting state is the singleton set containing
    the given automaton's starting state. **)
@@ -216,14 +210,14 @@ Definition nfa_to_dfa :=
   dfaI
     powerset_state
     powerset_s0 
-    [ pred X: powerset_state | existsb x: state, (x \in X) && nfa_fin A x]
+    [ pred X: powerset_state | existsb x: A, (x \in X) && nfa_fin A x]
     [fun X a => cover [set finset (nfa_step A x a) | x <- X] ]
 .
 
 (** We prove that for every state x, the new automaton
    accepts at least the language of the given automaton
    when starting in a set containing x. **)
-Lemma nfa_to_dfa_correct1 (x: state) w (X: powerset_state):
+Lemma nfa_to_dfa_correct1 (x: A) w (X: nfa_to_dfa):
   x \in X -> nfa_accept A x w -> dfa_accept nfa_to_dfa X w.
 Proof. move => H0.
   (* "->" *)
@@ -251,7 +245,7 @@ Qed.
    if the powerset automaton accepts w in X, there exists one
    representative state of that set in which the given automaton
    accepts w. **)
-Lemma nfa_to_dfa_correct2 (X: powerset_state) w:
+Lemma nfa_to_dfa_correct2 (X: nfa_to_dfa) w:
   dfa_accept nfa_to_dfa X w -> existsb x, (x \in X) && nfa_accept A x w.
 Proof. elim: w X => [|a w IHw] X.
   by [].
@@ -279,17 +273,14 @@ End PowersetConstruction.
 (** Embedding deterministic automata in non-deterministic automata. **)
 Section Embed.
 
-Variable state: finType.
+Variable A: dfa.
 
-Variable A: dfa state.
-
-Definition dfa_to_nfa : nfa state :=
+Definition dfa_to_nfa : nfa :=
   nfaI
-    state
+    A
     (dfa_s0 A)
     (dfa_fin A)
-    [fun x a => fun y => y == dfa_step A x a ]
-.
+    [fun x a => fun y => y == dfa_step A x a ].
 
 (** We prove that dfa_to_nfa accepts the same language as
    the given automaton in any state. **)
@@ -316,8 +307,7 @@ End Embed.
 (** Operations on non-deterministic automata. **)
 Section DFAOps.
 
-Variable state1: finType.
-Variable A1: dfa state1.
+Variable A1: dfa.
 
 
 (** Complement automaton **)
@@ -327,7 +317,7 @@ Definition fin_compl := [ fun x1 => ~~ dfa_fin A1 x1 ].
 (** We construct the resulting automaton. **)
 Definition dfa_compl :=
   dfaI
-    state1
+    A1
     (dfa_s0 A1)
     fin_compl
     (dfa_step A1).
@@ -350,11 +340,10 @@ Proof. exact: dfa_compl_correct'. Qed.
 (** Operations on two automata. **)
 Section BinaryOps.
   
-Variable state2: finType.
-Variable A2: dfa state2.
+Variable A2: dfa.
 
 (** Cross product of the two state sets **)
-Definition state_prod := prod_finType state1 state2.
+Definition state_prod := prod_finType A1 A2.
 
 (** Disjunction automaton **)
 
@@ -416,13 +405,12 @@ End DFAOps.
 
 (** Operations on non-deterministic automata. **)
 Section NFAOps.
-Variable state1 state2: finType.
-Variable A1: nfa state1.
-Variable A2: nfa state2.
+Variable A1: nfa.
+Variable A2: nfa.
 
 (** Concatenation of two non-deterministic automata. **)
 
-Definition state_conc : finType := sum_finType state1 state2.
+Definition state_conc : finType := sum_finType A1 A2.
 
 Definition step_conc x a y :=
 match x,y with
@@ -440,7 +428,7 @@ end.
 
 Definition s0_conc : state_conc := inl _ (nfa_s0 A1).
 
-Definition nfa_conc : nfa state_conc :=
+Definition nfa_conc : nfa :=
   nfaI
     state_conc
     s0_conc
@@ -451,7 +439,7 @@ Definition nfa_conc : nfa state_conc :=
    of nfa_conc. **)
 Lemma nfa_conc_cont x xs w:
   nfa_lpath A2 x xs w
-  -> nfa_lpath nfa_conc (inr _ x) (map (@inr state1 state2) xs) w.
+  -> nfa_lpath nfa_conc (inr _ x) (map (@inr A1 A2) xs) w.
 Proof. elim: xs x w => [|y xs IHxs] x w; case: w => [|a w] => //.
 simpl. by move/andP => [] -> /IHxs ->.
 Qed.
@@ -554,9 +542,9 @@ nfa_step A1 x a y || (
                     ).
 
 (** **)
-Definition nfa_plus : nfa state1 :=
+Definition nfa_plus : nfa :=
   nfaI
-    state1
+    A1
     (nfa_s0 A1)
     (nfa_fin A1)
     step_plus.
@@ -685,8 +673,6 @@ Proof. exact: nfa_plus_correct2'. Qed.
 
 End NFAOps.
 
-
-(** NFA minimization **)
 
 End FA.
 
