@@ -43,14 +43,14 @@ if __name__=='__main__':
     }
     #page-wrap {
       width: 100%;
-      margin: 15px auto;
+      margin: 10px auto;
       position: relative;
     }
 
     #sidebar {
         width: 250px;
         position: fixed;
-        right: 15px;
+        right: 10px;
         margin-left: 500px;
         border: 2px solid #FFBD90;
         background-color: white;
