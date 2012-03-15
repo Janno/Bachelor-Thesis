@@ -45,7 +45,7 @@
 <div class="code">
 <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="library">ssreflect</span> <span class="id" type="library">ssrbool</span> <span class="id" type="library">eqtype</span> <span class="id" type="library">fintype</span> <span class="id" type="library">finfun</span> <span class="id" type="library">seq</span> <span class="id" type="library">fingraph</span> <span class="id" type="library">ssrfun</span> <span class="id" type="library">ssrnat</span> <span class="id" type="library">finset</span>.<br/>
 <br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="library">misc</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <a class="idref" href="misc.html#"><span class="id" type="library">misc</span></a>.<br/>
 <br/>
 <span class="id" type="keyword">Set</span> <span class="id" type="keyword">Implicit</span> <span class="id" type="var">Arguments</span>.<br/>
 <br/>
@@ -56,11 +56,6 @@ Finite automata.
 <section class="beautiful_section"><div class="code">
 <span class="id" type="keyword">Section</span> <a name="FA"><span class="id" type="section">FA</span></a>.<br/>
 <br/>
-</div>
-<div class="doc_outer"><div class="doc doc_inner">
-The finite input alphabet. 
-</div></div>
-<div class="code">
 <span class="id" type="keyword">Variable</span> <a name="FA.char"><span class="id" type="variable">char</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
 <br/>
 </div>
@@ -68,7 +63,7 @@ The finite input alphabet.
 Type of input sequences 
 </div></div>
 <div class="code">
-<span class="id" type="keyword">Definition</span> <a name="word"><span class="id" type="definition">word</span></a> := <span class="id" type="definition">misc.word</span> <a class="idref" href="automata.html#FA.char"><span class="id" type="variable">char</span></a>.<br/>
+<span class="id" type="keyword">Definition</span> <a name="word"><span class="id" type="definition">word</span></a> := <a class="idref" href="misc.html#word"><span class="id" type="definition">misc.word</span></a> <a class="idref" href="automata.html#FA.char"><span class="id" type="variable">char</span></a>.<br/>
 <br/>
 </div>
 <div class="doc_outer"><div class="doc doc_inner">
@@ -79,21 +74,15 @@ Deterministic finite automata.
 <br/>
 </div>
 <div class="doc_outer"><div class="doc doc_inner">
-The finite type of states 
-</div></div>
-<div class="code">
-<span class="id" type="keyword">Variable</span> <a name="FA.DFA.state"><span class="id" type="variable">state</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
-<br/>
-</div>
-<div class="doc_outer"><div class="doc doc_inner">
 The type of deterministic finite automata. 
 </div></div>
 <div class="code">
 <span class="id" type="keyword">Record</span> <a name="dfa"><span class="id" type="record">dfa</span></a> : <span class="id" type="keyword">Type</span> :=<br/>
   <a name="dfaI"><span class="id" type="constructor">dfaI</span></a> {<br/>
-    <a name="dfa_s0"><span class="id" type="projection">dfa_s0</span></a>: <a class="idref" href="automata.html#FA.DFA.state"><span class="id" type="variable">state</span></a>;<br/>
-    <a name="dfa_fin"><span class="id" type="projection">dfa_fin</span></a>: <span class="id" type="definition">pred</span> <a class="idref" href="automata.html#FA.DFA.state"><span class="id" type="variable">state</span></a>;<br/>
-    <a name="dfa_step"><span class="id" type="projection">dfa_step</span></a>: <a class="idref" href="automata.html#FA.DFA.state"><span class="id" type="variable">state</span></a> -&gt; <a class="idref" href="automata.html#FA.char"><span class="id" type="variable">char</span></a> -&gt; <a class="idref" href="automata.html#FA.DFA.state"><span class="id" type="variable">state</span></a><br/>
+    <a name="dfa_state"><span class="id" type="projection">dfa_state</span></a> :&gt; <span class="id" type="abbreviation">finType</span>;<br/>
+    <a name="dfa_s0"><span class="id" type="projection">dfa_s0</span></a>: <a class="idref" href="automata.html#dfa_state"><span class="id" type="method">dfa_state</span></a>;<br/>
+    <a name="dfa_fin"><span class="id" type="projection">dfa_fin</span></a>: <span class="id" type="definition">pred</span> <a class="idref" href="automata.html#dfa_state"><span class="id" type="method">dfa_state</span></a>;<br/>
+    <a name="dfa_step"><span class="id" type="projection">dfa_step</span></a>: <a class="idref" href="automata.html#dfa_state"><span class="id" type="method">dfa_state</span></a> -&gt; <a class="idref" href="automata.html#FA.char"><span class="id" type="variable">char</span></a> -&gt; <a class="idref" href="automata.html#dfa_state"><span class="id" type="method">dfa_state</span></a><br/>
     }.<br/>
 <br/>
 </div>
@@ -118,7 +107,7 @@ We define a run of w on the automaton A
    w_1 .. w|w| starting in x. 
 </div></div>
 <div class="code">
-<span class="id" type="keyword">Fixpoint</span> <a name="dfa_run'"><span class="id" type="definition">dfa_run'</span></a> (<span class="id" type="var">x</span>: <a class="idref" href="automata.html#FA.DFA.state"><span class="id" type="variable">state</span></a>) (<span class="id" type="var">w</span>: <a class="idref" href="automata.html#word"><span class="id" type="definition">word</span></a>) : <span class="id" type="inductive">seq</span> <a class="idref" href="automata.html#FA.DFA.state"><span class="id" type="variable">state</span></a> :=<br/>
+<span class="id" type="keyword">Fixpoint</span> <a name="dfa_run'"><span class="id" type="definition">dfa_run'</span></a> (<span class="id" type="var">x</span>: <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a>) (<span class="id" type="var">w</span>: <a class="idref" href="automata.html#word"><span class="id" type="definition">word</span></a>) : <span class="id" type="inductive">seq</span> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a> :=<br/>
 <span class="id" type="keyword">match</span> <span class="id" type="var">w</span> <span class="id" type="keyword">with</span><br/>
   | <span class="id" type="notation">[::]</span> =&gt; <span class="id" type="notation">[::]</span><br/>
   | <span class="id" type="var">a</span><span class="id" type="notation">::</span><span class="id" type="var">w</span> =&gt; <span class="id" type="notation">(</span><a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span><span class="id" type="notation">)</span> <span class="id" type="notation">::</span><a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> (<a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span>) <span class="id" type="var">w</span><br/>
@@ -213,7 +202,7 @@ Predicate to distinguish between accepting
    and non-accepting runs. 
 </div></div>
 <div class="code">
-<span class="id" type="keyword">Definition</span> <a name="dfa_run_accepting"><span class="id" type="definition">dfa_run_accepting</span></a> := <span class="id" type="notation">[</span><span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> <span class="id" type="var">xs</span> <span class="id" type="notation">=&gt;</span> <a class="idref" href="automata.html#dfa_fin"><span class="id" type="projection">dfa_fin</span></a> (<span class="id" type="definition">last</span> <span class="id" type="var">x</span> <span class="id" type="var">xs</span>)<span class="id" type="notation">]</span>.<br/>
+<span class="id" type="keyword">Definition</span> <a name="dfa_run_accepting"><span class="id" type="definition">dfa_run_accepting</span></a> := <span class="id" type="notation">[</span><span class="id" type="keyword">fun</span> <span class="id" type="notation">(</span><span class="id" type="var">x</span><span class="id" type="notation">:</span> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a><span class="id" type="notation">)</span> <span class="id" type="notation">(</span><span class="id" type="var">xs</span><span class="id" type="notation">:</span> <span class="id" type="inductive">seq</span> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a><span class="id" type="notation">)</span> <span class="id" type="notation">=&gt;</span> <a class="idref" href="automata.html#dfa_fin"><span class="id" type="projection">dfa_fin</span></a> <a class="idref" href="automata.html#FA.DFA.Acceptance.A"><span class="id" type="variable">A</span></a> (<span class="id" type="definition">last</span> <span class="id" type="var">x</span> <span class="id" type="var">xs</span>)<span class="id" type="notation">]</span>.<br/>
 <br/>
 <span class="id" type="keyword">Definition</span> <a name="dfa_run_accepts"><span class="id" type="definition">dfa_run_accepts</span></a> <span class="id" type="var">x</span> <span class="id" type="var">xs</span> <span class="id" type="var">w</span> := <span class="id" type="var">xs</span> <span class="id" type="notation">==</span> <a class="idref" href="automata.html#dfa_run'"><span class="id" type="definition">dfa_run'</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span>.<br/>
 <br/>
@@ -230,21 +219,15 @@ Non-deterministic automata.
 <br/>
 </div>
 <div class="doc_outer"><div class="doc doc_inner">
-The finite type of states 
-</div></div>
-<div class="code">
-<span class="id" type="keyword">Variable</span> <a name="FA.NFA.state"><span class="id" type="variable">state</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
-<br/>
-</div>
-<div class="doc_outer"><div class="doc doc_inner">
 The type of non-deterministic finite automata. 
 </div></div>
 <div class="code">
 <span class="id" type="keyword">Record</span> <a name="nfa"><span class="id" type="record">nfa</span></a> : <span class="id" type="keyword">Type</span> :=<br/>
   <a name="nfaI"><span class="id" type="constructor">nfaI</span></a> {<br/>
-    <a name="nfa_s0"><span class="id" type="projection">nfa_s0</span></a>: <a class="idref" href="automata.html#FA.NFA.state"><span class="id" type="variable">state</span></a>;<br/>
-    <a name="nfa_fin"><span class="id" type="projection">nfa_fin</span></a>: <span class="id" type="definition">pred</span> <a class="idref" href="automata.html#FA.NFA.state"><span class="id" type="variable">state</span></a>;<br/>
-    <a name="nfa_step"><span class="id" type="projection">nfa_step</span></a>: <a class="idref" href="automata.html#FA.NFA.state"><span class="id" type="variable">state</span></a> -&gt; <a class="idref" href="automata.html#FA.char"><span class="id" type="variable">char</span></a> -&gt; <span class="id" type="definition">pred</span> <a class="idref" href="automata.html#FA.NFA.state"><span class="id" type="variable">state</span></a><br/>
+    <a name="state"><span class="id" type="projection">state</span></a> :&gt; <span class="id" type="abbreviation">finType</span>;<br/>
+    <a name="nfa_s0"><span class="id" type="projection">nfa_s0</span></a>: <a class="idref" href="automata.html#state"><span class="id" type="method">state</span></a>;<br/>
+    <a name="nfa_fin"><span class="id" type="projection">nfa_fin</span></a>: <span class="id" type="definition">pred</span> <a class="idref" href="automata.html#state"><span class="id" type="method">state</span></a>;<br/>
+    <a name="nfa_step"><span class="id" type="projection">nfa_step</span></a>: <a class="idref" href="automata.html#state"><span class="id" type="method">state</span></a> -&gt; <a class="idref" href="automata.html#FA.char"><span class="id" type="variable">char</span></a> -&gt; <span class="id" type="definition">pred</span> <a class="idref" href="automata.html#state"><span class="id" type="method">state</span></a><br/>
     }.<br/>
 <br/>
 </div>
@@ -261,7 +244,7 @@ Acceptance on non-deterministic automata.
 Non-deterministic acceptance. 
 </div></div>
 <div class="code">
-<span class="id" type="keyword">Fixpoint</span> <a name="nfa_accept"><span class="id" type="definition">nfa_accept</span></a> (<span class="id" type="var">x</span>: <a class="idref" href="automata.html#FA.NFA.state"><span class="id" type="variable">state</span></a>) <span class="id" type="var">w</span> :=<br/>
+<span class="id" type="keyword">Fixpoint</span> <a name="nfa_accept"><span class="id" type="definition">nfa_accept</span></a> (<span class="id" type="var">x</span>: <a class="idref" href="automata.html#FA.NFA.Acceptance.A"><span class="id" type="variable">A</span></a>) <span class="id" type="var">w</span> :=<br/>
 <span class="id" type="keyword">match</span> <span class="id" type="var">w</span> <span class="id" type="keyword">with</span><br/>
   | <span class="id" type="notation">[::]</span> =&gt; <a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a> <a class="idref" href="automata.html#FA.NFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span><br/>
   | <span class="id" type="var">a</span><span class="id" type="notation">::</span><span class="id" type="var">w</span> =&gt; <span class="id" type="notation">existsb</span> <span class="id" type="var">y</span><span class="id" type="notation">,</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&amp;&amp;'_x"><span class="id" type="notation">(</span></a><a class="idref" href="automata.html#nfa_step"><span class="id" type="projection">nfa_step</span></a> <a class="idref" href="automata.html#FA.NFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="var">y</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&amp;&amp;'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&amp;&amp;'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <span class="id" type="var">y</span> <span class="id" type="var">w</span><br/>
@@ -280,7 +263,7 @@ We define the language of the non-deterministic
 We define labeled paths over the non-deterministic step relation 
 </div></div>
 <div class="code">
-<span class="id" type="keyword">Fixpoint</span> <a name="nfa_lpath"><span class="id" type="definition">nfa_lpath</span></a> <span class="id" type="var">x</span> (<span class="id" type="var">xs</span> : <span class="id" type="inductive">seq</span> <a class="idref" href="automata.html#FA.NFA.state"><span class="id" type="variable">state</span></a>) (<span class="id" type="var">w</span>: <a class="idref" href="automata.html#word"><span class="id" type="definition">word</span></a>) {<span class="id" type="keyword">struct</span> <span class="id" type="var">xs</span>} :=<br/>
+<span class="id" type="keyword">Fixpoint</span> <a name="nfa_lpath"><span class="id" type="definition">nfa_lpath</span></a> <span class="id" type="var">x</span> (<span class="id" type="var">xs</span> : <span class="id" type="inductive">seq</span> <a class="idref" href="automata.html#FA.NFA.Acceptance.A"><span class="id" type="variable">A</span></a>) (<span class="id" type="var">w</span>: <a class="idref" href="automata.html#word"><span class="id" type="definition">word</span></a>) {<span class="id" type="keyword">struct</span> <span class="id" type="var">xs</span>} :=<br/>
 <span class="id" type="keyword">match</span> <span class="id" type="var">xs</span>,<span class="id" type="var">w</span> <span class="id" type="keyword">with</span><br/>
   | <span class="id" type="var">y</span> <span class="id" type="notation">::</span> <span class="id" type="var">xs'</span>, <span class="id" type="var">a</span><span class="id" type="notation">::</span><span class="id" type="var">w'</span> =&gt; <a class="idref" href="automata.html#nfa_step"><span class="id" type="projection">nfa_step</span></a> <a class="idref" href="automata.html#FA.NFA.Acceptance.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="var">y</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&amp;&amp;'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_lpath"><span class="id" type="definition">nfa_lpath</span></a> <span class="id" type="var">y</span> <span class="id" type="var">xs'</span> <span class="id" type="var">w'</span><br/>
   | <span class="id" type="notation">[::]</span>    , <span class="id" type="notation">[::]</span>  =&gt; <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#true"><span class="id" type="constructor">true</span></a><br/>
@@ -356,8 +339,7 @@ We define the powerset construction to obtain
 <section class="beautiful_section"><div class="code">
 <span class="id" type="keyword">Section</span> <a name="FA.PowersetConstruction"><span class="id" type="section">PowersetConstruction</span></a>.<br/>
 <br/>
-<span class="id" type="keyword">Variable</span> <a name="FA.PowersetConstruction.state"><span class="id" type="variable">state</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
-<span class="id" type="keyword">Variable</span> <a name="FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a>: <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> <a class="idref" href="automata.html#FA.PowersetConstruction.state"><span class="id" type="variable">state</span></a>.<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a>: <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a>.<br/>
 <br/>
 </div>
 <div class="doc_outer"><div class="doc doc_inner">
@@ -365,7 +347,7 @@ The new automaton's states are sets of the given
    automaton' states. 
 </div></div>
 <div class="code">
-<span class="id" type="keyword">Definition</span> <a name="powerset_state"><span class="id" type="definition">powerset_state</span></a> : <span class="id" type="abbreviation">finType</span> := <span class="id" type="notation">[</span><span class="id" type="notation">finType</span> <span class="id" type="notation">of</span> <span class="id" type="notation">{</span><span class="id" type="notation">set</span> <a class="idref" href="automata.html#FA.PowersetConstruction.state"><span class="id" type="variable">state</span></a><span class="id" type="notation">}</span><span class="id" type="notation">]</span>.<br/>
+<span class="id" type="keyword">Definition</span> <a name="powerset_state"><span class="id" type="definition">powerset_state</span></a> : <span class="id" type="abbreviation">finType</span> := <span class="id" type="notation">[</span><span class="id" type="notation">finType</span> <span class="id" type="notation">of</span> <span class="id" type="notation">{</span><span class="id" type="notation">set</span> <a class="idref" href="automata.html#FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a><span class="id" type="notation">}</span><span class="id" type="notation">]</span>.<br/>
 <br/>
 </div>
 <div class="doc_outer"><div class="doc doc_inner">
@@ -379,7 +361,7 @@ The new starting state is the singleton set containing
   <a class="idref" href="automata.html#dfaI"><span class="id" type="constructor">dfaI</span></a><br/>
     <a class="idref" href="automata.html#powerset_state"><span class="id" type="definition">powerset_state</span></a><br/>
     <a class="idref" href="automata.html#powerset_s0"><span class="id" type="definition">powerset_s0</span></a> <br/>
-    <span class="id" type="notation">[</span> <span class="id" type="notation">pred</span> <span class="id" type="var">X</span><span class="id" type="notation">:</span> <a class="idref" href="automata.html#powerset_state"><span class="id" type="definition">powerset_state</span></a> <span class="id" type="notation">|</span> <span class="id" type="notation">existsb</span> <span class="id" type="var">x</span><span class="id" type="notation">:</span> <a class="idref" href="automata.html#FA.PowersetConstruction.state"><span class="id" type="variable">state</span></a><span class="id" type="notation">,</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&amp;&amp;'_x"><span class="id" type="notation">(</span></a><span class="id" type="var">x</span> <span class="id" type="notation">\</span><span class="id" type="keyword">in</span> <span class="id" type="var">X</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&amp;&amp;'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&amp;&amp;'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a> <a class="idref" href="automata.html#FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span><span class="id" type="notation">]</span><br/>
+    <span class="id" type="notation">[</span> <span class="id" type="notation">pred</span> <span class="id" type="var">X</span><span class="id" type="notation">:</span> <a class="idref" href="automata.html#powerset_state"><span class="id" type="definition">powerset_state</span></a> <span class="id" type="notation">|</span> <span class="id" type="notation">existsb</span> <span class="id" type="var">x</span><span class="id" type="notation">:</span> <a class="idref" href="automata.html#FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a><span class="id" type="notation">,</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&amp;&amp;'_x"><span class="id" type="notation">(</span></a><span class="id" type="var">x</span> <span class="id" type="notation">\</span><span class="id" type="keyword">in</span> <span class="id" type="var">X</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&amp;&amp;'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&amp;&amp;'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a> <a class="idref" href="automata.html#FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span><span class="id" type="notation">]</span><br/>
     <span class="id" type="notation">[</span><span class="id" type="keyword">fun</span> <span class="id" type="var">X</span> <span class="id" type="var">a</span> <span class="id" type="notation">=&gt;</span> <span class="id" type="definition">cover</span> <span class="id" type="notation">[</span><span class="id" type="notation">set</span> <span class="id" type="abbreviation">finset</span> (<a class="idref" href="automata.html#nfa_step"><span class="id" type="projection">nfa_step</span></a> <a class="idref" href="automata.html#FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span>) <span class="id" type="notation">|</span> <span class="id" type="var">x</span> <span class="id" type="notation">&lt;-</span> <span class="id" type="var">X</span><span class="id" type="notation">]</span> <span class="id" type="notation">]</span><br/>
 .<br/>
 <br/>
@@ -390,7 +372,7 @@ We prove that for every state x, the new automaton
    when starting in a set containing x. 
 </div></div>
 <div class="code">
-<span class="id" type="keyword">Lemma</span> <a name="nfa_to_dfa_correct1"><span class="id" type="lemma">nfa_to_dfa_correct1</span></a> (<span class="id" type="var">x</span>: <a class="idref" href="automata.html#FA.PowersetConstruction.state"><span class="id" type="variable">state</span></a>) <span class="id" type="var">w</span> (<span class="id" type="var">X</span>: <a class="idref" href="automata.html#powerset_state"><span class="id" type="definition">powerset_state</span></a>):<br/>
+<span class="id" type="keyword">Lemma</span> <a name="nfa_to_dfa_correct1"><span class="id" type="lemma">nfa_to_dfa_correct1</span></a> (<span class="id" type="var">x</span>: <a class="idref" href="automata.html#FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a>) <span class="id" type="var">w</span> (<span class="id" type="var">X</span>: <a class="idref" href="automata.html#nfa_to_dfa"><span class="id" type="definition">nfa_to_dfa</span></a>):<br/>
   <span class="id" type="var">x</span> <span class="id" type="notation">\</span><span class="id" type="keyword">in</span> <span class="id" type="var">X</span> -&gt; <a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span> -&gt; <a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <a class="idref" href="automata.html#nfa_to_dfa"><span class="id" type="definition">nfa_to_dfa</span></a> <span class="id" type="var">X</span> <span class="id" type="var">w</span>.<br/>
 <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">move</span> =&gt; <span class="id" type="var">H0</span>.<br/>
   <span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">X</span> <span class="id" type="var">x</span> <span class="id" type="var">H0</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>] <span class="id" type="var">X</span> <span class="id" type="var">x</span> <span class="id" type="var">H0</span>.<br/>
@@ -417,7 +399,7 @@ Next we prove that in any set of states X, for every word w,
    accepts w. 
 </div></div>
 <div class="code">
-<span class="id" type="keyword">Lemma</span> <a name="nfa_to_dfa_correct2"><span class="id" type="lemma">nfa_to_dfa_correct2</span></a> (<span class="id" type="var">X</span>: <a class="idref" href="automata.html#powerset_state"><span class="id" type="definition">powerset_state</span></a>) <span class="id" type="var">w</span>:<br/>
+<span class="id" type="keyword">Lemma</span> <a name="nfa_to_dfa_correct2"><span class="id" type="lemma">nfa_to_dfa_correct2</span></a> (<span class="id" type="var">X</span>: <a class="idref" href="automata.html#nfa_to_dfa"><span class="id" type="definition">nfa_to_dfa</span></a>) <span class="id" type="var">w</span>:<br/>
   <a class="idref" href="automata.html#dfa_accept"><span class="id" type="definition">dfa_accept</span></a> <a class="idref" href="automata.html#nfa_to_dfa"><span class="id" type="definition">nfa_to_dfa</span></a> <span class="id" type="var">X</span> <span class="id" type="var">w</span> -&gt; <span class="id" type="notation">existsb</span> <span class="id" type="var">x</span><span class="id" type="notation">,</span> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&amp;&amp;'_x"><span class="id" type="notation">(</span></a><span class="id" type="var">x</span> <span class="id" type="notation">\</span><span class="id" type="keyword">in</span> <span class="id" type="var">X</span><a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&amp;&amp;'_x"><span class="id" type="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#:bool_scope:x_'&amp;&amp;'_x"><span class="id" type="notation">&amp;&amp;</span></a> <a class="idref" href="automata.html#nfa_accept"><span class="id" type="definition">nfa_accept</span></a> <a class="idref" href="automata.html#FA.PowersetConstruction.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">w</span>.<br/>
 <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">w</span> <span class="id" type="var">X</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span> <span class="id" type="var">IHw</span>] <span class="id" type="var">X</span>.<br/>
   <span class="id" type="tactic">by</span> [].<br/>
@@ -451,17 +433,14 @@ Embedding deterministic automata in non-deterministic automata.
 <section class="beautiful_section"><div class="code">
 <span class="id" type="keyword">Section</span> <a name="FA.Embed"><span class="id" type="section">Embed</span></a>.<br/>
 <br/>
-<span class="id" type="keyword">Variable</span> <a name="FA.Embed.state"><span class="id" type="variable">state</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.Embed.A"><span class="id" type="variable">A</span></a>: <a class="idref" href="automata.html#dfa"><span class="id" type="record">dfa</span></a>.<br/>
 <br/>
-<span class="id" type="keyword">Variable</span> <a name="FA.Embed.A"><span class="id" type="variable">A</span></a>: <a class="idref" href="automata.html#dfa"><span class="id" type="record">dfa</span></a> <a class="idref" href="automata.html#FA.Embed.state"><span class="id" type="variable">state</span></a>.<br/>
-<br/>
-<span class="id" type="keyword">Definition</span> <a name="dfa_to_nfa"><span class="id" type="definition">dfa_to_nfa</span></a> : <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> <a class="idref" href="automata.html#FA.Embed.state"><span class="id" type="variable">state</span></a> :=<br/>
+<span class="id" type="keyword">Definition</span> <a name="dfa_to_nfa"><span class="id" type="definition">dfa_to_nfa</span></a> : <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> :=<br/>
   <a class="idref" href="automata.html#nfaI"><span class="id" type="constructor">nfaI</span></a><br/>
-    <a class="idref" href="automata.html#FA.Embed.state"><span class="id" type="variable">state</span></a><br/>
+    <a class="idref" href="automata.html#FA.Embed.A"><span class="id" type="variable">A</span></a><br/>
     (<a class="idref" href="automata.html#dfa_s0"><span class="id" type="projection">dfa_s0</span></a> <a class="idref" href="automata.html#FA.Embed.A"><span class="id" type="variable">A</span></a>)<br/>
     (<a class="idref" href="automata.html#dfa_fin"><span class="id" type="projection">dfa_fin</span></a> <a class="idref" href="automata.html#FA.Embed.A"><span class="id" type="variable">A</span></a>)<br/>
-    <span class="id" type="notation">[</span><span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="notation">=&gt;</span> <span class="id" type="keyword">fun</span> <span class="id" type="var">y</span> =&gt; <span class="id" type="var">y</span> <span class="id" type="notation">==</span> <a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.Embed.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="notation">]</span><br/>
-.<br/>
+    <span class="id" type="notation">[</span><span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="notation">=&gt;</span> <span class="id" type="keyword">fun</span> <span class="id" type="var">y</span> =&gt; <span class="id" type="var">y</span> <span class="id" type="notation">==</span> <a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.Embed.A"><span class="id" type="variable">A</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="notation">]</span>.<br/>
 <br/>
 </div>
 <div class="doc_outer"><div class="doc doc_inner">
@@ -498,8 +477,7 @@ Operations on non-deterministic automata.
 <section class="beautiful_section"><div class="code">
 <span class="id" type="keyword">Section</span> <a name="FA.DFAOps"><span class="id" type="section">DFAOps</span></a>.<br/>
 <br/>
-<span class="id" type="keyword">Variable</span> <a name="FA.DFAOps.state1"><span class="id" type="variable">state1</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
-<span class="id" type="keyword">Variable</span> <a name="FA.DFAOps.A1"><span class="id" type="variable">A1</span></a>: <a class="idref" href="automata.html#dfa"><span class="id" type="record">dfa</span></a> <a class="idref" href="automata.html#FA.DFAOps.state1"><span class="id" type="variable">state1</span></a>.<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.DFAOps.A1"><span class="id" type="variable">A1</span></a>: <a class="idref" href="automata.html#dfa"><span class="id" type="record">dfa</span></a>.<br/>
 <br/>
 </div>
 <div class="doc_outer"><div class="doc doc_inner">
@@ -520,7 +498,7 @@ We construct the resulting automaton.
 <div class="code">
 <span class="id" type="keyword">Definition</span> <a name="dfa_compl"><span class="id" type="definition">dfa_compl</span></a> :=<br/>
   <a class="idref" href="automata.html#dfaI"><span class="id" type="constructor">dfaI</span></a><br/>
-    <a class="idref" href="automata.html#FA.DFAOps.state1"><span class="id" type="variable">state1</span></a><br/>
+    <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a><br/>
     (<a class="idref" href="automata.html#dfa_s0"><span class="id" type="projection">dfa_s0</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a>)<br/>
     <a class="idref" href="automata.html#fin_compl"><span class="id" type="definition">fin_compl</span></a><br/>
     (<a class="idref" href="automata.html#dfa_step"><span class="id" type="projection">dfa_step</span></a> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a>).<br/>
@@ -555,15 +533,14 @@ Operations on two automata.
 <section class="beautiful_section"><div class="code">
 <span class="id" type="keyword">Section</span> <a name="FA.DFAOps.BinaryOps"><span class="id" type="section">BinaryOps</span></a>.<br/>
 <br/>
-<span class="id" type="keyword">Variable</span> <a name="FA.DFAOps.BinaryOps.state2"><span class="id" type="variable">state2</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
-<span class="id" type="keyword">Variable</span> <a name="FA.DFAOps.BinaryOps.A2"><span class="id" type="variable">A2</span></a>: <a class="idref" href="automata.html#dfa"><span class="id" type="record">dfa</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.state2"><span class="id" type="variable">state2</span></a>.<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.DFAOps.BinaryOps.A2"><span class="id" type="variable">A2</span></a>: <a class="idref" href="automata.html#dfa"><span class="id" type="record">dfa</span></a>.<br/>
 <br/>
 </div>
 <div class="doc_outer"><div class="doc doc_inner">
 Cross product of the two state sets 
 </div></div>
 <div class="code">
-<span class="id" type="keyword">Definition</span> <a name="state_prod"><span class="id" type="definition">state_prod</span></a> := <span class="id" type="definition">prod_finType</span> <a class="idref" href="automata.html#FA.DFAOps.state1"><span class="id" type="variable">state1</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.state2"><span class="id" type="variable">state2</span></a>.<br/>
+<span class="id" type="keyword">Definition</span> <a name="state_prod"><span class="id" type="definition">state_prod</span></a> := <span class="id" type="definition">prod_finType</span> <a class="idref" href="automata.html#FA.DFAOps.A1"><span class="id" type="variable">A1</span></a> <a class="idref" href="automata.html#FA.DFAOps.BinaryOps.A2"><span class="id" type="variable">A2</span></a>.<br/>
 <br/>
 </div>
 <div class="doc_outer"><div class="doc doc_inner">
@@ -653,9 +630,8 @@ Operations on non-deterministic automata.
 </div></div>
 <section class="beautiful_section"><div class="code">
 <span class="id" type="keyword">Section</span> <a name="FA.NFAOps"><span class="id" type="section">NFAOps</span></a>.<br/>
-<span class="id" type="keyword">Variable</span> <a name="FA.NFAOps.state1"><span class="id" type="variable">state1</span></a> <a name="FA.NFAOps.state2"><span class="id" type="variable">state2</span></a>: <span class="id" type="abbreviation">finType</span>.<br/>
-<span class="id" type="keyword">Variable</span> <a name="FA.NFAOps.A1"><span class="id" type="variable">A1</span></a>: <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> <a class="idref" href="automata.html#FA.NFAOps.state1"><span class="id" type="variable">state1</span></a>.<br/>
-<span class="id" type="keyword">Variable</span> <a name="FA.NFAOps.A2"><span class="id" type="variable">A2</span></a>: <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> <a class="idref" href="automata.html#FA.NFAOps.state2"><span class="id" type="variable">state2</span></a>.<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.NFAOps.A1"><span class="id" type="variable">A1</span></a>: <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a>.<br/>
+<span class="id" type="keyword">Variable</span> <a name="FA.NFAOps.A2"><span class="id" type="variable">A2</span></a>: <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a>.<br/>
 <br/>
 </div>
 <div class="doc_outer"><div class="doc doc_inner">
@@ -663,7 +639,7 @@ Concatenation of two non-deterministic automata.
 </div></div>
 <div class="code">
 <br/>
-<span class="id" type="keyword">Definition</span> <a name="state_conc"><span class="id" type="definition">state_conc</span></a> : <span class="id" type="abbreviation">finType</span> := <span class="id" type="definition">sum_finType</span> <a class="idref" href="automata.html#FA.NFAOps.state1"><span class="id" type="variable">state1</span></a> <a class="idref" href="automata.html#FA.NFAOps.state2"><span class="id" type="variable">state2</span></a>.<br/>
+<span class="id" type="keyword">Definition</span> <a name="state_conc"><span class="id" type="definition">state_conc</span></a> : <span class="id" type="abbreviation">finType</span> := <span class="id" type="definition">sum_finType</span> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <a class="idref" href="automata.html#FA.NFAOps.A2"><span class="id" type="variable">A2</span></a>.<br/>
 <br/>
 <span class="id" type="keyword">Definition</span> <a name="step_conc"><span class="id" type="definition">step_conc</span></a> <span class="id" type="var">x</span> <span class="id" type="var">a</span> <span class="id" type="var">y</span> :=<br/>
 <span class="id" type="keyword">match</span> <span class="id" type="var">x</span>,<span class="id" type="var">y</span> <span class="id" type="keyword">with</span><br/>
@@ -681,7 +657,7 @@ Concatenation of two non-deterministic automata.
 <br/>
 <span class="id" type="keyword">Definition</span> <a name="s0_conc"><span class="id" type="definition">s0_conc</span></a> : <a class="idref" href="automata.html#state_conc"><span class="id" type="definition">state_conc</span></a> := <a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inl"><span class="id" type="constructor">inl</span></a> <span class="id" type="var">_</span> (<a class="idref" href="automata.html#nfa_s0"><span class="id" type="projection">nfa_s0</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a>).<br/>
 <br/>
-<span class="id" type="keyword">Definition</span> <a name="nfa_conc"><span class="id" type="definition">nfa_conc</span></a> : <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> <a class="idref" href="automata.html#state_conc"><span class="id" type="definition">state_conc</span></a> :=<br/>
+<span class="id" type="keyword">Definition</span> <a name="nfa_conc"><span class="id" type="definition">nfa_conc</span></a> : <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> :=<br/>
   <a class="idref" href="automata.html#nfaI"><span class="id" type="constructor">nfaI</span></a><br/>
     <a class="idref" href="automata.html#state_conc"><span class="id" type="definition">state_conc</span></a><br/>
     <a class="idref" href="automata.html#s0_conc"><span class="id" type="definition">s0_conc</span></a><br/>
@@ -696,7 +672,7 @@ We prove that every path of A2 can be mapped to a path
 <div class="code">
 <span class="id" type="keyword">Lemma</span> <a name="nfa_conc_cont"><span class="id" type="lemma">nfa_conc_cont</span></a> <span class="id" type="var">x</span> <span class="id" type="var">xs</span> <span class="id" type="var">w</span>:<br/>
   <a class="idref" href="automata.html#nfa_lpath"><span class="id" type="definition">nfa_lpath</span></a> <a class="idref" href="automata.html#FA.NFAOps.A2"><span class="id" type="variable">A2</span></a> <span class="id" type="var">x</span> <span class="id" type="var">xs</span> <span class="id" type="var">w</span><br/>
-  -&gt; <a class="idref" href="automata.html#nfa_lpath"><span class="id" type="definition">nfa_lpath</span></a> <a class="idref" href="automata.html#nfa_conc"><span class="id" type="definition">nfa_conc</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inr"><span class="id" type="constructor">inr</span></a> <span class="id" type="var">_</span> <span class="id" type="var">x</span>) (<span class="id" type="definition">map</span> (@<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inr"><span class="id" type="constructor">inr</span></a> <a class="idref" href="automata.html#FA.NFAOps.state1"><span class="id" type="variable">state1</span></a> <a class="idref" href="automata.html#FA.NFAOps.state2"><span class="id" type="variable">state2</span></a>) <span class="id" type="var">xs</span>) <span class="id" type="var">w</span>.<br/>
+  -&gt; <a class="idref" href="automata.html#nfa_lpath"><span class="id" type="definition">nfa_lpath</span></a> <a class="idref" href="automata.html#nfa_conc"><span class="id" type="definition">nfa_conc</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inr"><span class="id" type="constructor">inr</span></a> <span class="id" type="var">_</span> <span class="id" type="var">x</span>) (<span class="id" type="definition">map</span> (@<a class="idref" href="http://coq.inria.fr/distrib/8.3pl3/stdlib/Coq.Init.Datatypes.html#inr"><span class="id" type="constructor">inr</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a> <a class="idref" href="automata.html#FA.NFAOps.A2"><span class="id" type="variable">A2</span></a>) <span class="id" type="var">xs</span>) <span class="id" type="var">w</span>.<br/>
 <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">elim</span>: <span class="id" type="var">xs</span> <span class="id" type="var">x</span> <span class="id" type="var">w</span> =&gt; [|<span class="id" type="var">y</span> <span class="id" type="var">xs</span> <span class="id" type="var">IHxs</span>] <span class="id" type="var">x</span> <span class="id" type="var">w</span>; <span class="id" type="tactic">case</span>: <span class="id" type="var">w</span> =&gt; [|<span class="id" type="var">a</span> <span class="id" type="var">w</span>] =&gt; //.<br/>
 <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">by</span> <span class="id" type="tactic">move</span>/<span class="id" type="lemma">andP</span> =&gt; [] -&gt; /<span class="id" type="var">IHxs</span> -&gt;.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
@@ -829,9 +805,9 @@ The step relation implements the following rules:
 <div class="doc_outer"><div class="doc doc_inner">
 </div></div>
 <div class="code">
-<span class="id" type="keyword">Definition</span> <a name="nfa_plus"><span class="id" type="definition">nfa_plus</span></a> : <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> <a class="idref" href="automata.html#FA.NFAOps.state1"><span class="id" type="variable">state1</span></a> :=<br/>
+<span class="id" type="keyword">Definition</span> <a name="nfa_plus"><span class="id" type="definition">nfa_plus</span></a> : <a class="idref" href="automata.html#nfa"><span class="id" type="record">nfa</span></a> :=<br/>
   <a class="idref" href="automata.html#nfaI"><span class="id" type="constructor">nfaI</span></a><br/>
-    <a class="idref" href="automata.html#FA.NFAOps.state1"><span class="id" type="variable">state1</span></a><br/>
+    <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a><br/>
     (<a class="idref" href="automata.html#nfa_s0"><span class="id" type="projection">nfa_s0</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a>)<br/>
     (<a class="idref" href="automata.html#nfa_fin"><span class="id" type="projection">nfa_fin</span></a> <a class="idref" href="automata.html#FA.NFAOps.A1"><span class="id" type="variable">A1</span></a>)<br/>
     <a class="idref" href="automata.html#step_plus"><span class="id" type="definition">step_plus</span></a>.<br/>
@@ -983,15 +959,9 @@ We prove the second part of language correctness
 <br/>
 <span class="id" type="keyword">End</span> <a class="idref" href="automata.html#FA.NFAOps"><span class="id" type="section">NFAOps</span></a>.<br/>
 <br/>
-</div></section>
-<div class="doc_outer"><div class="doc doc_inner">
-NFA minimization 
-</div></div>
-<div class="code">
-<br/>
 <span class="id" type="keyword">End</span> <a class="idref" href="automata.html#FA"><span class="id" type="section">FA</span></a>.<br/>
 <br/>
-</div></section>
+</div></section></section>
 </div>
 <div id="footer">
 <hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
