@@ -23,6 +23,20 @@
                     ],
                 "showHeader" : true,
                 "showFooter" : true
+            },
+            "halfPage": {
+                "frames": [
+                    ["0cm", "0cm", "100%", "75%"]
+                    ],
+                "showHeader" : true,
+                "showFooter" : true
+            },
+            "34Page": {
+                "frames": [
+                    ["0cm", "0cm", "100%", "82.5%"]
+                    ],
+                "showHeader" : true,
+                "showFooter" : true
             }
 
         },

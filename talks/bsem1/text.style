@@ -1,0 +1,5 @@
+styles:
+    bigtext:
+        fontSize: 20
+    formula:
+        fontSize: 20

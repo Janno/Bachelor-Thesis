@@ -1,0 +1,9 @@
+styles:
+    bullet-list:
+        parent: bodytext
+        spaceBefore: 20
+
+    item-list:
+        parent: bodytext
+        spaceBefore: 20
+

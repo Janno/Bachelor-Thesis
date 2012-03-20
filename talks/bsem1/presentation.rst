@@ -7,8 +7,6 @@
 
 Constructive Formalization of Regular Languages
 ==================================================
-
---------------------------------------------
 Jan-Oliver Kaiser
 --------------------------------------------
 
@@ -27,37 +25,38 @@ Supervisor: Gert Smolka
 
 .. raw:: pdf
 
-    PageBreak normalPage
+    PageBreak halfPage
 
-=============
+--------
 Contents
-=============
+--------
 
 
 #. Motivation
 #. Previous work
+#. Our development
 #. Roadmap
 
 .. raw:: pdf
 
-    PageBreak 
+    PageBreak halfPage
 
-==========
+----------
 Motivation
-==========
+----------
 
-* Interest in formalizations growing stronger
-* No complete and elegant formalization of regular languages in Coq
-* Recent formalizations avoid FA in favor of partial derivatives
+* Strong interest in formalizations in this area.
+* No complete and elegant formalization of regular languages in Coq.
+* Recent formalizations avoid FA in favor of partial derivatives.
 
 .. raw:: pdf
 
-    PageBreak 
+    PageBreak normalPage
 
 
-=============
+-------------
 Previous work
-=============
+-------------
 
 * Constructively formalizing automata theory (2000)
 
@@ -73,7 +72,7 @@ Previous work
 
     Spacer 0, 10
 
-* Proof Pearl: Regular Expression Equivalence and Relation Algebra
+* Proof Pearl: Regular Expression Equivalence and Relation Algebra (2011)
 
   *Alexander Krauss, Tobias Nipkow*
   
@@ -83,7 +82,7 @@ Previous work
 
 .. raw:: pdf
 
-    Spacer 0, 10
+    PageBreak
 
 * Deciding Kleene Algebras in Coq (2011)
 
@@ -108,7 +107,7 @@ Previous work
 
 .. raw:: pdf
 
-    Spacer 0, 10
+    PageBreak
 
 * A Formalisation of the Myhill-Nerode Theorem
   based on Regular Expressions (Proof Pearl) (2011)
@@ -120,5 +119,89 @@ Previous work
   The first proof of MH based on **partial derivatives of RE**.
 
 
+.. raw:: pdf
+
+    PageBreak halfPage
+
+---------------
+Our Development
+---------------
+
+* We want to focus on elegance, not performance. 
+* Our main goals are MH and the decidability of RE equality.
+* We use FA.
+  
+  They are not at all impractical. (Partly thanks to Ssreflect's finType)
+
+.. raw:: pdf
+
+    PageBreak halfPage
+
+.. class:: bigtext
+
+**Ssreflect**
+
+* Excellent support for all things boolean.
+* Finite types with all necessary operations and closure properties. 
+  
+  (very useful for alphabets, FA states, etc.)
+* Lots and lots of useful lemmas and functions.
+
+
+.. raw:: pdf
+
+    PageBreak 34Page
+
+.. class:: bigtext
+
+**Finite automata**
+
+.. raw:: pdf
+    
+    Spacer 0, 10
+
+DFA and NFA without e-transitions.
+
+* DFA to prove closure under :math:`\cup`, :math:`\cap`, and :math:`\neg`.
+* NFA to prove closure under :math:`\bullet\,` and :math:`\ast`.
+
+.. raw:: pdf
+    
+    Spacer 0, 20
+
+Also proven: 
+NFA :math:`\Leftrightarrow\,` DFA.
+
+.. raw:: pdf
+    
+    Spacer 0, 20
+
+This gives us:
+RE :math:`\Rightarrow\,` FA.    
+
+.. raw:: pdf
+
+    PageBreak
+
+
+-------
+Roadmap
+-------
+
+.. raw:: pdf
+    
+    Spacer 0, 10
+
+
+#. Emptiness test on FA (:math:`\emptyset(A) := \mathcal{L}(A) = \emptyset \,`)
+#. FA :math:`\Rightarrow\,` RE
+#. Dedicedability of RE using RE :math:`\Rightarrow` FA, (2) and (1):
+
+    :math:`\mathcal{L}(r) = \mathcal{L}(s)`
+    
+    :math:`\Leftrightarrow`
+
+    :math:`\emptyset(\mathcal{A}(r) \cap \overline{\mathcal{A}(s)}) \wedge`
+    :math:`\emptyset(\overline{\mathcal{A}(r)} \cap \mathcal{A}(s))`
 
 
