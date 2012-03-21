@@ -48,7 +48,7 @@ Motivation
 
 We want to develop an elegant formalization of regular languages in Coq based on finite automata. 
 
-There are several reasons for chosing this topic and our specific approach:
+There are several reasons for choosing this topic and our specific approach:
 
 * Strong interest in formalizations in this area.
 * Few formalizations of regular languages in Coq, most of them very long or incomplete.
