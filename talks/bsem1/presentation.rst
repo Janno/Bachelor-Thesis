@@ -25,18 +25,35 @@ Supervisor: Gert Smolka
 
 .. raw:: pdf
 
-    PageBreak halfPage
+    PageBreak 34Page
 
 --------
 Contents
 --------
 
-#. Quick Recap
 #. Motivation
+#. Quick Recap
 #. Previous work
 #. Our development
 #. Roadmap
 
+
+.. raw:: pdf
+
+    PageBreak 34Page
+
+----------
+Motivation
+----------
+
+We want to develop an elegant formalization of regular languages in Coq based on finite automata. 
+
+There are several reasons for chosing this topic and our specific approach:
+
+* Strong interest in formalizations in this area.
+* Few formalizations of regular languages in Coq, most of them very long or incomplete.
+* Most formalizations avoid finite automata in favor of regular expressions.
+* It's fun.
 
 .. raw:: pdf
 
@@ -58,20 +75,7 @@ The regular languages over an alphabet :math:`\Sigma\,` can be defined recursive
 
     PageBreak 34Page
 
-They can also be defined using regular expressions:
-
-* :math:`\emptyset \, \in \, RE_{\Sigma}, \, \mathcal{L}(\emptyset) := \{\}`
-* :math:`\varepsilon \, \in \, RE_{\Sigma}, \, \mathcal{L}(\varepsilon) := \{ \varepsilon \}`
-* :math:`a \, \in \, \Sigma \, \rightarrow \, a \in \, RE_{\Sigma}, \, \mathcal{L}(a) := \{ a \}`
-* :math:`r,s \, \in \, RL_{\Sigma} \, \rightarrow \, (r + s) \in \, RE_{\Sigma}, \, \mathcal{L}(r + s) := \mathcal{L}(r) \cup \mathcal{L}(s)`
-* :math:`r,s \, \in \, RL_{\Sigma} \, \rightarrow \, (r \bullet s) \in \, RE_{\Sigma}, \, \mathcal{L}(r \bullet s) := \mathcal{L}(r) \bullet \mathcal{L}(s)`
-* :math:`r \, \in \, RL_{\Sigma} \, \rightarrow \, r^{\ast} \in \, RE_{\Sigma}, \, \mathcal{L}(r^{\ast}) := \mathcal{L}(r)^{\ast}`
-
-.. raw:: pdf
-
-    PageBreak 34Page
-
-Additionally, regular languages are also exactly those languages accepted by finite automata.
+Additionally, regular languages are also exactly those languages accepted by **finite automata**.
 
 One possible definition of FA over an alphabet :math:`\Sigma \,` is:
 
@@ -90,6 +94,42 @@ Let A be a FA.
 
 .. raw:: pdf
 
+    PageBreak 34Page
+
+They can also be defined using **regular expressions** which are usually converted to FA for matching:
+
+* :math:`\emptyset \, \in \, regexp_{\Sigma}, \, \mathcal{L}(\emptyset) := \{\}`
+* :math:`\varepsilon \, \in \, regexp_{\Sigma}, \, \mathcal{L}(\varepsilon) := \{ \varepsilon \}`
+* :math:`a \, \in \, \Sigma \, \rightarrow \, a \in \, regexp_{\Sigma}, \, \mathcal{L}(a) := \{ a \}`
+* :math:`r,s \, \in \, RL_{\Sigma} \, \rightarrow \, (r + s) \in \, regexp_{\Sigma}, \, \mathcal{L}(r + s) := \mathcal{L}(r) \cup \mathcal{L}(s)`
+* :math:`r,s \, \in \, RL_{\Sigma} \, \rightarrow \, (r s) \in \, regexp_{\Sigma}, \, \mathcal{L}(r \bullet s) := \mathcal{L}(r) \bullet \mathcal{L}(s)`
+* :math:`r \, \in \, RL_{\Sigma} \, \rightarrow \, r^{\ast} \in \, regexp_{\Sigma}, \, \mathcal{L}(r^{\ast}) := \mathcal{L}(r)^{\ast}`
+
+.. raw:: pdf
+
+    PageBreak normalPage
+
+Brzozowski showed that matching words against regular expressions can be done without converting them to FA. (1964, Derivatives of Regular Expressions)
+
+
+* der a :math:`\emptyset` = :math:`\emptyset`
+* der a :math:`\varepsilon` = :math:`\emptyset`
+* der a b = if a = b then :math:`\varepsilon` else :math:`\emptyset`
+* der a (r + s) = (der a r) + (der a s)
+* der a (r s) = if :math:`\delta(r) \,` then (der a s) + ((der a r) s)  else (der a r) s 
+* der a (r*) = (der a r) r*
+
+with :math:`\delta(r) \, = \, true \, \Leftrightarrow \, \varepsilon \, \in \, \mathcal{L}(r)`.
+
+.. raw:: pdf
+
+    Spacer 0, 10
+
+:math:`w \, \in \, \mathcal{L}(r) \,` if and only if the derivative of r with respect to :math:`w_1 .. \, w_{|w|}` accepts :math:`\varepsilon`.
+
+
+.. raw:: pdf
+
     PageBreak halfPage
 
 Finally, regular languages are also characterized by the Myhill-Nerode theorem.
@@ -102,19 +142,7 @@ Finally, regular languages are also characterized by the Myhill-Nerode theorem.
 
     Spacer 0, 10
 
-* :math:`L \,` is regular if and only if :math:`R_{L}` divides L into a finite number of equivalence classes.
-
-.. raw:: pdf
-
-    PageBreak halfPage
-
-----------
-Motivation
-----------
-
-* Strong interest in formalizations in this area.
-* No complete and elegant formalization of regular languages in Coq.
-* Recent formalizations avoid FA in favor of partial derivatives.
+* L is regular if and only if :math:`R_{L}` divides L into a finite number of equivalence classes.
 
 .. raw:: pdf
 
@@ -145,7 +173,7 @@ Previous work
   
   **PA**: Isabelle
 
-  Based on **partial derivatives of RE**. No proof of termination.
+  Based on **derivatives of regexps**. No proof of termination.
 
 .. raw:: pdf
 
@@ -169,7 +197,7 @@ Previous work
 
   **PA**: Coq
 
-  Based on **partial derivatives of RE**.
+  Based on **derivatives of regexps**.
 
 .. raw:: pdf
 
@@ -182,7 +210,7 @@ Previous work
 
   **PA**: Isabelle
 
-  The first proof of MH based on **partial derivatives of RE**.
+  The first proof of MH based on **derivatives of regexps**.
 
 .. raw:: pdf
 
@@ -207,8 +235,8 @@ Our Development
 ---------------
 
 * We want to focus on elegance, not performance. 
-* Our main goals are MH and the decidability of RE equivalence.
-* We use FA.
+* Our main goals are MH and the decidability of regexp equivalence.
+* We use finite automata.
   
   They are not at all impractical. (Partly thanks to Ssreflect's finType)
 
@@ -256,7 +284,7 @@ NFA :math:`\Leftrightarrow\,` DFA.
     Spacer 0, 20
 
 This gives us:
-RE :math:`\Rightarrow\,` FA.    
+regexp :math:`\Rightarrow\,` FA.    
 
 .. raw:: pdf
 
@@ -273,8 +301,8 @@ Roadmap
 
 
 #. Emptiness test on FA (:math:`\emptyset(A) := \mathcal{L}(A) = \emptyset \,`)
-#. FA :math:`\Rightarrow\,` RE
-#. Dedicedability of RE equivalence using RE :math:`\Rightarrow` FA, (2) and (1):
+#. FA :math:`\Rightarrow\,` regexp
+#. Dedicedability of regexp equivalence using regexp :math:`\Rightarrow` FA, (2) and (1):
 
     :math:`\mathcal{L}(r) = \mathcal{L}(s)`
     
@@ -293,5 +321,5 @@ Roadmap
     
     Spacer 0, 20
 
-With this we'll have a complete formalization of regular languages including RE, FA and MH and all corresponding equivalences.
+With this we'll have an extensive formalization of regular languages including regular expressions, FA and MH and all corresponding equivalences.
 
