@@ -216,4 +216,15 @@ Roadmap
     :math:`\emptyset(\mathcal{A}(r) \cap \overline{\mathcal{A}(s)}) \wedge`
     :math:`\emptyset(\overline{\mathcal{A}(r)} \cap \mathcal{A}(s))`
 
+.. raw:: pdf
+    
+    PageBreak halfPage
+
+4. Finally, we want to prove the MH theorem
+
+.. raw:: pdf
+    
+    Spacer 0, 20
+
+With this we'll have a complete formalization of regular languages including RE, FA and MH and all corresponding equivalences.
 

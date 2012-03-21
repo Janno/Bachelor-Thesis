@@ -3,3 +3,6 @@ styles:
         fontSize: 20
     formula:
         fontSize: 20
+    end:
+        fontSize: 40
+        alignment: "center"
