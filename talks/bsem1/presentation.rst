@@ -78,7 +78,7 @@ Previous work
   
   **PA**: Isabelle
 
-  Based on **partial derivatives of RE**.
+  Based on **partial derivatives of RE**. No proof of termination.
 
 .. raw:: pdf
 
@@ -91,7 +91,6 @@ Previous work
   **PA**: Coq
 
   Based on **FA**, matrices. Focus on performance.
-
 
 .. raw:: pdf
 
@@ -118,6 +117,19 @@ Previous work
 
   The first proof of MH based on **partial derivatives of RE**.
 
+.. raw:: pdf
+
+    Spacer 0, 10
+
+* Deciding Regular Expressions (In-)Equivalence in Coq (2011)
+  
+  Nelma Moreira, David Pereira, Simão Melo de Sousa
+
+  **PA**: Coq
+
+  Based on Krauss, Nipkow. Proof of termination.
+
+
 
 .. raw:: pdf
 
@@ -128,7 +140,7 @@ Our Development
 ---------------
 
 * We want to focus on elegance, not performance. 
-* Our main goals are MH and the decidability of RE equality.
+* Our main goals are MH and the decidability of RE equivalence.
 * We use FA.
   
   They are not at all impractical. (Partly thanks to Ssreflect's finType)
@@ -195,7 +207,7 @@ Roadmap
 
 #. Emptiness test on FA (:math:`\emptyset(A) := \mathcal{L}(A) = \emptyset \,`)
 #. FA :math:`\Rightarrow\,` RE
-#. Dedicedability of RE using RE :math:`\Rightarrow` FA, (2) and (1):
+#. Dedicedability of RE equivalence using RE :math:`\Rightarrow` FA, (2) and (1):
 
     :math:`\mathcal{L}(r) = \mathcal{L}(s)`
     
