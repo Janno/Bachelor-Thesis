@@ -31,11 +31,78 @@ Supervisor: Gert Smolka
 Contents
 --------
 
-
+#. Quick Recap
 #. Motivation
 #. Previous work
 #. Our development
 #. Roadmap
+
+
+.. raw:: pdf
+
+    PageBreak 34Page
+
+-----------
+Quick Recap
+-----------
+
+The regular languages over an alphabet :math:`\Sigma\,` can be defined recursively:
+
+* :math:`\emptyset \, \in \, RL_{\Sigma}`
+* :math:`a \, \in \, \Sigma \, \rightarrow \, \{a\} \, \in \, RL_{\Sigma}`
+* :math:`A,B \, \in \, RL_{\Sigma} \, \rightarrow \, A \, \cup \, B \, \in \, RL_{\Sigma}`
+* :math:`A,B \, \in \, RL_{\Sigma} \, \rightarrow \, A \, \bullet \, B \, \in \, RL_{\Sigma}`
+* :math:`A \, \in \, RL_{\Sigma} \, \rightarrow \, A^{\ast} \, \in \, RL_{\Sigma}`
+
+.. raw:: pdf
+
+    PageBreak 34Page
+
+They can also be defined using regular expressions:
+
+* :math:`\emptyset \, \in \, RE_{\Sigma}, \, \mathcal{L}(\emptyset) := \{\}`
+* :math:`\varepsilon \, \in \, RE_{\Sigma}, \, \mathcal{L}(\varepsilon) := \{ \varepsilon \}`
+* :math:`a \, \in \, \Sigma \, \rightarrow \, a \in \, RE_{\Sigma}, \, \mathcal{L}(a) := \{ a \}`
+* :math:`r,s \, \in \, RL_{\Sigma} \, \rightarrow \, (r + s) \in \, RE_{\Sigma}, \, \mathcal{L}(r + s) := \mathcal{L}(r) \cup \mathcal{L}(s)`
+* :math:`r,s \, \in \, RL_{\Sigma} \, \rightarrow \, (r \bullet s) \in \, RE_{\Sigma}, \, \mathcal{L}(r \bullet s) := \mathcal{L}(r) \bullet \mathcal{L}(s)`
+* :math:`r \, \in \, RL_{\Sigma} \, \rightarrow \, r^{\ast} \in \, RE_{\Sigma}, \, \mathcal{L}(r^{\ast}) := \mathcal{L}(r)^{\ast}`
+
+.. raw:: pdf
+
+    PageBreak 34Page
+
+Additionally, regular languages are also exactly those languages accepted by finite automata.
+
+One possible definition of FA over an alphabet :math:`\Sigma \,` is:
+
+* a finite set of states Q
+* an initial state :math:`s_0 \in \,` Q
+* a transition relation :math:`\Delta \, \in \,` (Q, :math:`\Sigma`, Q)
+* a set of finite states F, F :math:`\sqsubseteq \,` Q
+
+.. raw:: pdf
+
+    Spacer 0, 10
+
+Let A be a FA.
+
+:math:`\mathcal{L}(A) := \{ w \, | \, \exists s_1, \, ... \, s_{|w|} \, \in \, Q \, s.t. \, \forall \, i : \, 0 \, < \, i \, \leq \, n \, \rightarrow \, (s_{i-1}, w_i, s_i) \, \in \, \Delta \}`
+
+.. raw:: pdf
+
+    PageBreak halfPage
+
+Finally, regular languages are also characterized by the Myhill-Nerode theorem.
+
+* First, we define a binary relation on L:
+
+  :math:`R_{L} x y := \neg \exists z, \, x \bullet z \, \in \, L \, \oplus \, y \bullet z \, \in \, L` 
+
+.. raw:: pdf
+
+    Spacer 0, 10
+
+* :math:`L \,` is regular if and only if :math:`R_{L}` divides L into a finite number of equivalence classes.
 
 .. raw:: pdf
 
