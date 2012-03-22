@@ -110,10 +110,10 @@ Section NFA.
 (** The type of non-deterministic finite automata. ***)
 Record nfa : Type :=
   nfaI {
-    state :> finType;
-    nfa_s0: state;
-    nfa_fin: pred state;
-    nfa_step: state -> char -> pred state
+    nfa_state :> finType;
+    nfa_s0: nfa_state;
+    nfa_fin: pred nfa_state;
+    nfa_step: nfa_state -> char -> pred nfa_state
     }.
 
 (** Acceptance on non-deterministic automata. **)
