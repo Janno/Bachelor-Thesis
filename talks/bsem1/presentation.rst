@@ -52,37 +52,69 @@ There are several reasons for choosing this topic and our specific approach:
 
 * Strong interest in formalizations in this area.
 * Few formalizations of regular languages in Coq, most of them very long or incomplete.
-* Most formalizations avoid finite automata in favor of regular expressions.
-* It's fun.
+* Most formalizations avoid finite automata in favor of regular expressions. 
+  Regular expressions (with Brzozowski derivatives) lead to more complex but also more performant algorithms.
 
 .. raw:: pdf
 
-    PageBreak 34Page
+    PageBreak normalPage
 
 -----------
 Quick Recap
 -----------
 
-The regular languages over an alphabet :math:`\Sigma\,` can be defined recursively:
+We use extended **regular expressions** (regexp):
 
-* :math:`\emptyset \, \in \, RL_{\Sigma}`
-* :math:`a \, \in \, \Sigma \, \rightarrow \, \{a\} \, \in \, RL_{\Sigma}`
-* :math:`A,B \, \in \, RL_{\Sigma} \, \rightarrow \, A \, \cup \, B \, \in \, RL_{\Sigma}`
-* :math:`A,B \, \in \, RL_{\Sigma} \, \rightarrow \, A \, \bullet \, B \, \in \, RL_{\Sigma}`
-* :math:`A \, \in \, RL_{\Sigma} \, \rightarrow \, A^{\ast} \, \in \, RL_{\Sigma}`
+:math:`r,s \, ::= \, \emptyset \, | \, \varepsilon \, | \, a \, | \, r s \, | \, r + s \, | \, r & s \, | \, r^{\ast} \, | \, \neg r`
+
+* :math:`\mathcal{L}(\emptyset) := \{\}`
+* :math:`\mathcal{L}(\varepsilon) := \{ \varepsilon \}`
+* :math:`\mathcal{L}(a) := \{ a \}`
+* :math:`\mathcal{L}(r s) := \mathcal{L}(r) \cdot \mathcal{L}(s)`
+* :math:`\mathcal{L}(r + s) := \mathcal{L}(r) \cup \mathcal{L}(s)`
+* :math:`\mathcal{L}(r & s) := \mathcal{L}(r) \cap \mathcal{L}(s)`
+* :math:`\mathcal{L}(r^{\ast}) := \mathcal{L}(r)^{\ast}`
+* :math:`\mathcal{L}(\neg r) := \overline{\mathcal{L}(r)}`
+
+.. raw:: pdf
+
+    PageBreak normalPage
+
+**Derivatives of Regular Expressions** (1964), *Janusz Brzozowski*:
+
+* der a :math:`\emptyset` = :math:`\emptyset`
+* der a :math:`\varepsilon` = :math:`\emptyset`
+* der a b = if a = b then :math:`\varepsilon \,` else :math:`\emptyset`
+* der a (r s) = if :math:`\delta(r) \,` then (der a s) + ((der a r) s)  else (der a r) s 
+  
+  with :math:`\delta(r) \, = \, true \, \Leftrightarrow \, \varepsilon \, \in \, \mathcal{L}(r)`.
+* der a (r + s) = (der a r) + (der a s)
+* der a (r & s) = (der a r) & (der a s)
+* der a (r*) = (der a r) r*
+* der a (:math:`\neg` r) = :math:`\neg` (der a r)
+
+
+.. raw:: pdf
+
+    Spacer 0, 10
+
+**Theorem**: :math:`w \, \in \, \mathcal{L}(r) \,` if and only if the derivative of r with respect to :math:`w_1 .. \, w_{|w|}\,` accepts :math:`\varepsilon`.
 
 .. raw:: pdf
 
     PageBreak 34Page
 
-Additionally, regular languages are also exactly those languages accepted by **finite automata**.
+Regular languages are also exactly those languages accepted by **finite automata** (FA).
 
-One possible definition of FA over an alphabet :math:`\Sigma \,` is:
+Our definition of FA over an alphabet :math:`\Sigma \,`:
 
-* a finite set of states Q
-* an initial state :math:`s_0 \in \,` Q
-* a transition relation :math:`\Delta \, \in \,` (Q, :math:`\Sigma`, Q)
-* a set of finite states F, F :math:`\sqsubseteq \,` Q
+* The finite set of states Q
+* The initial state :math:`s_0 \in \,` Q
+* The (decidable) transition relation :math:`\Delta \, \in \,` (Q, :math:`\Sigma`, Q) 
+  
+  Deterministic FA: :math:`\Delta \,` is functional and **total**.
+   
+* The set of finite states F, F :math:`\sqsubseteq \,` Q
 
 .. raw:: pdf
 
@@ -92,41 +124,6 @@ Let A be a FA.
 
 :math:`\mathcal{L}(A) := \{ w \, | \, \exists s_1, \, ... \, s_{|w|} \, \in \, Q \, s.t. \, \forall \, i : \, 0 \, < \, i \, \leq \, n \, \rightarrow \, (s_{i-1}, w_i, s_i) \, \in \, \Delta \}`
 
-.. raw:: pdf
-
-    PageBreak 34Page
-
-They can also be defined using **regular expressions** which are usually converted to FA for matching:
-
-* :math:`\emptyset \, \in \, regexp_{\Sigma}, \, \mathcal{L}(\emptyset) := \{\}`
-* :math:`\varepsilon \, \in \, regexp_{\Sigma}, \, \mathcal{L}(\varepsilon) := \{ \varepsilon \}`
-* :math:`a \, \in \, \Sigma \, \rightarrow \, a \in \, regexp_{\Sigma}, \, \mathcal{L}(a) := \{ a \}`
-* :math:`r,s \, \in \, RL_{\Sigma} \, \rightarrow \, (r + s) \in \, regexp_{\Sigma}, \, \mathcal{L}(r + s) := \mathcal{L}(r) \cup \mathcal{L}(s)`
-* :math:`r,s \, \in \, RL_{\Sigma} \, \rightarrow \, (r s) \in \, regexp_{\Sigma}, \, \mathcal{L}(r \bullet s) := \mathcal{L}(r) \bullet \mathcal{L}(s)`
-* :math:`r \, \in \, RL_{\Sigma} \, \rightarrow \, r^{\ast} \in \, regexp_{\Sigma}, \, \mathcal{L}(r^{\ast}) := \mathcal{L}(r)^{\ast}`
-
-.. raw:: pdf
-
-    PageBreak normalPage
-
-Brzozowski showed that matching words against regular expressions can be done without converting them to FA. (1964, Derivatives of Regular Expressions)
-
-
-* der a :math:`\emptyset` = :math:`\emptyset`
-* der a :math:`\varepsilon` = :math:`\emptyset`
-* der a b = if a = b then :math:`\varepsilon` else :math:`\emptyset`
-* der a (r + s) = (der a r) + (der a s)
-* der a (r s) = if :math:`\delta(r) \,` then (der a s) + ((der a r) s)  else (der a r) s 
-* der a (r*) = (der a r) r*
-
-with :math:`\delta(r) \, = \, true \, \Leftrightarrow \, \varepsilon \, \in \, \mathcal{L}(r)`.
-
-.. raw:: pdf
-
-    Spacer 0, 10
-
-:math:`w \, \in \, \mathcal{L}(r) \,` if and only if the derivative of r with respect to :math:`w_1 .. \, w_{|w|}` accepts :math:`\varepsilon`.
-
 
 .. raw:: pdf
 
@@ -134,15 +131,15 @@ with :math:`\delta(r) \, = \, true \, \Leftrightarrow \, \varepsilon \, \in \, \
 
 Finally, regular languages are also characterized by the Myhill-Nerode theorem.
 
-* First, we define a binary relation on L:
+First, we define an  equivalence relation on L:
 
-  :math:`R_{L} x y := \neg \exists z, \, x \bullet z \, \in \, L \, \oplus \, y \bullet z \, \in \, L` 
+:math:`x \, R_{L} \, y \, := \, \forall z, \, x \cdot z \, \in \, L \, \Leftrightarrow \, y \cdot z \, \in \, L` 
 
 .. raw:: pdf
 
     Spacer 0, 10
 
-* L is regular if and only if :math:`R_{L}` divides L into a finite number of equivalence classes.
+**Myhill-Nerode theorem**: L is regular if and only if :math:`R_{L}` divides L into a finite number of equivalence classes.
 
 .. raw:: pdf
 
@@ -270,7 +267,7 @@ Our Development
 DFA and NFA without e-transitions.
 
 * DFA to prove closure under :math:`\cup`, :math:`\cap`, and :math:`\neg`.
-* NFA to prove closure under :math:`\bullet\,` and :math:`\ast`.
+* NFA to prove closure under :math:`\cdot\,` and :math:`\ast`.
 
 .. raw:: pdf
     

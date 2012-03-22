@@ -1,9 +1,9 @@
 styles:
     bullet-list:
         parent: bodytext
-        spaceBefore: 20
+        spaceBefore: 10
 
     item-list:
         parent: bodytext
-        spaceBefore: 20
+        spaceBefore: 10
 
