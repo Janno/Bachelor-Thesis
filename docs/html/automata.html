@@ -224,10 +224,10 @@ The type of non-deterministic finite automata.
 <div class="code">
 <span class="id" type="keyword">Record</span> <a name="nfa"><span class="id" type="record">nfa</span></a> : <span class="id" type="keyword">Type</span> :=<br/>
   <a name="nfaI"><span class="id" type="constructor">nfaI</span></a> {<br/>
-    <a name="state"><span class="id" type="projection">state</span></a> :&gt; <span class="id" type="abbreviation">finType</span>;<br/>
-    <a name="nfa_s0"><span class="id" type="projection">nfa_s0</span></a>: <a class="idref" href="automata.html#state"><span class="id" type="method">state</span></a>;<br/>
-    <a name="nfa_fin"><span class="id" type="projection">nfa_fin</span></a>: <span class="id" type="definition">pred</span> <a class="idref" href="automata.html#state"><span class="id" type="method">state</span></a>;<br/>
-    <a name="nfa_step"><span class="id" type="projection">nfa_step</span></a>: <a class="idref" href="automata.html#state"><span class="id" type="method">state</span></a> -&gt; <a class="idref" href="automata.html#FA.char"><span class="id" type="variable">char</span></a> -&gt; <span class="id" type="definition">pred</span> <a class="idref" href="automata.html#state"><span class="id" type="method">state</span></a><br/>
+    <a name="nfa_state"><span class="id" type="projection">nfa_state</span></a> :&gt; <span class="id" type="abbreviation">finType</span>;<br/>
+    <a name="nfa_s0"><span class="id" type="projection">nfa_s0</span></a>: <a class="idref" href="automata.html#nfa_state"><span class="id" type="method">nfa_state</span></a>;<br/>
+    <a name="nfa_fin"><span class="id" type="projection">nfa_fin</span></a>: <span class="id" type="definition">pred</span> <a class="idref" href="automata.html#nfa_state"><span class="id" type="method">nfa_state</span></a>;<br/>
+    <a name="nfa_step"><span class="id" type="projection">nfa_step</span></a>: <a class="idref" href="automata.html#nfa_state"><span class="id" type="method">nfa_state</span></a> -&gt; <a class="idref" href="automata.html#FA.char"><span class="id" type="variable">char</span></a> -&gt; <span class="id" type="definition">pred</span> <a class="idref" href="automata.html#nfa_state"><span class="id" type="method">nfa_state</span></a><br/>
     }.<br/>
 <br/>
 </div>

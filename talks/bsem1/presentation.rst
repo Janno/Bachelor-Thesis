@@ -122,7 +122,7 @@ Our definition of FA over an alphabet :math:`\Sigma \,`:
 
 Let A be a FA.
 
-:math:`\mathcal{L}(A) := \{ w \, | \, \exists s_1, \, ... \, s_{|w|} \, \in \, Q \, s.t. \, \forall \, i : \, 0 \, < \, i \, \leq \, n \, \rightarrow \, (s_{i-1}, w_i, s_i) \, \in \, \Delta \}`
+:math:`\mathcal{L}(A) := \{ w \, | \, \exists s_1, \, ... \, s_{|w|} \, \in \, Q \, s.t. \, \forall \, i : \, 0 \, < \, i \, \leq \, n \, \rightarrow \, (s_{i-1}, w_i, s_i) \, \in \, \Delta \, \wedge \, s_{|w|} \in \, F \, \}`
 
 
 .. raw:: pdf
@@ -239,54 +239,68 @@ Our Development
 
 .. raw:: pdf
 
-    PageBreak halfPage
+    PageBreak normalPage
 
 .. class:: bigtext
 
-**Ssreflect**
+**Quick examples**
 
-* Excellent support for all things boolean.
-* Finite types with all necessary operations and closure properties. 
-  
-  (very useful for alphabets, FA states, etc.)
-* Lots and lots of useful lemmas and functions.
+.. code-block:: Haskell
 
+    Record dfa : Type :=
+      dfaI {
+        dfa_state :> finType;
+        dfa_s0: dfa_state;
+        dfa_fin: pred dfa_state;
+        dfa_step: dfa_state -> char -> dfa_state
+      }.
+
+    Fixpoint dfa_accept A (x: A) w :=
+    match w with
+      | [::] => dfa_fin A x
+      | a::w => dfa_accept A (dfa_step A x a) w
+    end.
+
+.. code-block:: Haskell
+
+    Record nfa : Type :=
+      nfaI {
+        nfa_state :> finType;
+        nfa_s0: nfa_state;
+        nfa_fin: pred nfa_state;
+        nfa_step: nfa_state -> char -> pred nfa_state
+      }.
+
+    Fixpoint nfa_accept A (x: A) w :=
+    match w with
+      | [::] => nfa_fin A x
+      | a::w => existsb y, (nfa_step A x a y) && nfa_accept A y w
+    end.
 
 .. raw:: pdf
-
+    
     PageBreak 34Page
 
-.. class:: bigtext
+50% of **NFA** :math:`\Rightarrow` **DFA** (powerset construction)
 
-**Finite automata**
+.. code-block:: Haskell
 
-.. raw:: pdf
-    
-    Spacer 0, 10
+    Lemma nfa_to_dfa_correct2 (X: nfa_to_dfa) w:
+      dfa_accept nfa_to_dfa X w -> existsb x, (x \in X) && nfa_accept A x w.
+    Proof. elim: w X => [|a w IHw] X.
+      by [].
+    move/IHw => /existsP [] y /andP [].
+    rewrite /dfa_step /nfa_to_dfa /=. rewrite cover_imset.
+    move/bigcupP => [] x H0 H1 H2.
+    apply/existsP. exists x. rewrite H0 andTb.
+    apply/existsP. exists y. move: H1. rewrite in_set => ->.
+    exact: H2.
+    Qed.
 
-DFA and NFA without e-transitions.
-
-* DFA to prove closure under :math:`\cup`, :math:`\cap`, and :math:`\neg`.
-* NFA to prove closure under :math:`\cdot\,` and :math:`\ast`.
-
-.. raw:: pdf
-    
-    Spacer 0, 20
-
-Also proven: 
-NFA :math:`\Leftrightarrow\,` DFA.
-
-.. raw:: pdf
-    
-    Spacer 0, 20
-
-This gives us:
-regexp :math:`\Rightarrow\,` FA.    
 
 .. raw:: pdf
 
-    PageBreak
-
+    PageBreak halfPage
 
 -------
 Roadmap
@@ -297,14 +311,15 @@ Roadmap
     Spacer 0, 10
 
 
-#. Emptiness test on FA (:math:`\emptyset(A) := \mathcal{L}(A) = \emptyset \,`)
-#. FA :math:`\Rightarrow\,` regexp
-#. Dedicedability of regexp equivalence using regexp :math:`\Rightarrow` FA, (2) and (1):
+#. regexp :math:`\Rightarrow\,` FA: closure of FA under :math:`\cdot`, :math:`\cup`, :math:`\cap`, :math:`\ast`, :math:`\neg`. (**Done**)
+
+   
+#. Emptiness test on FA (:math:`\emptyset(A) := \mathcal{L}(A) = \emptyset \,`).
+#. FA :math:`\Rightarrow\,` regexp.
+#. Dedicedability of regexp equivalence.
 
     :math:`\mathcal{L}(r) = \mathcal{L}(s)`
-    
     :math:`\Leftrightarrow`
-
     :math:`\emptyset(\mathcal{A}(r) \cap \overline{\mathcal{A}(s)}) \wedge`
     :math:`\emptyset(\overline{\mathcal{A}(r)} \cap \mathcal{A}(s))`
 
@@ -312,7 +327,7 @@ Roadmap
     
     PageBreak halfPage
 
-4. Finally, we want to prove the MH theorem
+5. Finally, we want to prove the Myhill-Nerode theorem.
 
 .. raw:: pdf
     
