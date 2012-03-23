@@ -87,18 +87,22 @@ We use extended **regular expressions** (regexp):
 * der a b = if a = b then :math:`\varepsilon \,` else :math:`\emptyset`
 * der a (r s) = if :math:`\delta(r) \,` then (der a s) + ((der a r) s)  else (der a r) s 
   
-  with :math:`\delta(r) \, = \, true \, \Leftrightarrow \, \varepsilon \, \in \, \mathcal{L}(r)`.
-* der a (r + s) = (der a r) + (der a s)
-* der a (r & s) = (der a r) & (der a s)
-* der a (r*) = (der a r) r*
-* der a (:math:`\neg` r) = :math:`\neg` (der a r)
+  with :math:`\delta(r) \, = \, true \, \Leftrightarrow \, \varepsilon \, \in \, \mathcal{L}(r)`. (easily decidable by recursion)
+
+  ...
 
 
 .. raw:: pdf
 
     Spacer 0, 10
 
-**Theorem**: :math:`w \, \in \, \mathcal{L}(r) \,` if and only if the derivative of r with respect to :math:`w_1 .. \, w_{|w|}\,` accepts :math:`\varepsilon`.
+**Theorem 1**: :math:`w \, \in \, \mathcal{L}(r) \,` if and only if the derivative of r with respect to :math:`w_1 .. \, w_{|w|}\,` accepts :math:`\varepsilon`.
+
+.. raw:: pdf
+    
+    Spacer 0, 10
+
+**Theorem 2**: The set of derivatives of r is *closed under derivation* and *finite* w.r.t. a similarity relation .
 
 .. raw:: pdf
 
