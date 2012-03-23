@@ -87,7 +87,7 @@ We use extended **regular expressions** (regexp):
 * der a b = if a = b then :math:`\varepsilon \,` else :math:`\emptyset`
 * der a (r s) = if :math:`\delta(r) \,` then (der a s) + ((der a r) s)  else (der a r) s 
   
-  with :math:`\delta(r) \, = \, true \, \Leftrightarrow \, \varepsilon \, \in \, \mathcal{L}(r)`. (easily decidable by recursion)
+  with :math:`\delta(r) \, = \, true \, \Leftrightarrow \, \varepsilon \, \in \, \mathcal{L}(r)`. (easily decidable by recursion on r)
 
   ...
 
@@ -102,11 +102,11 @@ We use extended **regular expressions** (regexp):
     
     Spacer 0, 10
 
-**Theorem 2**: The set of derivatives of r is *closed under derivation* and *finite* w.r.t. a similarity relation .
+**Theorem 2**: The set of derivatives of r is *closed under derivation* and *finite* up to similarity.
 
 .. raw:: pdf
 
-    PageBreak 34Page
+    PageBreak normalPage
 
 Regular languages are also exactly those languages accepted by **finite automata** (FA).
 
@@ -118,24 +118,26 @@ Our definition of FA over an alphabet :math:`\Sigma \,`:
   
   Deterministic FA: :math:`\Delta \,` is functional and **total**.
    
-* The set of finite states F, F :math:`\sqsubseteq \,` Q
+* The set of finite states F, F :math:`\subseteq \,` Q
 
 .. raw:: pdf
 
     Spacer 0, 10
 
-Let A be a FA.
+Let A be a FA:
 
-:math:`\mathcal{L}(A) := \{ w \, | \, \exists s_1, \, ... \, s_{|w|} \, \in \, Q \, s.t. \, \forall \, i : \, 0 \, < \, i \, \leq \, n \, \rightarrow \, (s_{i-1}, w_i, s_i) \, \in \, \Delta \, \wedge \, s_{|w|} \in \, F \, \}`
+:math:`\mathcal{L}(A) :=`
+
+:math:`\{ w \, | \, \exists \, s_1, \, .. \, , \, s_{|w|} \, \in \, Q \, s.t. \, (\forall \, i : \, 0 \, < \, i \, \leq \, n \, \rightarrow \, (s_{i-1}, w_i, s_i) \, \in \, \Delta_A) \, \wedge \, s_{|w|} \in \, F_A \, \}`
 
 
 .. raw:: pdf
 
     PageBreak halfPage
 
-Finally, regular languages are also characterized by the Myhill-Nerode theorem.
+Finally, regular languages are also characterized by the Myhill-Nerode theorem (MH).
 
-First, we define an  equivalence relation on L:
+First, we define an  equivalence relation on L (MH relation):
 
 :math:`x \, R_{L} \, y \, := \, \forall z, \, x \cdot z \, \in \, L \, \Leftrightarrow \, y \cdot z \, \in \, L` 
 
@@ -154,77 +156,95 @@ First, we define an  equivalence relation on L:
 Previous work
 -------------
 
-* Constructively formalizing automata theory (2000)
+* **The first constructive formalization of MH**.
+  
+    Based on FA. 
+  
+    Implemented in Nuprl.
 
-  *Robert L. Constable, Paul B. Jackson, Pavel Naumov, Juan C. Uribe*
+    Focus on clear formalization. 
 
-  **PA**: Nuprl
+    Close to what we want to do.
 
-  The first constructive formalization of MH.
-
-  Based on **FA**.
+  (*Constable, Jackson, Naumov, Uribe*, 1997)
 
 .. raw:: pdf
 
     Spacer 0, 10
 
-* Proof Pearl: Regular Expression Equivalence and Relation Algebra (2011)
+* Decision procedure for regexp equivalence.
 
-  *Alexander Krauss, Tobias Nipkow*
+    Based on Brzozowski's derivatives.
+
+    Only soundness proof, *no proof of termination or completeness*.
+
+    Implemented in Isabelle. 
+
+    Focus on simplicity, small regexps.
+
+  (*Krauss, Nipkow*, 2011)
   
-  **PA**: Isabelle
-
-  Based on **derivatives of regexps**. No proof of termination.
 
 .. raw:: pdf
 
     PageBreak
 
-* Deciding Kleene Algebras in Coq (2011)
+* Decision procedure for regexp equivalence.
+    
+    Based on FA, matrices.
 
-  *Thomas Braibant, Damien Pous*
+    Implemented in Coq.
 
-  **PA**: Coq
+    Focus on performance. Outperforms every other solution so far.
 
-  Based on **FA**, matrices. Focus on performance.
+  (*Braibant, Pous*, 2011)
 
-.. raw:: pdf
-
-    Spacer 0, 10
-
-* A Decision Procedure for Regular Expression Equivalence in Type Theory (2011)
-
-  *Thierry Coquand, Vincent Siles*
-
-  **PA**: Coq
-
-  Based on **derivatives of regexps**.
-
-.. raw:: pdf
-
-    PageBreak
-
-* A Formalisation of the Myhill-Nerode Theorem
-  based on Regular Expressions (Proof Pearl) (2011)
-
-  *Chunhan Wu, Xingyuan Zhang, Christian Urban*
-
-  **PA**: Isabelle
-
-  The first proof of MH based on **derivatives of regexps**.
 
 .. raw:: pdf
 
     Spacer 0, 10
 
-* Deciding Regular Expressions (In-)Equivalence in Coq (2011)
+* **Decision Procedure for regexp equivalence**.
+    
+    Based on Brzozowski's derivatives.
+    
+    Implemented in Coq.
+
+    Proof of termination given.
+
+    Introduces the notion of *inductively finite sets*.
+
+  (*Coquand, Siles*, 2011)
+
+.. raw:: pdf
+
+    PageBreak normalPage
+
+* **First formalization of MH based on regexp**. 
+
+    Based on Brzozowski's derivatives.
+
+    Implemented in Isabelle.
+
+    The first formalization of MH in Isabelle.
+
+  (*Wu, Zhang, Urban*, 2011)
+
+.. raw:: pdf
+
+    Spacer 0, 10
+
+* Decision Procedure for regexp equivalence.
+
+    Based on Brzozowski's derivatives.
+
+    Implemented in Coq.
+
+    Translation of the work done by Krauss and Nipkow to Coq.
+
+    Adds proof of termination.
   
-  Nelma Moreira, David Pereira, Simão Melo de Sousa
-
-  **PA**: Coq
-
-  Based on Krauss, Nipkow. Proof of termination.
-
+  (*Moreira, Pereira, de Sousa*, 2011)
 
 
 .. raw:: pdf
@@ -291,10 +311,10 @@ Our Development
 
     Lemma nfa_to_dfa_correct2 (X: nfa_to_dfa) w:
       dfa_accept nfa_to_dfa X w -> existsb x, (x \in X) && nfa_accept A x w.
-    Proof. elim: w X => [|a w IHw] X.
+    Proof. elim: w X => [| a w IHw] X.
       by [].
     move/IHw => /existsP [] y /andP [].
-    rewrite /dfa_step /nfa_to_dfa /=. rewrite cover_imset.
+    rewrite /dfa_step /nfa_to_dfa /= cover_imset.
     move/bigcupP => [] x H0 H1 H2.
     apply/existsP. exists x. rewrite H0 andTb.
     apply/existsP. exists y. move: H1. rewrite in_set => ->.
@@ -318,24 +338,127 @@ Roadmap
 #. regexp :math:`\Rightarrow\,` FA: closure of FA under :math:`\cdot`, :math:`\cup`, :math:`\cap`, :math:`\ast`, :math:`\neg`. (**Done**)
 
    
-#. Emptiness test on FA (:math:`\emptyset(A) := \mathcal{L}(A) = \emptyset \,`).
+#. Emptiness test on FA. (:math:`\mathcal{L}(A) = \emptyset \,`)
 #. FA :math:`\Rightarrow\,` regexp.
-#. Dedicedability of regexp equivalence.
+#. Dedicedability of regexp equivalence:
 
     :math:`\mathcal{L}(r) = \mathcal{L}(s)`
     :math:`\Leftrightarrow`
-    :math:`\emptyset(\mathcal{A}(r) \cap \overline{\mathcal{A}(s)}) \wedge`
-    :math:`\emptyset(\overline{\mathcal{A}(r)} \cap \mathcal{A}(s))`
+    :math:`\mathcal{L}(\mathcal{A}(r) \cap \overline{\mathcal{A}(s)}) = \emptyset \, \wedge`
+    :math:`\mathcal{L}(\overline{\mathcal{A}(r)} \cap \mathcal{A}(s)) = \emptyset`
+
+.. raw:: pdf
+    
+    PageBreak 34Page
+
+5. Finally, we want to prove the Myhill-Nerode theorem.
+
+   Constable et al. establish a direct equivalence between MH and FA.
+
+   This requires proof of:
+
+   - FA induce an equivalence relation on words
+   - This relation is invariant under extension.
+   - This relation is a refinement of the MH relation.
+   - A finite number of equivalence classes under the MH relation 
+     induce a set of states for a FA which accepts exactly the union of these equivalence classes.
 
 .. raw:: pdf
     
     PageBreak halfPage
 
-5. Finally, we want to prove the Myhill-Nerode theorem.
+.. class:: end
+
+Thank you for your attention.
+
+.. raw:: pdf
+
+    PageBreak normalPage
+
+.. class:: bigtext
+
+    **References**
+::
+
+     Constructively formalizing automata theory (1997)
+
+      Robert L. Constable, Paul B. Jackson, Pavel Naumov, Juan C. Uribe
+
+
+     Proof Pearl: Regular Expression Equivalence and Relation Algebra (2011)
+
+      Alexander Krauss, Tobias Nipkow
+
+
+     Deciding Kleene Algebras in Coq (2011)
+
+      Thomas Braibant, Damien Pous
+
+
+     A Decision Procedure for Regular Expression Equivalence in Type Theory (2011)
+
+      Thierry Coquand, Vincent Siles
+
+
+     A Formalisation of the Myhill-Nerode Theorem based on Regular Expressions (Proof Pearl) (2011)
+
+      Chunhan Wu, Xingyuan Zhang, Christian Urban
+
+
+     Deciding Regular Expressions (In-)Equivalence in Coq (2011)
+      
+      Nelma Moreira, David Pereira, Simão Melo de Sousa
+
+
+
+.. raw:: pdf
+
+    PageBreak halfPage
+
+---------------
+Extras
+---------------
+
+.. raw:: pdf
+
+    PageBreak normalPage
+
+With **Theorem 2**, we can formulate a system of equations:
+
+.. raw:: pdf
+    
+    Spacer 0, 25
+
+:math:`r_0 = \sum^{n}_{i=0} \, a_{0, i} \, r_{0,i}`
+
+.. raw:: pdf
+    
+    Spacer 0, 25
+
+:math:`r_1 = \sum^{n}_{i=0} \, a_{1, i} \, r_{1,i}`
 
 .. raw:: pdf
     
     Spacer 0, 20
 
-With this we'll have an extensive formalization of regular languages including regular expressions, FA and MH and all corresponding equivalences.
+...
 
+.. raw:: pdf
+    
+    Spacer 0, 20
+
+:math:`r_n = \sum^{n}_{i=0} \, a_{n, i} \, r_{n,i}`
+
+.. raw:: pdf
+    
+    Spacer 0, 25
+
+where 
+
+  :math:`r_{j, i} = \emptyset \, \vee \, r_{j,i} = r_i`,
+
+  :math:`\{r_k | 0 < k \leq n \}\,` is the set of derivatives of :math:`r_0`
+
+and 
+
+  :math:`r_j = ... \, + \, a_{j,i} \, r_i \, + ... \,  \Leftrightarrow \, der \, r_j \, a_{j, i} \, = \, r_i`.

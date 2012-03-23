@@ -68,7 +68,7 @@
             "centered", {
                 "parent": "bodytext",
                 "alignment": "center",
-                "fontSize": 15
+                "fontSize": 20
 
             }
     ],
