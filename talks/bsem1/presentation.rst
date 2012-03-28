@@ -174,7 +174,7 @@ Previous work
 
 * Decision procedure for regexp equivalence.
 
-    Based on Brzozowski's derivatives.
+    Based on Brzozowski derivatives.
 
     Only soundness proof, *no proof of termination or completeness*.
 
@@ -206,7 +206,7 @@ Previous work
 
 * **Decision Procedure for regexp equivalence**.
     
-    Based on Brzozowski's derivatives.
+    Based on Brzozowski derivatives.
     
     Implemented in Coq.
 
@@ -222,7 +222,7 @@ Previous work
 
 * **First formalization of MH based on regexp**. 
 
-    Based on Brzozowski's derivatives.
+    Based on Brzozowski derivatives.
 
     Implemented in Isabelle.
 
@@ -236,7 +236,7 @@ Previous work
 
 * Decision Procedure for regexp equivalence.
 
-    Based on Brzozowski's derivatives.
+    Based on Brzozowski derivatives.
 
     Implemented in Coq.
 
@@ -339,13 +339,13 @@ Roadmap
 
    
 #. Emptiness test on FA. (:math:`\mathcal{L}(A) = \emptyset \,`)
-#. FA :math:`\Rightarrow\,` regexp.
 #. Dedicedability of regexp equivalence:
 
     :math:`\mathcal{L}(r) = \mathcal{L}(s)`
     :math:`\Leftrightarrow`
     :math:`\mathcal{L}(\mathcal{A}(r) \cap \overline{\mathcal{A}(s)}) = \emptyset \, \wedge`
     :math:`\mathcal{L}(\overline{\mathcal{A}(r)} \cap \mathcal{A}(s)) = \emptyset`
+#. FA :math:`\Rightarrow\,` regexp.
 
 .. raw:: pdf
     
