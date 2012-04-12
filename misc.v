@@ -1,3 +1,6 @@
+(*
+    Authors: Thierry Coquand, Vincent Siles
+*)
 Require Import ssreflect ssrnat seq ssrbool eqtype fintype.
 
 Set Implicit Arguments.
