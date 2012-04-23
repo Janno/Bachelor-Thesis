@@ -1,0 +1,82 @@
+{
+    "pageSetup" : {
+        "firstTemplate": "coverPage"
+    },
+        "pageTemplates" : {
+            "coverPage": {
+                "frames": [
+                    ["0cm", "0cm", "100%", "90%"]
+                    ],
+                "showHeader" : false,
+                "showFooter" : false
+            },
+            "sectionPage": {
+                "frames": [
+                    ["0cm", "0cm", "100%", "100%"]
+                    ],
+                "showHeader" : true,
+                "showFooter" : false
+            },
+            "normalPage": {
+                "frames": [
+                    ["0cm", "0cm", "100%", "100%"]
+                    ],
+                "showHeader" : true,
+                "showFooter" : true
+            },
+            "halfPage": {
+                "frames": [
+                    ["0cm", "0cm", "100%", "75%"]
+                    ],
+                "showHeader" : true,
+                "showFooter" : true
+            },
+            "34Page": {
+                "frames": [
+                    ["0cm", "0cm", "100%", "82.5%"]
+                    ],
+                "showHeader" : true,
+                "showFooter" : true
+            }
+
+        },
+        "styles" : 
+            [
+            [
+            "bodytext" , {
+                "fontSize": 20,
+                "alignment": "left"
+            }
+    ],
+
+        [
+            "thin" , {
+                "parent" : "bodytext",
+                "width" : "65%",
+                "alignment": "TA_JUSTIFY",
+                "hyphenation": true,
+                "language": "es_ES"
+            }
+    ],
+        [
+            "right", {
+                "parent": "bodytext",
+                "alignment": "right"
+            }
+    ],
+        [
+            "centered", {
+                "parent": "bodytext",
+                "alignment": "center",
+                "fontSize": 20
+
+            }
+    ],
+    ["bullet-list" , {
+    "parent": "bodytext",
+    "spaceBefore": 10
+    }]
+
+
+        ]
+}
