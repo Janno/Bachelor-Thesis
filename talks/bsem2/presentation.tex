@@ -272,20 +272,78 @@
 \begin{frame}
     \textbf{Construct system of equations}:
 
-    \begin{equation}
-        \begin{array}{lcl} 
-            r_0 & = & \displaystyle\sum\limits \{ \, a \, r_i \, | \, a \, \in \, \Sigma, \, 0 \, \leq i < \, |Q|, \, (q_0, a, r_i) \in \delta \} \\ 
+    \begin{equation*}
+        \begin{array}{lcll} 
+            r_0 & = & 
+            \displaystyle\sum\limits_{
+                \substack{a \in \Sigma \\ 0 \leq i < |Q|} 
+            }
+            \{ \, a \, r_i \, |  \, (q_0, a, q_i) \in \delta \} 
+            &
+            (+ \, \varepsilon \mbox{ if } r_0 \in F)
+            \\ 
            \vdots &  = & \vdots \\
-            r_k & = & \displaystyle\sum\limits \{ \, a \, r_i \, | \, a \, \in \, \Sigma, \, 0 \, \leq i < \, |Q|, \, (q_k, a, r_i) \in \delta \} \\ 
-           \vdots &  = & \vdots \\
-        r_{|Q|-1} & = & \displaystyle\sum\limits \{ \, a \, r_i \, | \, a \, \in \, \Sigma, \, 0 \, \leq i < \, |Q|, \, (q_{|Q|-1}, a, r_i) \in \delta \}
-
+        r_{|Q|-1} & = & 
+            \displaystyle\sum\limits_{
+                \substack{a \in \Sigma \\ 0 \leq i < |Q|} 
+            }
+            \{ \, a \, r_i \, |  \, (q_{|Q|-1}, a, q_i) \in \delta \} 
+            &
+            (+ \, \varepsilon \mbox{ if } r_{|Q|-1} \in F)
+            \\ 
         \end{array}
-    \end{equation}
+    \end{equation*}
     $\, \Rightarrow \mathcal{L}(A) = \mathcal{L}(r_0)$
 \end{frame}
 
 \begin{frame}
+    Solve the system by substitution and \textbf{Arden's Lemma} which states that for all regular languages X, Y and Z the equation
+    \begin{equation}
+        \begin{array}{lcl}
+            X = YX + Z
+        \end{array}
+    \end{equation}
+
+    has the unique solution
+
+    \begin{equation}
+        \begin{array}{lcl}
+            X = Y^*Z
+        \end{array}
+    \end{equation}
+\end{frame}
+
+\subsection*{Properties}
+\begin{frame}
+    \begin{description}
+        \item[\textbf{Formalization}:] \hfill \\
+            Complex due to missing infrastructure.\\
+        \item[\textbf{Efficiency}:] 
+            The resulting regular expressions are quite small.\\
+
+        \item[\textbf{Complexity}:]
+            $O(n^3)$ in the number of states.\\
+            Less in special cases (e.g. $O(n^2 log n)$ for acyclic automata).
+    \end{description}
+\end{frame}
+
+\section{Our Approach}
+\begin{frame}
+    \begin{itemize}
+        \item
+           We eliminated the Brzozowski algebraic method due to its heavy overhead in required infrastructure.
+
+        \pause
+
+        \item
+            The state removal method requires a new kind of automaton which we would rather avoid.
+
+        \pause
+            
+        \item
+            We settled for Kleene's transitive closure method.
+           
+   \end{itemize}
 \end{frame}
 
 \end{document}
