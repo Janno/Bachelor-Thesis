@@ -6,6 +6,9 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows,automata} 
 
+\usepackage{amsmath}
+\DeclareMathOperator*{\bigplus}{\mbox{\huge +}}
+
 \begin{document}
 \title{Constructive Formalization of Regular Languages}  
 \author[Jan-Oliver Kaiser]{Jan-Oliver Kaiser \\{\small Advisors: Christian Doczkal, Gert Smolka }\\{\small Supervisor: Gert Smolka}}
@@ -21,22 +24,55 @@
     \tableofcontents
 \end{frame}
 
+\section{Goal}
+\subsection{Current Goal}
 \begin{frame}
-    \section{Quick recap}
 
-    Our roadmap:
+    \textbf{Goal:}
+
+    Find simple proofs for the decidability of regular expression equivalence and the Myhill-Nerode theorem.
+    
+
+\end{frame}
+
+\subsection*{Roadmap}
+\begin{frame}
+    Roadmap:
 
     \begin{enumerate}
         \item RE $\Rightarrow$ FA (\textbf{DONE})
         \item Emptiness test on FA (\textbf{Easy})
         \item RE equivalence (\textbf{Follows from 1 and 2})
-        \item FA $\Rightarrow$ RE
+        \item FA $\Rightarrow$ RE (\textbf{Work in progress})
         \item Myhill-Nerode
     \end{enumerate}
 
 \end{frame}
 
-\section{Finite automata to regular expressions}
+\section*{Recap}
+\begin{frame}
+    \textbf{Definitions:} \\
+    
+    \begin{itemize}
+        \item 
+            We use extended regular Expressions (RE):
+            \[    
+            r, s ::= \emptyset \, | \, \varepsilon \, | \,  a \, | \, rs \, | \,  r \,  + \, s \, | \, r \, \& \, s \, |\, r^* \, | \, \neg r
+            \]
+            \[
+                \mbox{\textbf{Def.:} }  \bigplus_{x \in X} r_x := r_{x_0} + ... + r_{x_1}
+            \]
+
+        \item 
+            Our Finite Automata (FA) are
+            \[
+                (\Sigma, Q, q_0, F, \delta)
+            \]
+        (The transition relation $\delta$ of deterministic FA is total).
+    \end{itemize}
+\end{frame}
+
+\section*{Finite automata to regular expressions}
 \subsection*{Difficulty}
 \begin{frame}
 
@@ -44,12 +80,13 @@
 
     \begin{itemize}
         \item
-            Converting REs to FAs is straight forward and there is really only one algorithm (with slight variations).
+            Converting REs to FAs is straight-forward and there is really only one algorithm (with slight variations): \\
+            We mirror the constructors of RE in operations on FAs.
 
             \pause
 
         \item
-            Converting FAs to REs is complicated and there are at least three general algorithms.
+            Converting FAs to REs is complicated and there are at least three algorithms found in textbooks.
     \end{itemize}
 
     \pause
@@ -67,7 +104,9 @@
             \pause
 
         \item
-            Converting FAs to REs \textbf{can not be done} by structural recursion. There is no \textbf{recursive structure} in FAs. But somehow we need to construct a \textbf{tree structure}.
+            Converting FAs to REs \textbf{can not be done} by structural recursion.
+            There is \textbf{no recursive structure} in FAs. \\
+            But somehow we need to construct a \textbf{tree} of REs.
     \end{itemize}
 
 
@@ -93,11 +132,13 @@
 
     \large{\textbf{Transitive Closure}} \\
 
-    \textbf{Given}: DFA $A$ = $(\Sigma, Q, s_0, F \subseteq Q, \delta)$.
+    \textbf{Given}: DFA $A$ = $(\Sigma, Q, q_0, F, \delta)$.
 
     \textbf{Idea}: Construct regexps $r_f$ for every final states $f \in F$ s.t. \\$r_f$ matches all words which A accepts with final state $f$. \\
 
-    $\, \Rightarrow \mathcal{L}(A) = \mathcal{L}(\sum_{f \in F} r_f)$
+    \[
+        \, \Rightarrow \mathcal{L}(A) = \mathcal{L}(\bigplus\limits_{f \in F} r_f)
+    \]
 
     \vspace{5 mm}
 
@@ -133,7 +174,9 @@
 
     \end{enumerate}
 
-    $\Rightarrow \mathcal{L}(A) = \mathcal{L}(\sum_{f \in F} r_f) = \mathcal{L}(\sum_{f \in F} R^{|Q|}_{0 f})$
+    \[ 
+    \Rightarrow \mathcal{L}(A) = \mathcal{L}(\bigplus_{f \in F} r_f) = \mathcal{L}(\bigplus_{f \in F} R^{|Q|}_{0 f}) 
+    \]
 
 \end{frame}
 
@@ -157,7 +200,7 @@
 \begin{frame}
     \textbf{State Removal}    
 
-    \textbf{Given}: FA $A$ = $(\Sigma, Q, s_0, F \subseteq Q, \delta)$.
+    \textbf{Given}: FA $A$ = $(\Sigma, Q, q_0, F, \delta)$.
 
     \textbf{New concept}: Automata that have transitions labeled by RE.
 
@@ -230,6 +273,60 @@
             \pause
             In reality, there can be $|Q|-1$ states connected to $q$.
             \pause
+
+            \begin{figure}
+                \begin{tikzpicture}[shorten >=1pt,node distance=1.5cm,>=stealth,thick,minimum size=1cm]
+                    \node[state] (q11) {};
+                    \node[state] (q12) [right of = q11] {};
+                    \node[state] (q13) [right of = q12] {};
+                    \node[state] (q21) [below of = q11] {};
+                    \node[state] (q22) [right of = q21] {$q$};
+                    \node[state] (q23) [right of = q22] {};
+                    \node[state] (q31) [below of = q21] {};
+                    \node[state] (q32) [right of = q31] {};
+                    \node[state] (q33) [right of = q32] {};
+
+                    \draw [->] (q11) to[bend left=12.5] node[auto] {} (q22);
+                    \draw [->] (q22) to[bend left=12.5] node[auto] {} (q11);
+
+                    \draw [->] (q12) to[bend left=12.5] node[auto] {} (q22);
+                    \draw [->] (q22) to[bend left=12.5] node[auto] {} (q12);
+
+                    \draw [->] (q13) to[bend left=12.5] node[auto] {} (q22);
+                    \draw [->] (q22) to[bend left=12.5] node[auto] {} (q13);
+
+                    \draw [->] (q21) to[bend left=12.5] node[auto] {} (q22);
+                    \draw [->] (q22) to[bend left=12.5] node[auto] {} (q21);
+
+                    \draw [->] (q22) to[bend left=12.5] node[auto] {} (q22);
+                    \draw [->] (q22) to[bend left=12.5] node[auto] {} (q22);
+
+                    \draw [->] (q23) to[bend left=12.5] node[auto] {} (q22);
+                    \draw [->] (q22) to[bend left=12.5] node[auto] {} (q23);
+
+                    \draw [->] (q31) to[bend left=12.5] node[auto] {} (q22);
+                    \draw [->] (q22) to[bend left=12.5] node[auto] {} (q31);
+
+                    \draw [->] (q32) to[bend left=12.5] node[auto] {} (q22);
+                    \draw [->] (q22) to[bend left=12.5] node[auto] {} (q32);
+
+                    \draw [->] (q33) to[bend left=12.5] node[auto] {} (q22);
+                    \draw [->] (q22) to[bend left=12.5] node[auto] {} (q33);
+
+
+                \end{tikzpicture}
+            \end{figure}
+    
+
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \textbf{Caveats} \\
+    \begin{itemize}
+        \item
+            It looks like we only need to update two edges. \\
+            In reality, there can be $|Q|-1$ states connected to $q$.
         \item
             What about final states?\\
             \pause
@@ -238,8 +335,6 @@
             Make all other states non-final. \\
             Never remove the new final state.
     \end{itemize}
-
-
 \end{frame}
 
 \subsection*{Properties}
@@ -263,7 +358,7 @@
 \begin{frame}
     \textbf{Brzozowski Algebraic Method}
 
-    \textbf{Given}: FA $A$ = $(\Sigma, Q, q_0, F \subseteq Q, \delta)$.\\
+    \textbf{Given}: FA $A$ = $(\Sigma, Q, q_0, F, \delta)$.\\
     \textbf{Idea}: Retrieve a RE for FA by solving a system of equations determined by $\delta$.
 
 \end{frame}
