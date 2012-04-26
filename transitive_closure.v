@@ -14,22 +14,22 @@ Variable A: nfa char.
 
 
 
-Lemma mem_der_Plus r s w : mem_der (@Plus char r s) w = mem_der r w || mem_der s w.
+Lemma mem_der_Plus r s w : w \in (@Plus char r s) = (w \in r) || (w \in s).
 Proof. elim: w r s => [|a w IHw] r s //=. Qed.
 
 Lemma der_Plus a r s : der a (@Plus char r s) = Plus (der a r) (der a s).
 Proof. by []. Qed.
 
-Lemma mem_der_Conc r s (w1 w2: word char) : mem_der r w1 ->  mem_der s w2 ->
-mem_der (Conc r s) (w1 ++ w2).
+Lemma mem_der_Conc r s (w1 w2: word char) : w1 \in r ->  w2 \in s ->
+ (w1 ++ w2) \in (Conc r s).
 Proof.
-elim: w1 r s w2 => [|a w1 IHw1] r s w2 B C /=.
-  elim: w2 r s B C => [|b w2 IHw2] /= r s -> //. 
-  move => C. rewrite mem_der_Plus.
-  by rewrite C orbT.
-case: (has_eps r) => /=.
-  rewrite mem_der_Plus. by rewrite IHw1 => //.
-by apply/IHw1 => //.
+  move => H0 H1.
+  apply/concP.
+  exists w1.
+    by rewrite H0.
+  exists w2.
+    by rewrite H1.
+  reflexivity.  
 Qed.
 
 
@@ -39,16 +39,16 @@ elim: rs r a => [|s rs IHrs] r a //=.
 by rewrite IHrs.
 Qed.
 
-Lemma mem_der_fold_Plus r rs w: mem_der r w || has (fun r => mem_der r w) rs = mem_der (foldr (@Plus char) r rs) w.
+Lemma mem_der_fold_Plus (r: regular_expression char) rs w: (w \in r) || has (fun r => w \in r) rs = (w \in (foldr (@Plus char) r rs)).
 Proof.
   elim: rs r w => [|s rs IHrs] r w.
     apply/orP/idP.
       move => [] //=.
     by firstorder.
-  rewrite /= mem_der_Plus.
+  rewrite /= mem_derE mem_derE mem_derE mem_der_Plus.
   apply/orP/idP.
-    move => [] H0; apply/orP.
-      right. rewrite -IHrs. by rewrite H0.
+  move => [] H0; apply/orP.
+      right. rewrite -mem_derE -IHrs. by rewrite H0.
     apply/orP. move/orP: H0 => [].
       by move => ->.
     rewrite -IHrs => ->.
@@ -188,12 +188,20 @@ end.
 Definition nfa_R (k: nat) (i j: 'I_#|A|) : nfa char :=
 nfaI
   char
-  (A)
-  (nfa_s0 A)
-  [pred x | x == enum_val j]
-  (fun x a y => nfa_step A x a y && ((enum_rank x == i) || (enum_rank x < k)) && ((enum_rank y == j) || (enum_rank y < k))).
+  (option_finType A)
+  (Some (enum_val i))
+  [pred x | if x is Some x then i == j else true ]
+  (fun x a y =>
+     match x with
+         | None => false
+         | Some x =>
+         match y with
+             | None => nfa_step A x a (enum_val j) && ((enum_rank x == i) || (enum_rank x < k))
+             | Some y => nfa_step A x a y && (enum_rank y < k) && ((enum_rank x == i) || (enum_rank x < k))
+         end
+  end).
 
-Lemma nfa_R_correct2_0 w i j: mem_der (R 0 i j) w -> nfa_accept (nfa_R 0 i j) (enum_val i) w.
+Lemma nfa_R_correct2_0 w i j: mem_der (R 0 i j) w -> nfa_accept (nfa_R 0 i j) (Some (enum_val i)) w.
 Proof.
   elim: w i j => [|a w IHw] i j.
     simpl.
@@ -217,8 +225,8 @@ Proof.
       move/eqP => ->.
       move/mem_der_Eps => H1.
       rewrite H1. rewrite H1 in IHw.
-      apply/existsP. exists (enum_val j).
-      by rewrite enum_valK eq_refl H0 /= eq_refl.
+      apply/existsP. exists (None).
+      by rewrite enum_valK eq_refl H0 /=.
     by rewrite mem_der_Void.  
   move => H0. rewrite H0.  
   rewrite der_fold_Plus -mem_der_fold_Plus mem_der_Void orFb.
@@ -227,25 +235,28 @@ Proof.
   move => -> -> /=.
   case_eq (a==c) => /=.
     move/eqP => ->. move/mem_der_Eps => ->.
-    apply/existsP. exists (enum_val j).
-    by rewrite 2!enum_valK 2!eq_refl /= H1 eq_refl.
+    apply/existsP. exists (None).
+    by rewrite enum_valK eq_refl /= H1.
   by rewrite mem_der_Void.  
 Qed.
 
 Lemma nfa_R_monotone k w i j x: nfa_accept (nfa_R k i j) x w -> nfa_accept(nfa_R k.+1 i j) x w.
 Proof.
-  elim: w k i j x => [|a w IHw] k i j x //=.
-  move/pred0Pn.
-  move => [] y /andP [] /andP [] /andP [] H0 /orP [] H1 /orP [] H2 H3;
-  apply/pred0Pn; exists y.
-        rewrite H0 H1 H2 /=.
+  elim: w k i j x => [|a w IHw] k i j [x|] //;
+  move => /= /pred0Pn;
+  move => [] [y|] /andP [] //.
+    move => /andP [] /andP [] H0 H1 /orP [] H2 H3;
+    apply/pred0Pn; exists (Some y).
+          rewrite H0 (leqW H1) H2 /=.
+          by apply: IHw.
+        rewrite H0 (leqW H1) (leqW H2) orbT /=.
         by apply: IHw.
-      rewrite H0 H1 (leqW H2) orbT /=.
+      move => /andP [] H0 /orP [] H1 H2;
+      apply/pred0Pn; exists (None).
+      rewrite H0 H1 /=.
       by apply: IHw.
-    rewrite H0 (leqW H1) H2 orbT /=.
+    rewrite H0 (leqW H1) 1!orbT /=.
     by apply: IHw.
-  rewrite H0 (leqW H1) (leqW H2) 2!orbT /=.
-  by apply: IHw.
 Qed.
 
 Lemma enum_rank_ltn (x: A): enum_rank x <= #|A|.-1.
@@ -266,11 +277,13 @@ Proof.
 Qed.
   
 Lemma nfa_R_lpath_start k i j x xs a w:
-  nfa_lpath (nfa_R k i j) x xs (a::w) ->
+  nfa_lpath (nfa_R k i j) (Some x) xs (a::w) ->
   (enum_rank x == i) || (enum_rank x < k).
 Proof.
-  elim: xs => [|y xs IHxs] //.
-  by move => /= /andP [] /andP [] /andP [].
+  elim: xs => [|[y|] xs IHxs] //;
+  move => /= /andP [] /andP [].
+    by [].
+  by [].
 Qed.          
 
 Lemma nfa_R_lpath_empty k i j x xs:
