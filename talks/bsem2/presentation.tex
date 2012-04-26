@@ -31,7 +31,7 @@
     \textbf{Goal:}
 
     Find simple proofs for the decidability of regular expression equivalence and the Myhill-Nerode theorem.
-    
+
 
 \end{frame}
 
@@ -52,12 +52,12 @@
 \section*{Recap}
 \begin{frame}
     \textbf{Definitions:} \\
-    
+
     \begin{itemize}
         \item 
             We use extended regular Expressions (RE):
             \[    
-            r, s ::= \emptyset \, | \, \varepsilon \, | \,  a \, | \, rs \, | \,  r \,  + \, s \, | \, r \, \& \, s \, |\, r^* \, | \, \neg r
+                r, s ::= \emptyset \, | \, \varepsilon \, | \,  a \, | \, rs \, | \,  r \,  + \, s \, | \, r \, \& \, s \, |\, r^* \, | \, \neg r
             \]
             \[
                 \mbox{\textbf{Def.:} }  \bigplus_{x \in X} r_x := r_{x_0} + ... + r_{x_1}
@@ -68,7 +68,7 @@
             \[
                 (\Sigma, Q, q_0, F, \delta)
             \]
-        (The transition relation $\delta$ of deterministic FA is total).
+            (The transition relation $\delta$ of deterministic FA is total).
     \end{itemize}
 \end{frame}
 
@@ -126,74 +126,6 @@
 
 \end{frame}
 
-\section{Transitive Closure}
-\subsection*{Approach}
-\begin{frame}
-
-    \large{\textbf{Transitive Closure}} \\
-
-    \textbf{Given}: DFA $A$ = $(\Sigma, Q, q_0, F, \delta)$.
-
-    \textbf{Idea}: Construct regexps $r_f$ for every final states $f \in F$ s.t. \\$r_f$ matches all words which A accepts with final state $f$. \\
-
-    \[
-        \, \Rightarrow \mathcal{L}(A) = \mathcal{L}(\bigplus\limits_{f \in F} r_f)
-    \]
-
-    \vspace{5 mm}
-
-    \textbf{How do we construct $r_f$?} 
-
-\end{frame}
-
-\subsection*{Algorithm}
-\begin{frame}
-
-    We generalize the idea of $r_f$ to $R^k_{i j}$ which matches all words with which lead from state $i$ to $j$ while passing only through states with index smaller than $k$.
-
-    \begin{enumerate}
-        \item 
-            Merge multiple edges between states to one unified edge.
-        \item
-            Construct regexp $R^k_{i j}$ recursively:
-
-            \begin{description}
-
-                \item[$R^0_{i j}$]
-                    $ := \begin{cases} 
-                        r & \mbox{if } i \neq j \wedge i \mbox{ has edge } r \mbox{ to j}  \\
-          \varepsilon + r & \mbox{if } i = j \wedge i \mbox{ has edge } r \mbox{ to j}  \\
-                \emptyset & \mbox{otherwise}
-                    \end{cases}
-                    $ 
-
-                \item[$R^k_{i j}$]
-                    $ := R^{k-1}_{i k} R^{k-1}_{k k} R^{k-1}_{k j} + R^{k-1}_{i j}$
-
-            \end{description}
-
-    \end{enumerate}
-
-    \[ 
-    \Rightarrow \mathcal{L}(A) = \mathcal{L}(\bigplus_{f \in F} r_f) = \mathcal{L}(\bigplus_{f \in F} R^{|Q|}_{0 f}) 
-    \]
-
-\end{frame}
-
-\subsection*{Properties}
-\begin{frame}
-    \begin{description}
-        \item[\textbf{Formalization}:] \hfill \\
-            Easier than the other methods.\\
-            The recursive definition translates quite well.\\
-            Some details are quite challenging.
-
-        \item[\textbf{Efficiency}:] The resulting regular expressions are huge.
-
-        \item[\textbf{Complexity}:]
-            $O(n^3)$ in the number of states.
-    \end{description}
-\end{frame}
 
 \section{State Removal}
 \subsection*{Approach}
@@ -316,7 +248,7 @@
 
                 \end{tikzpicture}
             \end{figure}
-    
+
 
     \end{itemize}
 \end{frame}
@@ -330,27 +262,30 @@
         \item
             What about final states?\\
             \pause
-            Introduce a new final state without any outgoing edges. \\
-            Introduce $\varepsilon$ transitions from all other final states to the final new state. \\
-            Make all other states non-final. \\
-            Never remove the new final state.
+            \begin{enumerate}
+                \item
+                    Introduce a new final state without any outgoing edges.
+                \item
+                    Introduce $\varepsilon$ transitions from all other final states to the final new state.
+                \item
+                    Make all other states non-final.
+                \item
+                    Never remove the new final state.
+            \end{enumerate}
     \end{itemize}
 \end{frame}
 
 \subsection*{Properties}
 \begin{frame}
-    \begin{description}
-        \item[\textbf{Formalization}:] \hfill \\
-            Complex.\\
+    \textbf{Formalization:} \\
+    \begin{itemize}
+        \item
+            Requires a new kind of finite automaton that has RE transitions.
+        \item
             Lots of details to consider.
-        \item[\textbf{Efficiency}:] 
-            The resulting regular expressions are big.\\
-            They can be made small in special cases (e.g., acyclic automata).
-
-        \item[\textbf{Complexity}:]
-            $O(n^3)$ in the number of states.\\
-            Less in special cases (e.g. $O(n^2 log n)$ for acyclic automata).
-    \end{description}
+        \item
+            Induction on the number of states.
+    \end{itemize}
 \end{frame}
 
 \section{Brzozowski Algebraic Method}
@@ -377,8 +312,8 @@
             &
             (+ \, \varepsilon \mbox{ if } r_0 \in F)
             \\ 
-           \vdots &  = & \vdots \\
-        r_{|Q|-1} & = & 
+            \vdots &  = & \vdots \\
+         r_{|Q|-1} & = & 
             \displaystyle\sum\limits_{
                 \substack{a \in \Sigma \\ 0 \leq i < |Q|} 
             }
@@ -410,35 +345,101 @@
 
 \subsection*{Properties}
 \begin{frame}
-    \begin{description}
-        \item[\textbf{Formalization}:] \hfill \\
-            Complex due to missing infrastructure.\\
-        \item[\textbf{Efficiency}:] 
-            The resulting regular expressions are quite small.\\
+    \textbf{Formalization:} \\
+    \begin{itemize}
+        \item
+            Requires a formalization of these equations and operations on them. 
+        \item
+            We would need to prove Arden's Lemma.
+        \item
+            We would also need to prove that Arden's Lemma (and substitution) is enough to solve these systems of equations.
+    \end{itemize} 
+\end{frame}
 
-        \item[\textbf{Complexity}:]
-            $O(n^3)$ in the number of states.\\
-            Less in special cases (e.g. $O(n^2 log n)$ for acyclic automata).
-    \end{description}
+\section{Transitive Closure}
+\subsection*{Approach}
+\begin{frame}
+
+    \large{\textbf{Transitive Closure}} \\
+
+    \textbf{Given}: DFA $A$ = $(\Sigma, Q, q_0, F, \delta)$.
+
+    \textbf{Idea}: Construct regexps $r_f$ for every final states $f \in F$ s.t. \\$r_f$ matches all words which A accepts with final state $f$. \\
+
+    \[
+        \, \Rightarrow \mathcal{L}(A) = \mathcal{L}(\bigplus\limits_{f \in F} r_f)
+    \]
+
+    \vspace{5 mm}
+
+     \textbf{How do we construct $r_f$?} 
+
+\end{frame}
+
+\subsection*{Algorithm}
+\begin{frame}
+
+    We generalize the idea of $r_f$ to $R^k_{i j}$ which matches all words with which lead from state $i$ to $j$ while passing only through states with index smaller than $k$.
+
+    \begin{enumerate}
+        \item 
+            Merge multiple edges between states to one unified edge.
+        \item
+            Construct regexp $R^k_{i j}$ recursively:
+
+            \begin{description}
+
+                \item[$R^0_{i j}$]
+                    $ := \begin{cases} 
+                        r & \mbox{if } i \neq j \wedge i \mbox{ has edge } r \mbox{ to j}  \\
+          \varepsilon + r & \mbox{if } i = j \wedge i \mbox{ has edge } r \mbox{ to j}  \\
+                \emptyset & \mbox{otherwise}
+                    \end{cases}
+                    $ 
+
+                \item[$R^k_{i j}$]
+                    $ := R^{k-1}_{i k} R^{k-1}_{k k} R^{k-1}_{k j} + R^{k-1}_{i j}$
+
+            \end{description}
+
+    \end{enumerate}
+
+    \[ 
+        \Rightarrow \mathcal{L}(A) = \mathcal{L}(\bigplus_{f \in F} r_f) = \mathcal{L}(\bigplus_{f \in F} R^{|Q|}_{0 f}) 
+    \]
+
+\end{frame}
+
+\subsection*{Properties}
+\begin{frame}
+    \textbf{Formalization:} \\
+    \begin{itemize}
+        \item
+            Easier than the other methods.\\
+        \item
+            The recursive definition translates quite well.\\
+        \item
+            The details are quite challenging.
+    \end{itemize} 
 \end{frame}
 
 \section{Our Approach}
 \begin{frame}
     \begin{itemize}
         \item
-           We eliminated the Brzozowski algebraic method due to its heavy overhead in required infrastructure.
+            We eliminated the Brzozowski algebraic method due to its heavy overhead in required infrastructure.
 
-        \pause
+            \pause
 
         \item
             The state removal method requires a new kind of automaton which we would rather avoid.
 
-        \pause
-            
+            \pause
+
         \item
             We settled for Kleene's transitive closure method.
-           
-   \end{itemize}
+
+    \end{itemize}
 \end{frame}
 
 \end{document}
