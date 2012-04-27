@@ -8,6 +8,11 @@
 
 \usepackage{listings}
 
+\usepackage{cite} 
+\usepackage{natbib} %citep and citet
+\def\newblock{\hskip .11em plus .33em minus .07em}
+\renewcommand{\bibsection}{\subsubsection*{\bibname } }
+
 \usepackage{amsmath}
 \DeclareMathOperator*{\bigplus}{\mbox{\huge +}}
 
@@ -26,30 +31,6 @@
     \tableofcontents
 \end{frame}
 
-\section{Goal}
-\subsection*{Current Goal}
-\begin{frame}
-
-    \textbf{Goal:}
-
-    Find simple proofs for the decidability of regular expression equivalence and the Myhill-Nerode theorem.
-
-
-\end{frame}
-
-\subsection*{Roadmap}
-\begin{frame}
-    Roadmap:
-
-    \begin{enumerate}
-        \item RE $\Rightarrow$ FA (\textbf{DONE})
-        \item Emptiness test on FA (\textbf{Easy})
-        \item RE equivalence (\textbf{Follows from 1 and 2})
-        \item FA $\Rightarrow$ RE (\textbf{Work in progress})
-        \item Myhill-Nerode
-    \end{enumerate}
-
-\end{frame}
 
 \section*{Recap}
 \begin{frame}
@@ -72,6 +53,26 @@
             \]
             (The transition relation $\delta$ of deterministic FA is total).
     \end{itemize}
+\end{frame}
+
+\section{Goal}
+\subsection*{Current Goal}
+\begin{frame}
+
+    \textbf{Goal:}
+
+    Find simple proofs for the decidability of regular expression equivalence and the Myhill-Nerode theorem.\\
+
+    \textbf{Roadmap:}
+
+    \begin{enumerate}
+        \item RE $\Rightarrow$ FA (\textbf{DONE})
+        \item Emptiness test on FA (\textbf{Easy})
+        \item RE equivalence (\textbf{Follows from 1 and 2})
+        \item FA $\Rightarrow$ RE (\textbf{Work in progress})
+        \item Myhill-Nerode
+    \end{enumerate}
+
 \end{frame}
 
 \section*{Finite automata to regular expressions}
@@ -124,9 +125,9 @@
     \textbf{Three methods (+ variations):}
 
     \begin{enumerate}
-        \item Transitive Closure
-        \item State Removal
-        \item Brzozowski Algebraic Method
+        \item Transitive Closure (Kleene \cite{KleeneNets})
+        \item State Removal (Du, Ko \cite{DuKo}, simplified in Linz \cite{DBLP:books/daglib/0019552})
+        \item Brzozowski Algebraic Method (Brzozowski \cite{DBLP:journals/jacm/Brzozowski64})
     \end{enumerate}
 
 \end{frame}
@@ -369,7 +370,7 @@
 
     \textbf{Given}: FA $A$ = $(\Sigma, Q, q_0, F, \delta)$.
 
-    \textbf{Idea}: Construct regexps $r_f$ for every final states $f \in F$ s.t. \\$r_f$ matches all words which A accepts with final state $f$. \\
+    \textbf{Idea}: Construct regexps $r_f$ for all final states $f \in F$ s.t. \\$r_f$ matches all words which A accepts with final state $f$. \\
 
     \[
         \, \Rightarrow \mathcal{L}(A) = \mathcal{L}(\bigplus\limits_{f \in F} r_f)
@@ -430,7 +431,7 @@
     \pause
 
     {\centering 
-        \textbf{This appears to be the simplest formalization.}
+        \textbf{This appears to be the simplest to formalize.}
 
     }
 \end{frame}
@@ -466,6 +467,7 @@
 \begin{frame}
     \textbf{Lemmas:}
 
+    
     \begin{enumerate}
         \item The language of an automaton is the union of the words with runs on $A$ that end in any final state, i.e. 
             $\mathcal{L}(A) = \bigcup_{f \in F} \mathcal{L}(A_f) \mbox {, where $A_f$ accepts only in $f$}.$ (Not difficult)
@@ -476,26 +478,75 @@
                 \item a sub path from the first to the last occurrence of k
                 \item the remaining sub path from the last occurrence of k to the end.
             \end{itemize}
-            (Complex; requires a new operations on lists)
+            (Complex; requires new operations on lists and paths)
     \end{enumerate}
     
 \end{frame}
 
 \begin{frame}
-    \textbf{More lemmas:} 
 
     \begin{enumerate}
 
     \setcounter{enumi}{2}
-\item A path on $A$ which passes through a final state more than once is in $\mathcal{L}(A)^*$ (Relies on the same operations we need for lemma 2)
-        \item Any path on $A^k_{i j}$ that ends in the new accepting state can be mapped to an equivalent path that ends state j (and vice-versa).
-        \item Any path on $A^k_{i j}$ that does not end in the new accepting state is also a path on $A$.
+        \item If a path on $A$ passes through a final state more than once, the corresponding word is in $\mathcal{L}(A)^*$ (Relies on the same operations we need for lemma 2)
+        \item 
+            $\mathcal{L}(A^k_{i j}) = \mathcal{L}(R^k_{i j})$ (By recursion on $k$, using lemmas 1, 2 and 3)
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \begin{enumerate}
+    \setcounter{enumi}{4}
+        \item Any path on $A^k_{i j}$ that ends in the new accepting state can be mapped to an equivalent path that ends state j (and vice-versa). (Probably easy)
+        \item Any path on $A^k_{i j}$ that does not end in the new accepting state is also a path on $A$. (Follows from lemma 5 and definition of $A^k_{i j}$)
+        \item $\mathcal{L}(A^{|Q|}_{q_0 f}) = \mathcal{L}(A_f)$ (Follows from lemma 6)
     \end{enumerate}
 
 \end{frame}
 
+\subsection*{Theorem}
 \begin{frame}
-        \huge Thank you for your attention
+    \textbf{Theorem:}
+    \[
+        \mathcal{L}(\bigplus_{f \in F} R^{|Q|}_{q_0 f}) = \mathcal{L}(A).
+    \]
+    
+    \textbf{Proof:}\\
+    \begin{itemize}
+        \item By lemma 1:
+            $\mathcal{L}(\bigplus_{f \in F} R^{|Q|}_{q_0 f}) = \bigcup_{f \in F} \mathcal{L}(A_f).$
+        \item By lemma 7:
+            $\mathcal{L}(\bigplus_{f \in F} R^{|Q|}_{q_0 f}) = \bigcup_{f \in F} \mathcal{L}(A^{|Q|_{q_0 f}}).$
+        \item By lemma 4: 
+            $\mathcal{L}(\bigplus_{f \in F} R^{|Q|}_{q_0 f}) = \bigcup_{f \in F} \mathcal{L}(R^{|Q|_{q_0 f}}).$
+        \item Holds by definition of $+$.
+    \end{itemize}
+    
 \end{frame}
+
+\section{Summary}
+\begin{frame}
+    \textbf{Summary:}
+    \begin{itemize}
+        \item
+            Creating recursive from non-recursive structures is difficult.
+        \item 
+            Existing algorithms to construct RE from FA differ vastly in how easily and elegantly we can formalize them.
+        \item
+            We benefit from thinking of the $R^k_{i j}$ invariant in terms of existing infrastructure ($A^k_{i j}$ is an ordinary NFA).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \begin{center}
+        \huge Thank you for your attention
+    \end{center}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Reference}
+    \bibliography{bib}{}
+    \bibliographystyle{plain}
+\end{frame}
+
 
 \end{document}
