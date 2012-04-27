@@ -6,6 +6,8 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows,automata} 
 
+\usepackage{listings}
+
 \usepackage{amsmath}
 \DeclareMathOperator*{\bigplus}{\mbox{\huge +}}
 
@@ -25,7 +27,7 @@
 \end{frame}
 
 \section{Goal}
-\subsection{Current Goal}
+\subsection*{Current Goal}
 \begin{frame}
 
     \textbf{Goal:}
@@ -60,7 +62,7 @@
                 r, s ::= \emptyset \, | \, \varepsilon \, | \,  a \, | \, rs \, | \,  r \,  + \, s \, | \, r \, \& \, s \, |\, r^* \, | \, \neg r
             \]
             \[
-                \mbox{\textbf{Def.:} }  \bigplus_{x \in X} r_x := r_{x_0} + ... + r_{x_1}
+            \mbox{\textbf{Def.:} }  \bigplus_{x \in X} r_x := r_{x_0} + ... + r_{x_{|X|-1}}
             \]
 
         \item 
@@ -91,7 +93,10 @@
 
     \pause
 
-    \textbf{Why is that?}
+    {\centering 
+        \textbf{Why is that?}
+
+    }
 
 \end{frame}
 
@@ -132,7 +137,7 @@
 \begin{frame}
     \textbf{State Removal}    
 
-    \textbf{Given}: FA $A$ = $(\Sigma, Q, q_0, F, \delta)$.
+    \textbf{Given}: NFA $A$ = $(\Sigma, Q, q_0, F, \delta)$.
 
     \textbf{New concept}: Automata that have transitions labeled by RE.
 
@@ -362,7 +367,7 @@
 
     \large{\textbf{Transitive Closure}} \\
 
-    \textbf{Given}: DFA $A$ = $(\Sigma, Q, q_0, F, \delta)$.
+    \textbf{Given}: FA $A$ = $(\Sigma, Q, q_0, F, \delta)$.
 
     \textbf{Idea}: Construct regexps $r_f$ for every final states $f \in F$ s.t. \\$r_f$ matches all words which A accepts with final state $f$. \\
 
@@ -372,14 +377,14 @@
 
     \vspace{5 mm}
 
-     \textbf{How do we construct $r_f$?} 
+    \textbf{How do we construct $r_f$?} 
 
 \end{frame}
 
 \subsection*{Algorithm}
 \begin{frame}
 
-    We generalize the idea of $r_f$ to $R^k_{i j}$ which matches all words with which lead from state $i$ to $j$ while passing only through states with index smaller than $k$.
+    We generalize the idea of $r_f$ to $R^k_{i j}$ which matches all words which lead from state $i$ to $j$ while passing only through states with index smaller than $k$.
 
     \begin{enumerate}
         \item 
@@ -421,25 +426,76 @@
         \item
             The details are quite challenging.
     \end{itemize} 
+
+    \pause
+
+    {\centering 
+        \textbf{This appears to be the simplest formalization.}
+
+    }
 \end{frame}
 
 \section{Our Approach}
+\subsection*{Definitions}
 \begin{frame}
-    \begin{itemize}
+    \textbf{Our Approach:} \\
+
+    There are different ways of formalizing $R^k_{i j}$ itself, especially its parameters. Most practical so far: \\
+    $k$ is of type nat, $i$ and $j$ are ordinals from $[0..|Q|-1]$.\\
+    \pause
+    This gives us easy recursion and matching on $k$.\\
+    \pause
+    \textbf{But} we have to use $min \, k \, (|Q|-1)$ to map k to the corresponding ordinal (and then to a state).
+
+\end{frame}
+
+\begin{frame}
+    To get a FA counterpart to $R^k_{i j}$, we introduce $A^k_{i j}$ s.t.
+    \[
+        \mathcal{L}(A^k_{i j}) = \mathcal{L}(R^k_{i j}).
+    \]
+    $A^k_{i j}$ is similar to A. It has one additional state, which has all incoming edges of state $j$ and no outgoing edges. It only leaves states that are $i$ or  $<k$. It only enters states less than $<k$ or the new state.
+    \\
+    We can then show that  
+    \[
+        \mathcal{L}(\bigcup_{f \in F} A^{|Q|}_{q_0 f}) = \mathcal{L}(A).
+    \]
+\end{frame}
+
+\subsection*{Lemmas}
+\begin{frame}
+    \textbf{Lemmas:}
+
+    \begin{enumerate}
+        \item The language of an automaton is the union of the words with runs on $A$ that end in any final state, i.e. 
+            $\mathcal{L}(A) = \bigcup_{f \in F} \mathcal{L}(A_f) \mbox {, where $A_f$ accepts only in $f$}.$ (Not difficult)
         \item
-            We eliminated the Brzozowski algebraic method due to its heavy overhead in required infrastructure.
+            A path in $A^{k+1}_{i j}$ that is not in $A^{k}_{i j}$ can be decomposed into:\\
+            \begin{itemize}
+                \item a sub path from index 0 to the first occurrence of k
+                \item a sub path from the first to the last occurrence of k
+                \item the remaining sub path from the last occurrence of k to the end.
+            \end{itemize}
+            (Complex; requires a new operations on lists)
+    \end{enumerate}
+    
+\end{frame}
 
-            \pause
+\begin{frame}
+    \textbf{More lemmas:} 
 
-        \item
-            The state removal method requires a new kind of automaton which we would rather avoid.
+    \begin{enumerate}
 
-            \pause
+    \setcounter{enumi}{2}
+\item A path on $A$ which passes through a final state more than once is in $\mathcal{L}(A)^*$ (Relies on the same operations we need for lemma 2)
+        \item Any path on $A^k_{i j}$ that ends in the new accepting state can be mapped to an equivalent path that ends state j (and vice-versa).
+        \item Any path on $A^k_{i j}$ that does not end in the new accepting state is also a path on $A$.
+    \end{enumerate}
 
-        \item
-            We settled for Kleene's transitive closure method.
+\end{frame}
 
-    \end{itemize}
+\begin{frame}
+        \huge Thank you for your attention
 \end{frame}
 
 \end{document}
