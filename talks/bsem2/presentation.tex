@@ -125,9 +125,9 @@
     \textbf{Three methods (+ variations):}
 
     \begin{enumerate}
-        \item Transitive Closure (Kleene \cite{KleeneNets})
         \item State Removal (Du, Ko \cite{DuKo}, simplified in Linz \cite{DBLP:books/daglib/0019552})
         \item Brzozowski Algebraic Method (Brzozowski \cite{DBLP:journals/jacm/Brzozowski64})
+        \item Transitive Closure (Kleene \cite{KleeneNets})
     \end{enumerate}
 
 \end{frame}
@@ -401,7 +401,7 @@
                     $ 
 
                 \item[$R^k_{i j}$]
-                    $ := R^{k-1}_{i k} R^{k-1}_{k k} R^{k-1}_{k j} + R^{k-1}_{i j}$
+                    $ := R^{k-1}_{i k} (R^{k-1}_{k k})^* R^{k-1}_{k j} + R^{k-1}_{i j}$
 
             \end{description}
 
