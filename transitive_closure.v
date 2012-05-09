@@ -192,8 +192,40 @@ Section TransitiveClosure.
         rewrite enum_valK.
         by apply: k1_ord_lt.
       by [].
-      Qed.
+    Qed.
 
+    Lemma L_catR k i j w1 w2:
+      w1 \in L^k.+1 i (enum_val (k1_ord k)) ->
+      w2 \in L^k (enum_val (k1_ord k)) j ->
+      w1++w2 \in L^k.+1 i j.
+    Proof.
+      rewrite /L -3!topredE /=.
+      rewrite dfa_run'_cat.
+      move => /andP [] /eqP H0 H1 /andP [] /eqP H2 H3.
+      case: w1 H0 H1 => [|v1 w1] H0 H1.
+        rewrite /= in H0.
+        rewrite H0 /= H2 eq_refl /=.  
+        eapply allbutlast_impl.
+        move => x. by eapply (@ltnW ((enum_rank x)) k).
+        exact: H3.
+      rewrite last_cat.
+      case: w2 H2 H3 => [|v2 w2] H2 H3.
+        rewrite /= in H2.
+        rewrite -H2 H0 /= eq_refl /=.
+        rewrite cats0.
+        exact H1.
+
+      rewrite H0 H2 eq_refl andTb.
+      eapply all_allbutlast_cat.
+        apply: (allbutlast_last _ i) => //. 
+        rewrite H0. 
+        rewrite enum_valK.
+        by apply: k1_ord_lt.
+        eapply allbutlast_impl.
+          move => x.
+        by eapply (@ltnW ((enum_rank x)) k).
+      by [].
+    Qed.
   End L.
             
   
