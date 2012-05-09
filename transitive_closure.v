@@ -229,7 +229,26 @@ Section TransitiveClosure.
   End L.
             
   
-
+  Lemma R_L_star k vv:
+    
+    (forall (i j : 'I_#|A|) (w : word char),
+        w \in R^k i j -> w \in L^k (enum_val i) (enum_val j)) ->
+     all [predD mem_reg (R^k (k1_ord k) (k1_ord k)) & 
+          eps (symbol:=char)] vv ->
+     flatten vv \in L^k.+1 (enum_val (k1_ord k)) (enum_val (k1_ord k)).
+  Proof.
+    move => IHk.
+    elim: vv => [|v vv IHvv].
+      by rewrite /= -topredE /L /= eq_refl.
+    rewrite /= => /andP [] /andP [].
+    rewrite -topredE /= /eps /= => H0.
+    move => H1.
+    move/IHvv.
+    apply: L_catL.
+    apply: IHk.
+    by [].
+  Qed.
+  
   Lemma R_L k i j w: w \in R^k i j -> w \in L^k (enum_val i) (enum_val j).
    Proof.
     elim: k i j w => [|k IHk] i j w.
@@ -256,10 +275,14 @@ Section TransitiveClosure.
       move => /concP [] w2 H2 [] w3 /IHk H3.
       move => Eq1 Eq2.
       move/starP: H2 => [] vv Hvv Eqvv.
-      pose k' := enum_val (k1_ord k). 
-      assert ((flatten vv) \in L^(k.+1) k' k').
-        elim: vv w2 Eq1 Eqvv Hvv => [|v vv IHvv] w2 Eq1 Eqvv Hvv.
-          by rewrite /= -topredE /= /L /= eq_refl.
-        
-      
-    by apply: IHk.
+      pose k' := enum_val (k1_ord k).
+      assert (w2 \in L^k.+1 k' k').
+        rewrite Eqvv.
+        by apply: R_L_star.
+      rewrite Eq2.
+      apply: L_catL => //. 
+      rewrite Eq1.
+      by apply: L_catR.      
+    move/IHk.
+    by apply: L_monotone.
+  Qed.
