@@ -8,7 +8,7 @@ Set Implicit Arguments.
 
 
 Section AllButLast.
-
+  
   Variable X: Type.
   
   Definition belast (xs: seq X) :=
@@ -20,8 +20,8 @@ Section AllButLast.
     end)
     xs.
 
-  Definition allbutlast p xs :=
-    all p (belast xs).
+  Definition allbutlast p : pred (seq X) :=
+    fun xs => all p (belast xs).
 
   Lemma allbutlast_impl (p q: pred X) xs:
     (forall x, p x -> q x) ->
@@ -74,8 +74,65 @@ Section AllButLast.
     by rewrite /= H0 => /andP [] ->.
   Qed.
                          
+  Lemma allbutlast_pred0 p xs: p =1 pred0 -> allbutlast p xs -> size xs <= 1.
+  Proof.
+    move => H0.
+    elim: xs => [|x xs IHxs] //.
+    case: xs IHxs => [|y xs] IHxs //.
+    move/allbutlast_cons'.
+    move/andP=>[].
+    by rewrite (H0 x).
+  Qed.
+
+  
 End AllButLast.   
 
+
+  Section Split.
+    
+  Variable X: eqType.
+
+  Lemma last_neutral (x: X) xs: (last x xs) = (last (last x xs) xs).
+  Proof.
+    elim: xs x => [|y xs IHxs] x.
+      by [].
+    by rewrite last_cons last_cons.
+  Qed.
+    
+  Lemma allbutlast_split p y xs:
+    p (last y xs) == false -> 
+    exists xx,
+      (xs == flatten xx) &&
+      (all [predD (allbutlast p) & (@eps X)] xx &&
+      all (fun xs' => p (last (last y xs) xs') == false) xx).
+  Proof.
+    elim: xs y => [|x xs IHxs] y.
+      exists [::] => //.
+    rewrite last_cons.
+    move => H0.
+    case: (IHxs _ H0) => xx /andP [] /eqP H1 /andP [] H2 H3.
+
+    case_eq (p x) => H4.
+      case: xx H1 H2 H3 => [|z xx] /= H1 H2 H3.
+        exists [::[::x]].
+        rewrite H1 /= eq_refl /=.
+        move/eqP in H0.
+        by rewrite -H0 H1 /= eq_refl.
+      exists ((x::z)::xx).
+      rewrite H1 /= eq_refl /=.
+      move: H2 => /andP [] /andP [] H5 H6 H7.
+      rewrite -topredE /= H7 allbutlast_cons => //.
+      move: H3 => /andP [] H8 H9.
+
+      case: z H1 H5 H6 H7 H8 => // z zz H1 H5 H6 H7 H8.
+      
+      rewrite last_cons in H8.
+      by rewrite H8 -H1 H9.
+    exists ([::x]::xx). 
+    by rewrite /= H4 {1}H1 eq_refl H2 eq_refl H3 /=.
+  Qed.
+       
+  End Split.
 
 Section TransitiveClosure.
 
@@ -286,3 +343,35 @@ Section TransitiveClosure.
     move/IHk.
     by apply: L_monotone.
   Qed.
+
+
+  Lemma L_R k i j w: w \in L^k (enum_val i) (enum_val j) -> w \in R^k i j.
+  Proof.
+    elim: k i j w => [|k IHk] i j w.
+      rewrite -topredE /L /= => /andP [] H0 H1.
+      move: (allbutlast_pred0 _ (fun x => ltn0 (enum_rank x)) H1).
+      case: w H0 H1 => [|a [|w]] //= /eqP H0 H1 _.
+        assert (i==j).
+          by rewrite -(enum_valK i) H0 enum_valK.
+        rewrite H H0.
+        rewrite Plus_dist.
+        by rewrite orbT.
+      case_eq (i==j) => H2; rewrite H2.
+        rewrite Plus_dist orbF.
+        rewrite foldr_Plus orFb.
+        apply/hasP. exists (Atom a).
+          apply/mapP. exists a => //.
+          rewrite mem_filter /=.
+          by rewrite H0 eq_refl mem_enum. 
+        by rewrite -topredE /= /atom /= eq_refl.
+
+      rewrite foldr_Plus orFb.
+      apply/hasP. exists (Atom a).
+        apply/mapP. exists a => //.
+        rewrite mem_filter /=.
+        by rewrite H0 eq_refl mem_enum. 
+      by rewrite -topredE /= /atom /= eq_refl.
+
+
+    
+      
