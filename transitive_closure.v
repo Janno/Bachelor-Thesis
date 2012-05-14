@@ -37,6 +37,12 @@ Section AllButLast.
     by move: (IHxs H0). 
   Qed.
 
+  Lemma allbutlast0 p: allbutlast p [::].
+  Proof. by rewrite /allbutlast /=. Qed.
+
+  Lemma allbutlast1 p x: allbutlast p [::x].
+  Proof. by []. Qed.
+  
   Lemma allbutlast_cons (p: pred X) x xs: p x -> allbutlast p xs -> allbutlast p (x::xs).
   Proof.
     elim: xs x => [|y xs IHxs] x //. 
@@ -54,7 +60,14 @@ Section AllButLast.
     move => /= /andP [] H0 /IHxs.
     by apply: allbutlast_cons.
   Qed.
-       
+
+  Lemma allbutlast_cons'' p x (xs: seq X): allbutlast p (x::xs) -> (size xs == 0) || (p x && allbutlast p xs). 
+  Proof.
+    elim: xs x => [|y xs IHxs] x.
+      by [].
+    by rewrite orFb.    
+  Qed.
+  
   Lemma all_allbutlast_cat p xs ys: all p xs -> allbutlast p ys -> allbutlast p (xs++ys).
   Proof.
     elim: xs => [|x xs IHxs].
@@ -99,39 +112,80 @@ End AllButLast.
     by rewrite last_cons last_cons.
   Qed.
     
-  Lemma allbutlast_split p y xs:
-    p (last y xs) == false -> 
+  Lemma allbutlast_split p (xs: seq X):
     exists xx,
       (xs == flatten xx) &&
-      (all [predD (allbutlast p) & (@eps X)] xx &&
-      all (fun xs' => p (last (last y xs) xs') == false) xx).
+      (all (allbutlast p) xx &&
+      allbutlast
+      (fun xs => if xs is (x::xs) then p (last x xs) == false else false )
+      xx).
   Proof.
-    elim: xs y => [|x xs IHxs] y.
+    elim: xs => [|x xs IHxs].
       exists [::] => //.
-    rewrite last_cons.
-    move => H0.
-    case: (IHxs _ H0) => xx /andP [] /eqP H1 /andP [] H2 H3.
+
+    move: IHxs => [] xx /andP [] /eqP Hxs /andP [] H0 H1.
+    case: xx Hxs H0 H1 => [|xx [| xx' xxr]] Hxs H0 H1.
+        exists [::[::x]].
+        rewrite /= Hxs eq_refl /=.
+        by [].
+      case: xx Hxs H0 H1 => [|y [|y' ys]] Hxs H0 H1.
+          exists [::[::x]].
+          by rewrite /= Hxs eq_refl.
+
+        case_eq (p x) => H4. 
+          exists [::[::x;y]].
+          rewrite /= Hxs eq_refl.
+          by rewrite allbutlast_cons.
+
+        (* ~ p x *)
+        exists [::[::x];[::y]].
+        rewrite /= Hxs eq_refl /=.
+        rewrite allbutlast_cons => //.
+        by rewrite H4.
+
+      case_eq (p x) => H4.
+        exists ([::[:: x, y, y' & ys]]).
+        rewrite /= Hxs eq_refl /=.
+        rewrite allbutlast_cons => //.
+        move: H0 => /=.
+        by rewrite andbT.
+
+      (* ~ p x *)
+      exists ([::[::x] ; [:: y, y' & ys]]).
+      rewrite /= Hxs eq_refl /=.
+      move: H0. rewrite /= andbT => -> /=.
+      rewrite allbutlast_cons => //.
+      by rewrite H4.                                   
+
+    case: xx Hxs H0 H1 => [|y [|y' ys]] Hxs H0 H1.
+        by [].
+      case_eq (p x) => H4.
+        exists ([:: [:: x; y], xx' & xxr]).        
+        rewrite /= Hxs eq_refl /=.
+        rewrite allbutlast_cons => //.
+        move: H0 => /= /andP [] -> -> /=.
+        move: (allbutlast_cons' _ _ _ _ H1) => /= /andP [] H2 H3.
+        by rewrite allbutlast_cons => //.
+      (* ~ p x *)
+      exists [:: [::x], [::y], xx' & xxr ].                        
+      rewrite Hxs eq_refl /=.
+      move: H0 => /= /andP [] -> -> /=.
+      rewrite allbutlast_cons => //.
+      by rewrite /= H4.
 
     case_eq (p x) => H4.
-      case: xx H1 H2 H3 => [|z xx] /= H1 H2 H3.
-        exists [::[::x]].
-        rewrite H1 /= eq_refl /=.
-        move/eqP in H0.
-        by rewrite -H0 H1 /= eq_refl.
-      exists ((x::z)::xx).
-      rewrite H1 /= eq_refl /=.
-      move: H2 => /andP [] /andP [] H5 H6 H7.
-      rewrite -topredE /= H7 allbutlast_cons => //.
-      move: H3 => /andP [] H8 H9.
-
-      case: z H1 H5 H6 H7 H8 => // z zz H1 H5 H6 H7 H8.
-      
-      rewrite last_cons in H8.
-      by rewrite H8 -H1 H9.
-    exists ([::x]::xx). 
-    by rewrite /= H4 {1}H1 eq_refl H2 eq_refl H3 /=.
+      exists [:: [:: x, y, y' & ys], xx' & xxr].
+      rewrite Hxs eq_refl /=.
+      move: H0 => /= /andP [] H2 /andP [] -> ->  /=.
+      rewrite allbutlast_cons => //=.
+    (* ~ p x *)
+    exists [:: [::x], [::y, y' & ys], xx' & xxr ].
+    rewrite Hxs eq_refl /=.
+    move: H0 => /= /andP [] -> -> /=.
+    rewrite allbutlast_cons => //.
+    by rewrite H4.                                    
   Qed.
-       
+
   End Split.
 
 Section TransitiveClosure.
@@ -285,6 +339,89 @@ Section TransitiveClosure.
     Qed.
   End L.
             
+
+  Section R.
+
+    Lemma Conc_assoc r s t (w: word char): (w \in Conc r (Conc s t)) = (w \in Conc (Conc r s) t).
+    Proof.
+      rewrite -topredE -topredE /=.
+      apply/concP/concP.
+        move => [] v1 Hr [] v23 /concP [] v2 Hs [] v3 Ht H0 H1.
+        exists (v1++v2).
+        apply/concP.
+        exists v1 => //.
+          by exists v2.
+        exists v3 => //.
+        by rewrite -catA H1 H0.
+
+      move => [] v12 /concP [] v1 Hr [] v2 Hs H0 [] v3 Ht H1.
+      exists v1 => //.
+      exists (v2 ++ v3).
+        apply/concP.
+        exists v2 => //.
+        exists v3 => //.
+      by rewrite H1 catA H0.
+    Qed.
+
+    Lemma Conc_Star_idem r (w: word char): w \in Conc r (Star r) -> (w \in Star r).
+    Proof.
+      rewrite -topredE -topredE /=.
+      move/concP.
+      move => [] v1 H1 [] v2 /starP [] vv H2 H3 H4.
+      case: v1 H1 H4 => [|v v1] H1 H4.
+        apply/starP.
+        exists vv => //.
+        by rewrite H4 H3. 
+      apply/starP.
+      exists ([::(v::v1)]++vv).
+        by rewrite /= H2 andbT H1.
+      by rewrite H4 H3.
+    Qed.
+
+      
+    Lemma R_catL k i j w1 w2:
+      w1 \in R^k i  (k1_ord k) ->
+      w2 \in R^k.+1 (k1_ord k) j ->
+      w1++w2 \in R^k.+1 i j.
+    Proof.
+      rewrite /=.
+      move => H0.
+      rewrite Plus_dist => /orP [].
+        rewrite Conc_assoc.
+        rewrite -topredE /=.
+        move/concP => [] v1.
+        move/Conc_Star_idem => H1 [] v2 H2 H3.
+        rewrite Plus_dist.
+        apply/orP. left.
+        rewrite -topredE /=.
+        apply/concP.
+        exists w1 => //.
+        exists w2 => //.
+        apply/concP.
+        exists (v1) => //.
+        exists (v2) => //.
+
+      rewrite Plus_dist.
+      move => H1.
+      apply/orP. left.
+      rewrite -topredE /=.
+      apply/concP.
+      exists w1 => //.
+      exists w2 => //.
+      apply/concP.
+      exists [::] => //.
+      exists w2 => //.
+    Qed.
+
+    Lemma R_nil k i: [::] \in R^k i i.
+    Proof.
+      elim: k i => [|k IHk] i.
+        rewrite /= eq_refl /= Plus_dist -topredE /=.
+        apply/orP. by right.
+      by rewrite /= Plus_dist IHk orbT.
+    Qed.
+      
+  End R.
   
   Lemma R_L_star k vv:
     
@@ -344,7 +481,57 @@ Section TransitiveClosure.
     by apply: L_monotone.
   Qed.
 
+  Lemma L_R1 k i j w: 
+    (forall (i j : 'I_#|A|) (w : word char),
+        w \in L^k (enum_val i) (enum_val j) -> w \in R^k i j) ->
+    w \in L^k.+1 (enum_val i) (enum_val j) ->
+    w \in R^k.+1 i j.
+  Proof.
+    move => IHk.
+    rewrite /L -topredE [topred _]/=.
+    move: (allbutlast_split _ (fun x => enum_rank x < k) (dfa_run' A (enum_val i) w)) => [] xx.
+    elim: xx w => [|xs xx IHxx] w.
+      destruct w => //.
+                      
+      rewrite Plus_dist /= => _ /andP [].
+      move/eqP/(f_equal enum_rank).
+      rewrite 2!enum_valK => ->.
+      by rewrite R_nil orbT.
 
+    destruct xs as [|x xs].
+      destruct xx as [|ys xx] => //.    
+        move/andP => [].
+        destruct w as [|a w] => //.
+        move => _ _ /= /andP [].
+        move/eqP/(f_equal enum_rank).
+        rewrite 2!enum_valK => ->.
+        by rewrite Plus_dist R_nil orbT.
+      by rewrite /allbutlast /= 2!andbF. 
+     
+    destruct xx as [|ys xx] => //.    
+      move/andP => /= [] /eqP H0 /andP [] /andP [] H1 _.
+      rewrite -cat_cons in H0.
+      move: (dfa_run'_cat' _ _ _ _ _ H0).
+      move => [] w1 [] w2 [] H2 [].
+      move => H3 H4 H5. 
+      destruct w2 => //.
+      rewrite cats0 in H2.
+      subst.
+      move => /andP [] H6 H7.
+      assert (w1 \in L^k (enum_val i) (enum_val j)).
+        rewrite /L /= -topredE /=.
+        rewrite H6 /=.
+        by rewrite H3 H1.
+      apply/orP. right.
+      by apply: IHk.
+    rewrite /= => /andP [] /eqP H0.
+    rewrite -cat_cons in H0.
+    move: (dfa_run'_cat' _ _ _ _ _ H0).
+    move => [] [|a w1] [] w2 [] H2 [] //.
+    
+    /andP [] /andP [] H1 /andP [] H2 H3 H4 /andP [].
+      
+      
   Lemma L_R k i j w: w \in L^k (enum_val i) (enum_val j) -> w \in R^k i j.
   Proof.
     elim: k i j w => [|k IHk] i j w.
@@ -372,6 +559,71 @@ Section TransitiveClosure.
         by rewrite H0 eq_refl mem_enum. 
       by rewrite -topredE /= /atom /= eq_refl.
 
+      
+    by apply: L_R1.
+  Qed.
 
-    
+     
+                                                     
+
+      
+      rewrite /L /= => /andP [].
+      remember (dfa_run' A (enum_val i) w) as xs.
+      move => H0 H1.
+
+      move: (allbutlast_split _ (fun x => enum_rank x < k) xs) => [] xx.
+
+      rewrite Plus_dist. 
+
+      rewrite Heqxs.
+      elim: xx w xs Heqxs H0 H1 => [|x xx IHxx] w xs Heqxs H0 H1; move => /andP [] /eqP H2 /andP [] H3 H4.
+        rewrite Heqxs H2 /= in H0.
+        destruct w => //.
+        move/eqP/(f_equal enum_rank): H0.
+        rewrite 2!enum_valK => ->.
+        by rewrite R_nil orbT.
+
+
+        
+
+      rewrite /= in H2.  
+      assert (dfa_run' A (enum_val i) w = x ++ flatten xx).
+        symmetry.
+        by rewrite -H2 -Heqxs.
+        
+      move/dfa_run'_cat': (H).
+      move => [] w1 [] w2 [] H5 [] H6 H7.
+      case: w1 H5 H6 => [|a w1] H5 H6;
+        case: x H H3 H4 H2 Heqxs H7 H6 => [|x' x] H H3 H4 H2 Heqxs H7 H6 //.
+                                                
+        apply allbutlast_cons'' in H4.
+        rewrite andFb orbF in H4.
+        move/eqP/size0nil in H4.
+        assert(i=j).
+          rewrite H4 /= in H2.
+          rewrite Heqxs H2 /= in H0.
+          move/eqP in H0.
+          move: H0. move/(f_equal enum_rank).
+          by rewrite 2!enum_valK.
+        rewrite H8.
+
+        subst. 
+        simpl in *.
+        destruct w2 => //.
+        by rewrite R_nil orbT.
+        
+      assert ((a::w1) \in L^k (enum_val i) (enum_val (k1_ord k))).
+      move: H3.
+      
+      rewrite /L /= => /andP [] H8 H9.
+      rewrite -topredE [topred _]/=.
+      simpl in *.
+      rewrite H6.
+      destruct w => //.
+      simpl in H.
+      inversion H.
+      
+      
+
+
       
