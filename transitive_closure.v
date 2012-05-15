@@ -289,10 +289,6 @@ Section TransitiveClosure.
         apply: (L_cat k i (dfa_step A i a)) => //.
         rewrite ltn_neqAle.
         rewrite -ltnS H5 andbT.
-        (* The remaining part of thise case is tricky *)
-        apply/negP => /eqP H6.
-        move: H3.
-        rewrite -H6.
         admit.
         
       (* 2) we have gone through k before *)
@@ -303,7 +299,6 @@ Section TransitiveClosure.
       split => //. split => //. split => //.
       rewrite -cat1s.
       apply: L_cat; try eassumption.
-      (* The remaining part of thise case is tricky *)
       admit.
     Qed.
       
@@ -522,6 +517,71 @@ Section TransitiveClosure.
     move/IHk.
     by apply: L_monotone.
   Qed.
-
-
+   
+  Lemma size_induction (X : Type) (f : X -> nat) (p: X ->Prop) :
+  ( forall x, ( forall y, f y < f x -> p y) -> p x) -> forall x, p x.
+  Admitted.
+ 
+  (* w \in L^k.+1 i j -> w \in R^k.+1 i j *)
+  Lemma L_R_1 k i j w:
+       (forall (i j : 'I_#|A|) (w : automata.word char),
+        w \in L^k (enum_val i) (enum_val j) -> w \in R^k i j) ->
+        w \in L^k.+1 (enum_val i) (enum_val j) -> w \in R^k.+1 i j. 
+  Proof.
+    move => IHk.
+    move: w i j.
+    apply: (size_induction (size)) => w IHw i j.
+    case: w IHw => [|a w] IHw.
+      move/L_nil'/(f_equal enum_rank). 
+      rewrite 2!enum_valK => ->.
+      exact: R_nil.
+    move/L_split => [].
+      move/IHk.
+      rewrite /= Plus_dist => ->.
+      by rewrite orbT.
+    move => [] w1 [] w2 [] H0 [] H1 [] H2 H3.
+    assert (size w1 > 0).
+      case: w1 H0 H1 H2 => [|b w1] H0 H1 H2 => //.
+    rewrite H0.
+    apply: R_catL.
+      by apply: IHk.
+    apply: IHw => //.
+    rewrite H0 size_cat.
+    rewrite -{1}(addn0 (size w2)).
+    rewrite addnC.    
+    by rewrite ltn_add2r.
+  Qed.
+    
+  (* w \in L^k i j -> w \in R^k i j *)
+  Lemma L_R k i j w: w \in L^k (enum_val i) (enum_val j) -> w \in R^k i j. 
+  Proof.
+    elim: k i j w => [|k IHk] i j w.
+      assert ((fun x:A => enum_rank x < 0) =1 pred0) => //.
+      rewrite in_simpl /= => /andP [] H0 /(allbutlast_pred0 _ H).  
+      move: H0. case: w => [|a [|b w]] => /= H0 _ //.
+        move/eqP/(f_equal enum_rank) in H0.
+        rewrite 2!enum_valK in H0.
+        by rewrite H0 eq_refl Plus_dist foldr_Plus 2!in_simpl /= orbT.
+      case_eq (i==j) => H1.
+        move/eqP in H1.
+        rewrite H1 eq_refl /=.
+        rewrite Plus_dist foldr_Plus 2!in_simpl orbF /=. 
+        apply/hasP. exists (Atom a).
+          apply/mapP. exists a => //.
+          rewrite mem_filter.
+          rewrite H1 in H0.
+          by rewrite mem_enum andbT /= H0.
+        by rewrite in_simpl /= eq_refl.
+      rewrite H1.
+      rewrite foldr_Plus orFb.
+      apply/hasP. exists (Atom a).
+        apply/mapP. exists a => //.
+        rewrite mem_filter.
+        by rewrite mem_enum andbT /= H0.
+      by rewrite in_simpl /= eq_refl.
+    by apply: L_R_1.
+  Qed.
+  
+    
+    
 End TransitiveClosure.
