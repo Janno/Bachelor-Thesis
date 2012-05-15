@@ -202,10 +202,12 @@ Section TransitiveClosure.
     Lemma L_nil k i : [::] \in L^k i i.
       Proof. by rewrite in_simpl /= eq_refl. Qed.
 
+    (* w = [::] -> i = j *)
     Lemma L_nil' k i j: [::] \in L^k i j -> i = j.
     Proof. by rewrite in_simpl /= => /andP [] /eqP ->. Qed.
 
-    
+    (* prerequisite for L_split:
+       we can split at every char. *)
     Lemma L_cons k i j a w:
       (a::w) \in L^k.+1 i j ->
       [::a] \in L^k i (dfa_step A i a) /\
@@ -226,7 +228,9 @@ Section TransitiveClosure.
       by rewrite H0 H2.
     Qed.
 
-
+    (* Another prerequisite for L_split.
+       We can safely concatenate words and not
+       leave L^k if the split point is < k. *)
     Lemma L_cat k i h j w1 w2:
       enum_rank h < k ->
       w1 \in L^k i h ->
@@ -245,7 +249,7 @@ Section TransitiveClosure.
       exact H4.
     Qed.
 
-    (* Split at k or don't split at all if there is no k *)
+    (* Split at first k or don't split at all if there is no k *)
     Lemma L_split k i j a w:
       (a::w) \in L^k.+1 i j ->
       (a::w) \in L^k i j \/
@@ -256,32 +260,41 @@ Section TransitiveClosure.
         w2 \in L^k.+1 (enum_val (k_ord k)) j.
     Proof.
       elim: w k i j a => [|b w IHw] k i j a.
+        (* w = [::] *)
         move/L_cons => [] H0 H1.
         rewrite /= in H0.
+        (* see if we have to split at a *)
         case_eq (dfa_step A i a == enum_val (k_ord k)) => /eqP H2.
+          (* a =^= k, we need to split *)
           right.
           exists [::a]. exists [::].
           firstorder.
             by rewrite in_simpl /= H2 eq_refl.
           by rewrite -H2 H1.
+        (* a < k, we do not split *)
         left.
         move/L_nil': H1 <-.
         rewrite in_simpl /=.
         exact: H0.
+      (* (b::w) *)
       move => H.
+      (* get new split before b *)
       move/L_cons: (H) => [] H2.
       move/andP: (H) => [] H0 H1.
+      (* see if we have to split at a *)
       case_eq (dfa_step A i a == enum_val (k_ord k)) => H3.
-        move/eqP: H3 => H3.
         (* we go through k at a, we have to split here *)
+        move/eqP: H3 => H3.
         move => H4.
         rewrite -H3.
         right.
         by exists [::a]; exists [::b&w] => //.
 
-      (* we do not go through k at a. *)           
+      (* we do not go through k at a.
+         see if we go through k at all.
+        *)           
       move/IHw => [].
-        (* 1) we do not go through k at all *)
+        (* we do not go through k at all *)
         move => H4.
         left.
         rewrite -cat1s.
@@ -291,7 +304,8 @@ Section TransitiveClosure.
         rewrite -ltnS H5 andbT.
         admit.
         
-      (* 2) we have gone through k before *)
+      (* we have gone through k before.
+         we prepend a, which is <k, to w1. *)
       move => [] w1 [] w2 [] H4 [] H5 [] H6 H7.
       right.
       exists [::a & w1]. exists (w2).
@@ -302,6 +316,7 @@ Section TransitiveClosure.
       admit.
     Qed.
       
+    (* w1 \in L^k i k -> w2 \in L^k.+1 k j -> w1++w2 \in L^k.+1 i j *)
     Lemma L_catL k i j w1 w2:
       w1 \in L^k i (enum_val (k_ord k)) ->
       w2 \in L^k.+1 (enum_val (k_ord k)) j ->
@@ -336,6 +351,7 @@ Section TransitiveClosure.
       by [].
     Qed.
 
+    (* w1 \in L^k.+1 i k -> w2 \in L^k k j -> w1++w2 \in L^k.+1 i j *)
     Lemma L_catR k i j w1 w2:
       w1 \in L^k.+1 i (enum_val (k_ord k)) ->
       w2 \in L^k (enum_val (k_ord k)) j ->
@@ -373,6 +389,7 @@ Section TransitiveClosure.
 
   Section R.
 
+    (* Associativity of concatenation *)
     Lemma Conc_assoc r s t (w: word char): (w \in Conc r (Conc s t)) = (w \in Conc (Conc r s) t).
     Proof.
       rewrite -topredE -topredE /=.
@@ -394,6 +411,7 @@ Section TransitiveClosure.
       by rewrite H1 catA H0.
     Qed.
 
+    (* Some kind of idempotence for Conc r and Star r *)
     Lemma Conc_Star_idem r (w: word char): w \in Conc r (Star r) -> (w \in Star r).
     Proof.
       rewrite -topredE -topredE /=.
@@ -409,7 +427,7 @@ Section TransitiveClosure.
       by rewrite H4 H3.
     Qed.
 
-      
+    (* w1 \in R^k i k -> w2 \in R^k.+1 k j -> w1++w2 \in R^k i j *) 
     Lemma R_catL k i j w1 w2:
       w1 \in R^k i  (k_ord k) ->
       w2 \in R^k.+1 (k_ord k) j ->
@@ -417,7 +435,9 @@ Section TransitiveClosure.
     Proof.
       rewrite /=.
       move => H0.
+      (* see which case of R^k.+1 we are in *)
       rewrite Plus_dist => /orP [].
+        (* triple concatenation case *)
         rewrite Conc_assoc.
         rewrite -topredE /=.
         move/concP => [] v1.
@@ -431,7 +451,8 @@ Section TransitiveClosure.
         apply/concP.
         exists (v1) => //.
         exists (v2) => //.
-
+                         
+      (* basic recursion case *)
       rewrite Plus_dist.
       move => H1.
       apply/orP. left.
@@ -444,6 +465,7 @@ Section TransitiveClosure.
       exists w2 => //.
     Qed.
 
+    (* Empty word in all R^k i i *)
     Lemma R_nil k i: [::] \in R^k i i.
     Proof.
       elim: k i => [|k IHk] i.
@@ -481,8 +503,13 @@ Section TransitiveClosure.
   Qed.
   
   Lemma R_L k i j w: w \in R^k i j -> w \in L^k (enum_val i) (enum_val j).
-   Proof.
+  Proof.
+    (* induction over k *)
     elim: k i j w => [|k IHk] i j w.
+      (* k = 0 *)
+
+      (* we only ask if i==j due to the if condition.
+         the actual cases are very similar. *)
       case_eq (i==j) => H0 /=.
         rewrite H0 /=.
         rewrite Plus_dist => /orP [].
@@ -501,7 +528,13 @@ Section TransitiveClosure.
       rewrite -topredE /= /atom /= => /eqP ->.
       by rewrite -topredE /= /L /= H1.
 
+    (* k > 0 *)  
+
+    (* see which case of R^k.+1 we are in *)
     rewrite /= Plus_dist => /orP [].
+      (* triple concatenation case.
+         we apply IHk where we can and translate
+         star (R^k k k) with R_L_star. *)
       rewrite -topredE /= => /concP [] w1 /IHk H1 [] w23.
       move => /concP [] w2 H2 [] w3 /IHk H3.
       move => Eq1 Eq2.
@@ -513,16 +546,20 @@ Section TransitiveClosure.
       rewrite Eq2.
       apply: L_catL => //. 
       rewrite Eq1.
-      by apply: L_catR.      
+      by apply: L_catR.
+    (* basic recursion case. solved by IHK. *)
     move/IHk.
     by apply: L_monotone.
   Qed.
    
+  (* Size induction. We need this for the splitting induction *)
   Lemma size_induction (X : Type) (f : X -> nat) (p: X ->Prop) :
   ( forall x, ( forall y, f y < f x -> p y) -> p x) -> forall x, p x.
   Admitted.
  
-  (* w \in L^k.+1 i j -> w \in R^k.+1 i j *)
+  (* w \in L^k.+1 i j -> w \in R^k.+1 i j.
+     The first argument is the inductive hypothesis
+     obtained from induction over k in L_R *)
   Lemma L_R_1 k i j w:
        (forall (i j : 'I_#|A|) (w : automata.word char),
         w \in L^k (enum_val i) (enum_val j) -> w \in R^k i j) ->
@@ -530,21 +567,31 @@ Section TransitiveClosure.
   Proof.
     move => IHk.
     move: w i j.
+    (* we use size induction because we want to use the
+       inductive hypothesis for an abitrary suffix later. *)
     apply: (size_induction (size)) => w IHw i j.
+    (* destruct w so that we can use L_split, which requires
+       at a form of a::w. *)
     case: w IHw => [|a w] IHw.
       move/L_nil'/(f_equal enum_rank). 
       rewrite 2!enum_valK => ->.
       exact: R_nil.
+    (* a::w *)
     move/L_split => [].
+      (* no k => 2nd case of R^k.+1 i j = R^k i j by IHk *)
       move/IHk.
       rewrite /= Plus_dist => ->.
       by rewrite orbT.
+    (* Splitting exists *)
     move => [] w1 [] w2 [] H0 [] H1 [] H2 H3.
+    (* We need this later for size induction *)
     assert (size w1 > 0).
       case: w1 H0 H1 H2 => [|b w1] H0 H1 H2 => //.
     rewrite H0.
+    (* IHk takes care of the prefix *)
     apply: R_catL.
       by apply: IHk.
+    (* IHw takes care of the suffix *)
     apply: IHw => //.
     rewrite H0 size_cat.
     rewrite -{1}(addn0 (size w2)).
@@ -555,16 +602,28 @@ Section TransitiveClosure.
   (* w \in L^k i j -> w \in R^k i j *)
   Lemma L_R k i j w: w \in L^k (enum_val i) (enum_val j) -> w \in R^k i j. 
   Proof.
+    (* induction over k.
+       we only look at k=0 here,
+       L_R_1 takes care of k > 0 *)
     elim: k i j w => [|k IHk] i j w.
+      (* < 0 =1 pred0 *)
       assert ((fun x:A => enum_rank x < 0) =1 pred0) => //.
-      rewrite in_simpl /= => /andP [] H0 /(allbutlast_pred0 _ H).  
-      move: H0. case: w => [|a [|b w]] => /= H0 _ //.
+      (* allbutlast pred0 w -> |w| <= 1 *)
+      rewrite in_simpl => /andP [] H0 /(allbutlast_pred0 _ H).  
+      (* |w| <= 1 -> w = [::] \/ w = [::a] *)
+      move: H0. case: w => [|a [|b w]] H0 _ //.
+        (* w = [::] -> i = j *)
         move/eqP/(f_equal enum_rank) in H0.
         rewrite 2!enum_valK in H0.
-        by rewrite H0 eq_refl Plus_dist foldr_Plus 2!in_simpl /= orbT.
+        rewrite H0.
+        exact: R_nil.
+      (* w = [::a].
+         this would be much simpler if we could ignore
+         the if expression. *)
       case_eq (i==j) => H1.
+        (* i = j *)
         move/eqP in H1.
-        rewrite H1 eq_refl /=.
+        rewrite /= H1 eq_refl /=.
         rewrite Plus_dist foldr_Plus 2!in_simpl orbF /=. 
         apply/hasP. exists (Atom a).
           apply/mapP. exists a => //.
@@ -572,7 +631,8 @@ Section TransitiveClosure.
           rewrite H1 in H0.
           by rewrite mem_enum andbT /= H0.
         by rewrite in_simpl /= eq_refl.
-      rewrite H1.
+      (* i != j *)
+      rewrite /= H1.
       rewrite foldr_Plus orFb.
       apply/hasP. exists (Atom a).
         apply/mapP. exists a => //.
