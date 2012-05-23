@@ -84,6 +84,19 @@ Proof. elim: w1 w2 x => [|a w1 IHw1] w2 x //.
 simpl. by rewrite IHw1.
 Qed.
 
+Lemma dfa_run'_cat' x x1 x2 w:
+  dfa_run' x w = x1 ++ x2 -> exists w1, exists w2, w = w1 ++ w2 /\ dfa_run' x w1 = x1 /\ dfa_run' (last x x1) w2 = x2.
+Proof.
+  elim: x1 x x2 w => [|y x1 IHx1] x x2 w.
+    exists ([::]). by exists w.
+  case: w => [|a w] => //.
+  move => [] H0.
+  move/IHx1 => [] w1 [] w2 [] H1 [] H2 H3.
+  exists (a::w1). exists (w2).   
+  rewrite H1 -H0 H3 -H2 /=.
+  by firstorder.
+Qed.
+  
 Lemma dfa_run'_rcons x w a :
   dfa_run' x (rcons w a) = rcons (dfa_run' x w) (dfa_step A (last x (dfa_run' x w)) a).
 Proof. move: w a x. apply: last_ind => [|w b IHw] a x //.
