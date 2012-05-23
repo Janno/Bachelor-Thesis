@@ -5,13 +5,19 @@ Set Implicit Arguments.
 
 (* http://krchowdhary.com/toc/dfa-to-reg-exp.pdf *)
 
+   
+(* Size induction. We need this for the splitting induction *)
+Lemma size_induction (X : Type) (f : X -> nat) (p: X ->Prop) :
+( forall x, ( forall y, f y < f x -> p y) -> p x) -> forall x, p x.
+Admitted.
+
 
 
 Section AllButLast.
   
   Variable X: Type.
   
-  Definition belast (xs: seq X) :=
+  Definition belast (xs: seq X) : seq X :=
     (fix belast xs := 
     match xs with
       | [::] => [::]
@@ -20,6 +26,14 @@ Section AllButLast.
     end)
     xs.
 
+  Lemma belast_rcons (x: X) xs:
+    belast (rcons xs x) = xs.
+  Proof.
+    elim: xs => [|y xs IHxs] //.
+    rewrite rcons_cons /= IHxs.
+    destruct xs => //.
+  Qed.
+                     
   Definition allbutlast p : pred (seq X) :=
     fun xs => all p (belast xs).
 
@@ -85,6 +99,19 @@ Section AllButLast.
     by apply: allbutlast_cons.
   Qed.
 
+  (* This lemma is stronger than all_allbutlast_cat (both directions hold) *)
+  Lemma all_allbutlast_cat' p xs ys: size ys > 0 -> all p (xs) && allbutlast p ys = allbutlast p (xs++ys).
+  Proof.
+    move => H0.
+    apply/andP/idP.
+      move => []. by apply: all_allbutlast_cat.
+    elim: xs H0 => [|x xs IHxs] H0 //.
+    rewrite cat_cons.
+    move/allbutlast_cons'' => /orP [].
+      destruct xs, ys => //.
+    by move/andP => [] /= -> /(IHxs H0).
+  Qed.
+
   (* with p (last xs) we can extend allbutlast to all. *)
   Lemma allbutlast_last p x xs: allbutlast p xs -> p (last x xs) -> all p xs.
   Proof.
@@ -106,16 +133,115 @@ Section AllButLast.
     move/andP=>[].
     by rewrite (H0 x).
   Qed.
+
+  Lemma allbutlast_predI p1 p2 xs: allbutlast (predI p1 p2) xs = allbutlast p1 xs && allbutlast p2 xs.
+  Proof. by apply: all_predI. Qed.
   
+  Lemma eq_allbutlast p1 p2 xs: p1 =1 p2 -> allbutlast p1 xs = allbutlast p2 xs.
+  Proof. move => H0. by apply: eq_all. Qed.
+
+  Lemma allbutlast_rcons p (x: X) xs: allbutlast p (rcons xs x) = all p xs.
+  Proof. by rewrite /allbutlast belast_rcons. Qed.
+  
+  Lemma allbutlast_take p xs n: allbutlast p xs -> allbutlast p (take n xs).
+  Proof.
+    elim: xs n => [|x xs IHxs] n.
+      by [].
+    move => H0. 
+    destruct n => //.
+    move/allbutlast_cons'': (H0) => /orP [].
+      by move/eqP/size0nil => ->.
+    move/andP => [] /= H1 /IHxs H2.
+    by apply: allbutlast_cons.
+  Qed.
+      
+  Lemma allbutlast_drop p xs n: allbutlast p xs -> allbutlast p (drop n xs).
+  Proof.
+    elim: xs n => [|x xs IHxs] n.
+      by [].
+    move => H0. 
+    destruct n => //.
+    move/allbutlast_cons'': (H0) => /orP [].
+      by move/eqP/size0nil => ->.
+    move/andP => [] _ /=.
+    by apply: IHxs.
+  Qed.
+    
+    
 End AllButLast.   
 
+Section EqTypes.
+  Variable X: eqType.
+  
+  Lemma mem_belast (x: X) xs: x \in belast xs -> x \in xs.
+  Proof.
+    case/lastP: xs => [|xs y IHxs] //.
+    rewrite belast_rcons in IHxs.                                   
+    by rewrite mem_rcons in_cons IHxs orbT.
+  Qed.
 
+  Lemma belast_index (x: X) xs: x \in belast xs -> index x (belast xs) = index x xs.
+  Proof.
+    move: xs. apply: last_ind => [|xs y IHxs] //.
+    rewrite belast_rcons.
+    rewrite -cats1 index_cat.
+    by move ->.
+  Qed.
+  
+  Lemma index_take (x: X) xs: all (predC (pred1 x)) (take (index x xs) xs).
+  Proof.
+    move: xs.
+    apply: last_ind => [|xs y IHxs] //.
+    rewrite -cats1 index_cat take_cat.
+    case H1: (x \in xs).
+      rewrite -index_mem in H1.
+      by rewrite H1.
+    rewrite /=.
+    case H2: (y==x).
+      move/eqP in H2.
+      rewrite addn0 ltnn subnn cats0.
+      apply/allP => z H3 /=.
+      case H4: (z==x) => //.
+      move/eqP in H4.
+      rewrite H4 in H3.
+      by rewrite H3 in H1.
+    rewrite -{2}(addn0 (size xs)) ltn_add2l /= all_cat.
+    move: H1. rewrite -index_mem => /negbT. rewrite -ltnNge => H1.
+    rewrite addn1 subSnn.
+    move: IHxs. rewrite take_oversize // => -> /=.
+    by rewrite H2.
+  Qed.
+
+  Lemma allbutlast_index xs (x: X): allbutlast (predC (pred1 x)) (take (index x xs).+1 xs).
+  Proof.
+    move: xs.
+    apply: last_ind => [|xs y IHxs] //.
+    case H1: (x \in xs).
+      rewrite -cats1 index_cat H1.
+      rewrite -index_mem in H1.
+      by rewrite takel_cat.
+    rewrite -{2}cats1 take_cat.
+    case H2: ((index x (rcons xs y)).+1 < size xs).
+      move: (H1). rewrite -index_mem => /negbT. rewrite -ltnNge => H1'.
+      by rewrite -cats1 index_cat H1 /= -{2}(addn0 (size xs)) -addnS ltn_add2l ltn0 in H2.
+    move/negbT: H2. rewrite -ltnNge => H2.
+    move: (H1). rewrite -index_mem => /negbT. rewrite -ltnNge => H1'.
+    apply: all_allbutlast_cat.
+      apply/allP => z H3 /=. apply/negP => /eqP H4.
+      rewrite H4 in H3.
+      by rewrite H3 in H1.
+    simpl.
+    by destruct ((index x (rcons xs y)).+1 - size xs).
+  Qed.    
+       
+End EqTypes.
+  
 Section TransitiveClosure.
 
   Variable char: finType.
   Variable A: dfa char.
   
-    Section Misc.
+    Section RE_Misc.
       (* easy splitting for the (Plus r s) predicate *)
       Lemma Plus_dist r s (w: word char): w \in Plus r s = (w \in r) || (w \in s). 
       Proof. by rewrite -topredE. Qed.
@@ -129,7 +255,7 @@ Section TransitiveClosure.
         rewrite orbCA -IHrs.
         by rewrite -topredE -topredE.
       Qed.
-    End Misc.
+    End RE_Misc.
 
   (* Some machinery for k:nat -> 'I_#|A| *)
   Lemma minn_to_ord m n: minn m n <= n.
@@ -179,12 +305,19 @@ Section TransitiveClosure.
 
   Notation "'R^' k" := (R k) (at level 8).
 
+  Definition rltn k := [fun n: A => (enum_rank n) < k].
+  Definition rleq k := [fun n: A => (enum_rank n) <= k].
+  Definition rneq k := [fun n: A => (enum_rank n) != k].
+  Notation "'<_' k" := (rltn k) (at level 8, format "'<_' k").
+  Notation "'<=_' k" := (rleq k) (at level 8, format "'<=_' k").
+  Notation "'!=_' k" := (rneq k) (at level 8, format "'!=_' k").
+  
   Definition L :=
     [fun k: nat =>
        [fun x y: A =>
           [pred w | 
            (last x (dfa_run' A x w) == y)
-             && allbutlast (fun x => enum_rank x < k) (dfa_run' A x w) 
+             && allbutlast (<_k)  (dfa_run' A x w) 
           ]
        ]
     ].
@@ -243,79 +376,119 @@ Section TransitiveClosure.
       apply/andP. split.
         by rewrite last_cat H1 H3 eq_refl.       
       apply: all_allbutlast_cat.
-        apply: allbutlast_last => //.
+        apply: allbutlast_last => //=.
         rewrite -H1 in H0.
         eassumption.
       exact H4.
     Qed.
 
-    (* Split at first k or don't split at all if there is no k *)
-    Lemma L_split k i j a w:
+    Lemma rltn_neqAle (k: 'I_#|A|): <_k =1 predI !=_k <=_k.
+    Proof. move => n /=. by rewrite ltn_neqAle. Qed.
+
+    Lemma rneq_predC (k: 'I_#|A|):  predC (pred1 (enum_val k)) =1 !=_k.
+    Proof. move => n /=. f_equal. apply/eqP/eqP => [-> | <-].
+        by rewrite enum_valK.
+      by rewrite enum_rankK.
+    Qed.
+    
+    Lemma L_split' k' i j a w:
+      let k := k_ord k' in
       (a::w) \in L^k.+1 i j ->
       (a::w) \in L^k i j \/
       exists w1, exists w2,
         a::w = w1 ++ w2 /\
         w1 != [::] /\
-        w1 \in L^k i (enum_val (k_ord k)) /\
-        w2 \in L^k.+1 (enum_val (k_ord k)) j.
+        w1 \in L^k i (enum_val  k) /\
+        w2 \in L^k.+1 (enum_val k) j.
     Proof.
-      elim: w k i j a => [|b w IHw] k i j a.
-        (* w = [::] *)
-        move/L_cons => [] H0 H1.
-        rewrite /= in H0.
-        (* see if we have to split at a *)
-        case_eq (dfa_step A i a == enum_val (k_ord k)) => /eqP H2.
-          (* a =^= k, we need to split *)
-          right.
-          exists [::a]. exists [::].
-          firstorder.
-            by rewrite in_simpl /= H2 eq_refl.
-          by rewrite -H2 H1.
-        (* a < k, we do not split *)
-        left.
-        move/L_nil': H1 <-.
-        rewrite in_simpl /=.
-        exact: H0.
-      (* (b::w) *)
-      move => H.
-      (* get new split before b *)
-      move/L_cons: (H) => [] H2.
-      move/andP: (H) => [] H0 H1.
-      (* see if we have to split at a *)
-      case_eq (dfa_step A i a == enum_val (k_ord k)) => H3.
-        (* we go through k at a, we have to split here *)
-        move/eqP: H3 => H3.
-        move => H4.
-        rewrite -H3.
-        right.
-        by exists [::a]; exists [::b&w] => //.
+      move => k H0.
+      pose xs := dfa_run' A i (a::w).
+      case H: (enum_val k \in (belast xs)).
 
-      (* we do not go through k at a.
-         see if we go through k at all.
-        *)           
-      move/IHw => [].
-        (* we do not go through k at all *)
-        move => H4.
-        left.
-        rewrite -cat1s.
-        move: (allbutlast_cons' _ _ _ _ H1) => /andP [] H5 _.
-        apply: (L_cat k i (dfa_step A i a)) => //.
-        rewrite ltn_neqAle.
-        rewrite -ltnS H5 andbT.
-        admit.
+        (* setup *)
+        assert (H1: enum_val k \in xs).
+          by apply: mem_belast.
+        move: (H) (H1) => H' H1'.
+        rewrite -index_mem in H'.
+        rewrite -index_mem in H1'.
+        assert (index (enum_val k) xs = index (enum_val k) (belast xs)).
+          by rewrite belast_index.
         
-      (* we have gone through k before.
-         we prepend a, which is <k, to w1. *)
-      move => [] w1 [] w2 [] H4 [] H5 [] H6 H7.
-      right.
-      exists [::a & w1]. exists (w2).
-      rewrite /= H4.
-      split => //. split => //. split => //.
-      rewrite -cat1s.
-      apply: L_cat; try eassumption.
-      admit.
-    Qed.
+        right.
+        remember (index (enum_val k) (belast xs)) as n.
+        remember (a::w) as w'.
+        exists (take (n.+1) (w')).
+        exists (drop (n.+1) (w')).
+
+        
+        assert (Heqw: w' = take n.+1 w' ++ drop n.+1 w').
+          by rewrite cat_take_drop.
+
+        assert (xs = dfa_run' A i (take n.+1 w') ++ dfa_run' A (last i (dfa_run' A i (take n.+1 w'))) (drop n.+1 w')).
+          rewrite /xs {1}Heqw.
+          by rewrite -dfa_run'_cat.
+          
+        split => //.
+
+        split.
+          by rewrite Heqw'.
+
+        assert (H4: take n.+1 w' \in L^k i (enum_val k)).
+          rewrite  in_simpl /=.
+          rewrite -dfa_run'_take.
+        
+          rewrite -nth_last.
+          rewrite nth_take.
+            rewrite size_takel //=.
+              rewrite -{1}H2 nth_index //.
+              apply/andP. split => //.
+              rewrite Heqn.
+              rewrite (eq_allbutlast _ (rltn_neqAle k)).
+              rewrite allbutlast_predI.
+              apply/andP. split.
+                rewrite -(eq_allbutlast _ (rneq_predC k)).
+                rewrite -Heqn -H2.
+                by apply allbutlast_index.
+              move/andP: H0 => [] _.
+              exact: allbutlast_take.
+            rewrite -H2.
+            exact H1'.
+          rewrite size_takel //.
+          rewrite -H2.
+          exact H1'.
+          
+        split => //.
+
+        remember (dfa_run' A i (take n.+1 w')) as xs1.
+        move/andP: (H4) => [] /eqP H5 _.
+        rewrite -Heqxs1 in H5.
+        apply/andP. split.
+          rewrite -(H5) -last_cat -H3.
+          by move/andP: H0 => [].
+        move/andP: H0 => [] _.
+        rewrite -/xs H3 -H5.
+        case H6: (size (dfa_run' A (last i xs1) (drop n.+1 w')) == 0).
+          by move/eqP/size0nil: H6 => ->.
+        move/neq0_lt0n in H6.
+        by rewrite -(all_allbutlast_cat' _ _ _ H6) => /andP [].
+        
+      (* No split *)
+        
+      (* get all !=_k (belast xs) *)
+      move/andP: H0 => [] H0 H1. left.
+      rewrite in_simpl /= H0 /=.
+      rewrite -index_mem -has_find in H.
+      move/negbT in H.
+      rewrite -all_predC in H.
       
+      rewrite (eq_allbutlast _ (rltn_neqAle k)).
+      rewrite allbutlast_predI.
+      rewrite (@eq_all _ _ !=_k) in H.
+        by apply/andP. 
+      (* This should go somewhere else, it is unrelated. *)
+      exact: rneq_predC.
+    Qed.
+
     (* w1 \in L^k i k -> w2 \in L^k.+1 k j -> w1++w2 \in L^k.+1 i j *)
     Lemma L_catL k i j w1 w2:
       w1 \in L^k i (enum_val (k_ord k)) ->
@@ -346,7 +519,7 @@ Section TransitiveClosure.
           by eapply (@ltnW ((enum_rank x)) k).
         by [].
         rewrite H0. 
-        rewrite enum_valK.
+        rewrite /= enum_valK.
         by apply: k_ord_lt.
       by [].
     Qed.
@@ -377,7 +550,7 @@ Section TransitiveClosure.
       eapply all_allbutlast_cat.
         apply: (allbutlast_last _ i) => //. 
         rewrite H0. 
-        rewrite enum_valK.
+        rewrite /= enum_valK.
         by apply: k_ord_lt.
         eapply allbutlast_impl.
           move => x.
@@ -551,11 +724,6 @@ Section TransitiveClosure.
     move/IHk.
     by apply: L_monotone.
   Qed.
-   
-  (* Size induction. We need this for the splitting induction *)
-  Lemma size_induction (X : Type) (f : X -> nat) (p: X ->Prop) :
-  ( forall x, ( forall y, f y < f x -> p y) -> p x) -> forall x, p x.
-  Admitted.
  
   (* w \in L^k.+1 i j -> w \in R^k.+1 i j.
      The first argument is the inductive hypothesis
@@ -577,7 +745,7 @@ Section TransitiveClosure.
       rewrite 2!enum_valK => ->.
       exact: R_nil.
     (* a::w *)
-    move/L_split => [].
+    move/L_split' => [].
       (* no k => 2nd case of R^k.+1 i j = R^k i j by IHk *)
       move/IHk.
       rewrite /= Plus_dist => ->.
