@@ -61,12 +61,6 @@ Section AllButLast.
     by move: (IHxs H0). 
   Qed.
 
-  Lemma allbutlast0 p: allbutlast p [::].
-  Proof. by rewrite /allbutlast /=. Qed.
-
-  Lemma allbutlast1 p x: allbutlast p [::x].
-  Proof. by []. Qed.
-
   Lemma allbutlast_cons (p: pred X) x xs: p x -> allbutlast p xs -> allbutlast p (x::xs).
   Proof.
     elim: xs x => [|y xs IHxs] x //. 
@@ -152,9 +146,6 @@ Section AllButLast.
   Lemma eq_allbutlast p1 p2 xs: p1 =1 p2 -> allbutlast p1 xs = allbutlast p2 xs.
   Proof. move => H0. by apply: eq_all. Qed.
 
-  Lemma allbutlast_rcons p (x: X) xs: allbutlast p (rcons xs x) = all p xs.
-  Proof. by rewrite /allbutlast belast_rcons. Qed.
-  
   Lemma allbutlast_take p xs n: allbutlast p xs -> allbutlast p (take n xs).
   Proof.
     elim: xs n => [|x xs IHxs] n.
@@ -167,19 +158,6 @@ Section AllButLast.
     by apply: allbutlast_cons.
   Qed.
       
-  Lemma allbutlast_drop p xs n: allbutlast p xs -> allbutlast p (drop n xs).
-  Proof.
-    elim: xs n => [|x xs IHxs] n.
-      by [].
-    move => H0. 
-    destruct n => //.
-    move/allbutlast_cons'': (H0) => /orP [].
-      by move/eqP/size0nil => ->.
-    move/andP => [] _ /=.
-    by apply: IHxs.
-  Qed.
-    
-    
 End AllButLast.   
 
 Section EqTypes.
@@ -200,30 +178,6 @@ Section EqTypes.
     by move ->.
   Qed.
   
-  Lemma index_take (x: X) xs: all (predC (pred1 x)) (take (index x xs) xs).
-  Proof.
-    move: xs.
-    apply: last_ind => [|xs y IHxs] //.
-    rewrite -cats1 index_cat take_cat.
-    case H1: (x \in xs).
-      rewrite -index_mem in H1.
-      by rewrite H1.
-    rewrite /=.
-    case H2: (y==x).
-      move/eqP in H2.
-      rewrite addn0 ltnn subnn cats0.
-      apply/allP => z H3 /=.
-      case H4: (z==x) => //.
-      move/eqP in H4.
-      rewrite H4 in H3.
-      by rewrite H3 in H1.
-    rewrite -{2}(addn0 (size xs)) ltn_add2l /= all_cat.
-    move: H1. rewrite -index_mem => /negbT. rewrite -ltnNge => H1.
-    rewrite addn1 subSnn.
-    move: IHxs. rewrite take_oversize // => -> /=.
-    by rewrite H2.
-  Qed.
-
   Lemma allbutlast_index xs (x: X): allbutlast (predC (pred1 x)) (take (index x xs).+1 xs).
   Proof.
     move: xs.
@@ -294,7 +248,7 @@ Section TransitiveClosure.
   Lemma k_ord_lt k: k_ord k < k.+1.
   Proof.
     rewrite /k_ord /=.
-    case_eq (k <= #|A|.-1) => H0.
+    case H0: (k <= #|A|.-1).
       rewrite minnl => //.
     move: (leq_total k #|A|.-1).
     rewrite H0 /= => H1.
@@ -304,33 +258,28 @@ Section TransitiveClosure.
   Lemma k_ord_eq k: k <= #|A|.-1 -> k = k_ord k.
   Proof. move => H. by rewrite /= minnl. Qed.
 
-  Lemma k_ord0: nat_of_ord (k_ord 0) = 0.
-  Proof. apply/eqP. rewrite -leqn0. by apply: k_ord_lt. Qed.
-
-  Lemma k_ordS k: (k_ord k).+1 = (k_ord k.+1) \/ nat_of_ord (k_ord k.+1) = k_ord k.
-  Proof.
-    case H: (k < #|A|.-1).
-      left.
-      rewrite /= minnl //.
-        by rewrite minnl.
-      by apply: ltnW.
-    right.
-    move/negbT: H. rewrite -ltnNge => H.
-    rewrite /= minnr.
-      by rewrite minnr //.
-    by apply: leqW.
-  Qed.    
-    
   Fixpoint R (k: nat) (i j: 'I_#|A|) : regular_expression char :=
     match k with
       |   0  => 
-            let r := foldr (@Plus _) (Void _) (map (@Atom _) (filter [pred a | dfa_step A (enum_val i) a == (enum_val j)] (enum char))) in
+            let r :=
+                foldr
+                  (@Plus _)
+                  (Void _)
+                  (map
+                     (@Atom _)
+                     (filter
+                        [pred a | dfa_step A (enum_val i) a == (enum_val j)]
+                        (enum char)
+                     )
+                  ) in
               if i == j then Plus r (Eps _) else r
       | k.+1 =>
           let k' := k_ord k in
             Plus (
                 Conc (R k i k')
-                     (Conc (Star (R k k' k')) (R k k' j))
+                     (Conc (Star (R k k' k'))
+                           (R k k' j)
+                     )
               )
                  (R k i j)
     end.        
@@ -370,28 +319,6 @@ Section TransitiveClosure.
     (* w = [::] -> i = j *)
     Lemma L_nil' k i j: [::] \in L^k i j -> i = j.
     Proof. by rewrite in_simpl /= => /andP [] /eqP ->. Qed.
-
-    (* prerequisite for L_split:
-       we can split at every char. *)
-    Lemma L_cons k i j a w:
-      (a::w) \in L^k.+1 i j ->
-      [::a] \in L^k i (dfa_step A i a) /\
-      w \in L^k.+1 (dfa_step A i a) j.
-    Proof.
-      elim: w k i j a => [|b w IHw] k i j a.
-        move/(L_nil' k) => /= H0. 
-        firstorder.
-          by rewrite H0 in_simpl /= H0 eq_refl.
-        rewrite H0 in_simpl.
-        exact: L_nil.
-      rewrite /= in_simpl /=.
-      move/andP => [] H0 H1.
-      apply allbutlast_cons' in H1.
-      move/andP: H1 => [] H1 H2.
-      firstorder; rewrite in_simpl /=.
-        by rewrite eq_refl /=.
-      by rewrite H0 H2.
-    Qed.
 
     (* Another prerequisite for L_split.
        We can safely concatenate words and not
@@ -550,19 +477,19 @@ Section TransitiveClosure.
       w2 \in L^k.+1 (enum_val (k_ord k)) j ->
       w1++w2 \in L^k.+1 i j.
     Proof.
-      rewrite /L -3!topredE /=.
+      rewrite /L 3!in_simpl /=. 
       rewrite dfa_run'_cat.
       move => /andP [] /eqP H0 H1 /andP [] /eqP H2 H3.
       case: w1 H0 H1 => [|v1 w1] H0 H1.
-        rewrite /= in H0.
-        rewrite H0 /= H2 eq_refl /=.  
+        rewrite /= in H0. rewrite H0 /= H2 eq_refl /=.  
         exact: H3.
       rewrite last_cat.
       case: w2 H2 H3 => [|v2 w2] H2 H3.
         rewrite /= in H2.
         rewrite -H2 H0 /= eq_refl /=.
         eapply allbutlast_impl.
-        move => x. by eapply (@ltnW ((enum_rank x)) k).
+          move => x.
+          by eapply (@ltnW ((enum_rank x)) k).
         rewrite cats0.
         exact H1.
 
@@ -570,9 +497,9 @@ Section TransitiveClosure.
       eapply all_allbutlast_cat.
         apply: (allbutlast_last _ i) => //. 
           eapply allbutlast_impl.
-          move => x.
-          by eapply (@ltnW ((enum_rank x)) k).
-        by [].
+            move => x.
+            by eapply (@ltnW ((enum_rank x)) k).
+          by [].
         rewrite H0. 
         rewrite /= enum_valK.
         by apply: k_ord_lt.
@@ -585,8 +512,7 @@ Section TransitiveClosure.
       w2 \in L^k (enum_val (k_ord k)) j ->
       w1++w2 \in L^k.+1 i j.
     Proof.
-      rewrite /L -3!topredE /=.
-      rewrite dfa_run'_cat.
+      rewrite /L 3!in_simpl /= dfa_run'_cat.
       move => /andP [] /eqP H0 H1 /andP [] /eqP H2 H3.
       case: w1 H0 H1 => [|v1 w1] H0 H1.
         rewrite /= in H0.
@@ -620,7 +546,7 @@ Section TransitiveClosure.
     (* Associativity of concatenation *)
     Lemma Conc_assoc r s t (w: word char): (w \in Conc r (Conc s t)) = (w \in Conc (Conc r s) t).
     Proof.
-      rewrite -topredE -topredE /=.
+      rewrite -2!topredE /=.
       apply/concP/concP.
         move => [] v1 Hr [] v23 /concP [] v2 Hs [] v3 Ht H0 H1.
         exists (v1++v2).
@@ -631,8 +557,7 @@ Section TransitiveClosure.
         by rewrite -catA H1 H0.
 
       move => [] v12 /concP [] v1 Hr [] v2 Hs H0 [] v3 Ht H1.
-      exists v1 => //.
-      exists (v2 ++ v3).
+      exists v1 => //. exists (v2 ++ v3).
         apply/concP.
         exists v2 => //.
         exists v3 => //.
@@ -666,8 +591,7 @@ Section TransitiveClosure.
       (* see which case of R^k.+1 we are in *)
       rewrite Plus_dist => /orP [].
         (* triple concatenation case *)
-        rewrite Conc_assoc.
-        rewrite -topredE /=.
+        rewrite Conc_assoc -topredE /=.
         move/concP => [] v1.
         move/Conc_Star_idem => H1 [] v2 H2 H3.
         rewrite Plus_dist.
@@ -843,9 +767,8 @@ Section TransitiveClosure.
       (* w = [::a].
          this would be much simpler if we could ignore
          the if expression. *)
-      case_eq (i==j) => H1.
+      case_eq (i==j) => [/eqP H1| H1].
         (* i = j *)
-        move/eqP in H1.
         rewrite /= H1 eq_refl /=.
         rewrite Plus_dist foldr_Plus 2!in_simpl orbF /=. 
         apply/hasP. exists (Atom a).
