@@ -77,6 +77,15 @@ rewrite dfa_run'S 2!take_cons. case: n => [|n] //.
 by rewrite IHw dfa_run'S.
 Qed.
 
+Lemma dfa_run'_drop x w n: drop n (dfa_run' x w) = dfa_run' (last x (dfa_run' x (take n w))) (drop n w).
+Proof. elim: w x n => [|a w IHw] x n //.
+rewrite dfa_run'S 2!drop_cons. case: n => [|n] //.
+by rewrite IHw /=.
+Qed.
+
+Lemma dfa_run'_drop' x w n: last x (dfa_run' x (take n w)) = x -> dfa_run' x (drop n w) = drop n (dfa_run' x w).
+Proof. move => {1}<-. by rewrite dfa_run'_drop. Qed.
+
 (** rcons and cat lemmas. **)
 Lemma dfa_run'_cat x w1 w2 :
   dfa_run' x (w1 ++ w2) = dfa_run' x w1 ++ dfa_run' (last x (dfa_run' x w1)) w2.
