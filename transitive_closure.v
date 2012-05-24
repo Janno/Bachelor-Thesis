@@ -662,7 +662,7 @@ Section TransitiveClosure.
 
       (* we only ask if i==j due to the if condition.
          the actual cases are very similar. *)
-      case_eq (i==j) => H0 /=.
+      case H0: (i==j) => /=.
         rewrite H0 /=.
         rewrite Plus_dist => /orP [].
           rewrite foldr_Plus => /orP [] //.

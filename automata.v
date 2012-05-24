@@ -55,7 +55,7 @@ end.
 
 (** We define the language of the deterministic
    automaton, i.e. acceptance in the starting state. **)
-Definition dfa_lang := [fun w => dfa_accept (dfa_s0 A) w].
+Definition dfa_lang := [pred w | dfa_accept (dfa_s0 A) w].
 
 (** A lemma that helps us avoid cumbersome unfolding of accept **)
 Lemma dfa_acceptS x a w : dfa_accept x (a::w) = dfa_accept (dfa_step A x a) w.
@@ -112,13 +112,10 @@ Proof. move: w a x. apply: last_ind => [|w b IHw] a x //.
 rewrite -3!cats1. rewrite 2!dfa_run'_cat. by [].
 Qed.
 
-  
 
-(** Predicate to distinguish between accepting
-   and non-accepting runs. **)
-Definition dfa_run_accepting := [fun (x: A) (xs: seq A) => dfa_fin A (last x xs)].
-
-Definition dfa_run_accepts x xs w := xs == dfa_run' x w.
+(* slightly altered acceptance statement. *)
+Lemma dfa_run_accepts x w: last x (dfa_run' x w) \in dfa_fin A = dfa_accept x w.
+Proof. elim: w x => [|a w IHw] x //. by rewrite /= IHw. Qed.
 
 End Acceptance.
 
