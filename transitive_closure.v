@@ -136,6 +136,9 @@ Section AllButLast.
 
   Lemma allbutlast_predI p1 p2 xs: allbutlast (predI p1 p2) xs = allbutlast p1 xs && allbutlast p2 xs.
   Proof. by apply: all_predI. Qed.
+
+  Lemma allbutlast_predT xs: allbutlast predT xs.
+  Proof. by apply: all_predT. Qed.
   
   Lemma eq_allbutlast p1 p2 xs: p1 =1 p2 -> allbutlast p1 xs = allbutlast p2 xs.
   Proof. move => H0. by apply: eq_all. Qed.
@@ -288,6 +291,23 @@ Section TransitiveClosure.
     rewrite H0 /= => H1.
     by rewrite minnr.
   Qed.
+
+  Lemma k_ord0: nat_of_ord (k_ord 0) = 0.
+  Proof. apply/eqP. rewrite -leqn0. by apply: k_ord_lt. Qed.
+
+  Lemma k_ordS k: (k_ord k).+1 = (k_ord k.+1) \/ nat_of_ord (k_ord k.+1) = k_ord k.
+  Proof.
+    case H: (k < #|A|.-1).
+      left.
+      rewrite /= minnl //.
+        by rewrite minnl.
+      by apply: ltnW.
+    right.
+    move/negbT: H. rewrite -ltnNge => H.
+    rewrite /= minnr.
+      by rewrite minnr //.
+    by apply: leqW.
+  Qed.    
     
   Fixpoint R (k: nat) (i j: 'I_#|A|) : regular_expression char :=
     match k with
@@ -646,7 +666,30 @@ Section TransitiveClosure.
         apply/orP. by right.
       by rewrite /= Plus_dist IHk orbT.
     Qed.
+
+    Lemma R_final k: k >= #|A|.-1 -> forall i j w, w \in R^k i j = (w \in R^#|A|.-1 i j).
+    Proof.
+      elim: k => [|k IHk].
+        by rewrite leqn0 => /eqP ->.
       
+      rewrite leq_eqVlt => /orP [].
+        by move/eqP => ->.
+           
+      move => H0. move: (IHk H0) => H1 i j w.
+      apply/idP/idP.
+      rewrite /= Plus_dist => /orP [] //.
+      move/concP => [] w1 Hw1 [] w_ /concP [] w2 Hw2 [] w3 Hw3 Hw' Hw.
+      subst.
+      rewrite H1 in Hw1.
+      rewrite H1 in Hw3.
+      move/starP: Hw2 => [].
+      elim => [|v vv IHvv].
+        move => _ ->.
+        rewrite /=.
+        
+        
+      
+                           
   End R.
 
   (* R_L_star encapsulates the induction over
@@ -731,7 +774,7 @@ Section TransitiveClosure.
   Lemma L_R_1 k i j w:
        (forall (i j : 'I_#|A|) (w : automata.word char),
         w \in L^k (enum_val i) (enum_val j) -> w \in R^k i j) ->
-        w \in L^k.+1 (enum_val i) (enum_val j) -> w \in R^k.+1 i j. 
+        w \in L^(k_ord k).+1 (enum_val i) (enum_val j) -> w \in R^k.+1 i j. 
   Proof.
     move => IHk.
     move: w i j.
@@ -768,7 +811,7 @@ Section TransitiveClosure.
   Qed.
     
   (* w \in L^k i j -> w \in R^k i j *)
-  Lemma L_R k i j w: w \in L^k (enum_val i) (enum_val j) -> w \in R^k i j. 
+  Lemma L_R k i j w: w \in L^(k_ord k) (enum_val i) (enum_val j) -> w \in R^k i j. 
   Proof.
     (* induction over k.
        we only look at k=0 here,
@@ -777,7 +820,7 @@ Section TransitiveClosure.
       (* < 0 =1 pred0 *)
       assert ((fun x:A => enum_rank x < 0) =1 pred0) => //.
       (* allbutlast pred0 w -> |w| <= 1 *)
-      rewrite in_simpl => /andP [] H0 /(allbutlast_pred0 _ H).  
+      rewrite k_ord0 in_simpl => /andP [] H0 /(allbutlast_pred0 _ H).  
       (* |w| <= 1 -> w = [::] \/ w = [::a] *)
       move: H0. case: w => [|a [|b w]] H0 _ //.
         (* w = [::] -> i = j *)
@@ -807,9 +850,48 @@ Section TransitiveClosure.
         rewrite mem_filter.
         by rewrite mem_enum andbT /= H0.
       by rewrite in_simpl /= eq_refl.
-    by apply: L_R_1.
+    move: (k_ordS k) => [<-|->].
+      by apply: L_R_1.
+    rewrite /= Plus_dist => /IHk ->.
+    by rewrite orbT.
   Qed.
+
+  Lemma L_R' k i j w: w \in L^k (enum_val i) (enum_val j) -> w \in R^k i j.
   
-    
+
+  Lemma dfa_L x y: L^#|A| x y =1 [pred w | last x (dfa_run' A x w) == y ].
+  Proof.
+    move => w /=.
+    apply/andP/idP.
+      by move => [] H0 H1.
+    move => -> /=.
+    assert (<_#|A| =1 predT).
+      move => n /=.
+      by rewrite ltn_ord.
+    rewrite (eq_allbutlast _ H).
+    firstorder.
+    by apply: allbutlast_predT.
+  Qed.
+                 
+  
+  Lemma dfa_to_regex: exists r: regular_expression char, dfa_lang A =1 [pred w | w \in r ].
+  Proof.
+    exists (
+        foldr
+          (@Plus char)
+          (@Void char)
+          (map  (fun f => R^(#|A|) (enum_rank (dfa_s0 A)) (enum_rank f)) (enum (dfa_fin A)))
+       ).
+    move => w.
+    apply/idP/idP.
+      rewrite /= -dfa_run_accepts => H.
+      rewrite foldr_Plus orFb.
+      apply/hasP.
+      exists (R^#|A| (enum_rank (dfa_s0 A)) (enum_rank (last (dfa_s0 A) (dfa_run' A (dfa_s0 A) w)))).
+        apply/mapP.
+        exists (last (dfa_s0 A) (dfa_run' A (dfa_s0 A) w)) => //.
+        by rewrite mem_enum.
+      apply/L_R.
+        
     
 End TransitiveClosure.
