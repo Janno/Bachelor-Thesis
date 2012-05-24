@@ -2,7 +2,7 @@
 %.vo: %.v
 	coqc $(subst .vo,.v,$@)
 
-all: misc.vo automata.vo transitive_closure.vo regex.vo
+all: misc.vo automata.vo transitive_closure.vo regex.vo glue.vo
 
 doc: all 
 	coqdoc -d docs/html automata.v misc.v transitive_closure.v
