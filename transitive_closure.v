@@ -411,7 +411,7 @@ Section TransitiveClosure.
       by rewrite H1 catA H0.
     Qed.
 
-    (* Some kind of idempotence for Conc r and Star r *)
+    (* Re-fold for Conc r (Star r) *)
     Lemma Conc_Star_idem r (w: word char): w \in Conc r (Star r) -> (w \in Star r).
     Proof.
       rewrite -topredE -topredE /=.
