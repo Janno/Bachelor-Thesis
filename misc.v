@@ -1,7 +1,7 @@
 (*
     Authors: Thierry Coquand, Vincent Siles
 *)
-Require Import ssreflect ssrnat seq ssrbool eqtype fintype.
+Require Import ssreflect ssrnat seq ssrbool eqtype fintype choice.
 
 Set Implicit Arguments.
 
@@ -9,7 +9,7 @@ Set Implicit Arguments.
 Section Language.
 
 Variable char: finType.
-Definition word := seq char.
+Definition word := seq_choiceType char.
 Definition language := pred word.
 
 End Language.

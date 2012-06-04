@@ -103,7 +103,7 @@ Proof.
   move/IHx1 => [] w1 [] w2 [] H1 [] H2 H3.
   exists (a::w1). exists (w2).   
   rewrite H1 -H0 H3 -H2 /=.
-  by firstorder.
+  by auto.
 Qed.
   
 Lemma dfa_run'_rcons x w a :
