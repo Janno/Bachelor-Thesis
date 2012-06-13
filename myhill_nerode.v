@@ -138,7 +138,7 @@ Section MyhillNerode.
           match [ pick a | dist_ext1 x y a ] with
           | None => unnamed1 todo
           | Some a => let r := unnamed1 todo in
-                        r :|: (mu (propagate x y)) 
+                        set1 (x,y) :|: r :|: (mu (propagate x y)) 
           end
       end.
 
@@ -151,16 +151,47 @@ Section MyhillNerode.
           by rewrite /= in_set0.
         rewrite /=.
         case H0: (x' == y') => //.
-        case: pickP => a H.
-          rewrite /= in_setU => /orP [] //.
+        case: pickP => [a H|H] //.
+        rewrite /= 2!in_setU => /orP [] .
+          move/orP => [] //.
+          rewrite in_set1 => /eqP [] -> ->.
+          by exists a.
+                                          
+        eapply mu_ind => [|s IHs].
+          rewrite in_set0 //.
+        rewrite in_setU => /orP [] //.
+        rewrite in_set /=.
+        move/imsetP => [] b _ [] H1 H2.
+        exists b.
+        by rewrite /dist_ext1 -H1 -H2 H0.
+      Qed.
 
-          eapply mu_ind => [|s IHs].
-            rewrite in_set0 //.
-          rewrite in_setU => /orP [] //.
-          rewrite in_set /=.
-          
-        
+      Lemma unnamed1_dist_ext todo x y a: (x,y) \in todo -> dist_ext1 x y a -> (x,y) \in unnamed1 todo.
+      Proof.
+        elim: todo => [|[x' y'] todo IHtd] //.
+        rewrite in_cons => /orP [].
+          move/eqP => [] -> -> /=.
+          case H0: (x' == y').
+            rewrite /dist_ext1.
+            move/eqP: H0 => ->.
+            by rewrite eq_refl.
+          case: pickP => [b H|H] H1.
+            apply/setUP. left.
+            apply/setUP. left.
+            by rewrite in_set1 eq_refl.
+          by rewrite H in H1.
+        rewrite /=.
+        case H0: (x' == y') => //.
+        case: pickP => [b H|H] H1 H2.
+          apply/setUP. left.
+          apply/setUP. right.
+          by apply: IHtd.
+        by apply: IHtd.
+      Qed.
+
     End Correctness.    
+
+    
         
   End Minimalization.
   
