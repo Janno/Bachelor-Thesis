@@ -17,4 +17,4 @@ doc: all
 	mv docs/html/misc.html.tmp docs/html/misc.html
 
 clean:
-	rm -rf *.vo docs/*
+	rm -r *.vo docs/html/*

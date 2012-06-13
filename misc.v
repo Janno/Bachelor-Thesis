@@ -9,7 +9,7 @@ Set Implicit Arguments.
 Section Language.
 
 Variable char: finType.
-Definition word := seq_choiceType char.
+Definition word := seq char.
 Definition language := pred word.
 
 End Language.
