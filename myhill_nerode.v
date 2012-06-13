@@ -122,13 +122,8 @@ Section MyhillNerode.
 
     
 
-    Definition propagate x y disjunct :=
-      disjunct :|: [ set x' | (x,y) \in [ set ext (fst x') (snd x') a | a <- char ]  ].
-
-    Lemma propagate_monotone (disjunct: {set X*X}) x y: disjunct \subset (propagate x y disjunct). 
-    Proof.
-      by apply: subsetUl.
-    Qed.
+    Definition propagate x y :=
+      [ set x' | (x,y) \in [ set ext (fst x') (snd x') a | a <- char ]  ].
 
     Fixpoint unnamed1 todo  :=
       match todo with
@@ -138,7 +133,7 @@ Section MyhillNerode.
           match [ pick a | dist_ext1 x y a ] with
           | None => unnamed1 todo
           | Some a => let r := unnamed1 todo in
-                        set1 (x,y) :|: r :|: (mu (propagate x y)) 
+                        set1 (x,y) :|: r :|: (propagate x y) 
           end
       end.
 
@@ -156,10 +151,7 @@ Section MyhillNerode.
           move/orP => [] //.
           rewrite in_set1 => /eqP [] -> ->.
           by exists a.
-                                          
-        eapply mu_ind => [|s IHs].
-          rewrite in_set0 //.
-        rewrite in_setU => /orP [] //.
+
         rewrite in_set /=.
         move/imsetP => [] b _ [] H1 H2.
         exists b.
