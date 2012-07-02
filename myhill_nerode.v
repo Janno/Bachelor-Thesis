@@ -1,7 +1,5 @@
 Require Import ssreflect ssrbool ssrnat fintype eqtype seq ssrfun ssrbool finset choice.
 Require Import automata misc regexp.
-Require Import Program.Equality.
-
 Require Import base.
 
 Set Implicit Arguments.
@@ -14,7 +12,7 @@ Section MyhillNerode.
     Variable X: finType.
     Variable L: language char.
 
-    Definition MN w1 w2 := forall w3, w1++w3 \in L <-> w2++w3 \in L.
+    Definition MN w1 w2 := forall w3, w1++w3 \in L == (w2++w3 \in L).
 
     (* We model finiteness of equivalence classes
      by functions to some finType. *)
@@ -23,10 +21,10 @@ Section MyhillNerode.
     
     (* We define what it means to be a refinement
      of the MH relation: *)
-    Definition MN_rel (f: Fin_eq_cls) := forall w1 w2, f w1 = f w2 <-> MN w1 w2.
+    Definition MN_rel (f: Fin_eq_cls) := forall w1 w2, f w1 == f w2 <-> MN w1 w2.
 
     (* We also define refinements of the MN relation *)
-    Definition MN_ref (f: Fin_eq_cls) := forall w1 w2, f w1 = f w2 -> MN w1 w2.
+    Definition MN_ref (f: Fin_eq_cls) := forall w1 w2, f w1 == f w2 -> MN w1 w2.
     
   End Relation.
 
@@ -50,7 +48,7 @@ Section MyhillNerode.
     
     Definition repr := [ fun w => f_inv (f w) ].
                                          
-    Lemma f_inv_invariant_rcons w a: f (rcons (f_inv (f w)) a) = f (rcons w a).
+    Lemma f_inv_invariant_rcons w a: f (rcons (f_inv (f w)) a) == f (rcons w a).
     Proof.
       apply ref.
       move => z.
@@ -61,12 +59,12 @@ Section MyhillNerode.
       exact: H.
     Qed.
 
-    Lemma f_inv_invariant_L w: f_inv (f w) \in L <-> (w \in L).
+    Lemma f_inv_invariant_L w: f_inv (f w) \in L == (w \in L).
     Proof.
       move: (ref (f_inv (f w)) w) => [H1 H2].
       rewrite f_invK in H1.
-      move: (H1 (Logic.eq_refl _)) => H3.
-      move: (H3 [::]).
+      move: H1. rewrite eq_refl => H3.
+      move: (H3 is_true_true [::]).
       by rewrite 2!cats0.
     Qed.
       
@@ -89,15 +87,16 @@ Section MyhillNerode.
       apply: last_ind => [|w a IHw] //.
       rewrite -{1}cats1 dfa_run'_cat last_cat IHw /=.
       rewrite /step.
-      exact: f_inv_invariant_rcons.
+      apply/eqP. exact: f_inv_invariant_rcons.
     Qed.
       
     Lemma MN_dfa_correct: L =1 dfa_lang MN_dfa.
     Proof.
       move => w.
       rewrite /dfa_lang /= -dfa_run_accepts MN_dfa_run_f in_simpl /=.
-      apply/idP/idP;
-      by rewrite f_inv_invariant_L.
+      apply/eqP.
+      move: (f_inv_invariant_L w).
+      by rewrite eq_sym.
     Qed.
       
   End ToDFA.
@@ -109,82 +108,313 @@ Section MyhillNerode.
     Variable ref: MN_ref L f.
     Variable f_surj: surj f.
 
-    Record MState :=
-      mstateI {
-          todo: seq (X*X);
-          disjunct: {set X*X}
-      }.
+    Notation "f^-1" := (f_inv f_surj).
 
-    Definition ext x y a := (f (rcons (f_inv f_surj x) a), f (rcons (f_inv f_surj y) a)). 
-    Definition dist_ext1 x y a:= f (rcons (f_inv f_surj x) a) != f (rcons (f_inv f_surj y) a).
-
-    Definition dist_extS x y w := f (cat (f_inv f_surj x) w) != f (cat (f_inv f_surj y) w).
-
+    Definition ext x y a := (f (rcons (f^-1 x) a), f (rcons (f^-1 y) a)).
+    Definition extS x y w := (f (cat (f^-1 x) w), f (cat (f^-1 y) w)).
+    Definition dist x y := L (f^-1 x) != L (f^-1 y).
+    Definition dist_ext1 x y a:= dist (f (rcons (f^-1 x) a)) (f (rcons (f^-1 y) a)).
+    Definition distinct0 :=
+        [set x | dist (fst x) (snd x) ].
     
+    Definition unnamed distinct :=
+        distinct0 :|: distinct :|: [set (x,y) | x <- X, y <- X, existsb a, ext x y a \in distinct]
+    .            
 
-    Definition propagate x y :=
-      [ set x' | (x,y) \in [ set ext (fst x') (snd x') a | a <- char ]  ].
+    Definition distinct := mu unnamed.
 
-    Fixpoint unnamed1 todo  :=
-      match todo with
-      | [::] => set0: {set X*X}
-      | ((x,y)::todo) =>
-          if x == y then unnamed1 todo else  
-          match [ pick a | dist_ext1 x y a ] with
-          | None => unnamed1 todo
-          | Some a => let r := unnamed1 todo in
-                        set1 (x,y) :|: r :|: (propagate x y) 
-          end
-      end.
-
-    Section Correctness.
-      Definition reflexive (S: {set X*X}):= forall x y, (x,y) \in S -> (y,x) \in S.
-      
-      Lemma unnamed1_final todo x y: (x,y) \in  unnamed1 todo -> exists a, dist_ext1 x y a. 
-      Proof.
-        elim: todo => [|[x' y'] todo IHtd].          
-          by rewrite /= in_set0.
-        rewrite /=.
-        case H0: (x' == y') => //.
-        case: pickP => [a H|H] //.
-        rewrite /= 2!in_setU => /orP [] .
-          move/orP => [] //.
-          rewrite in_set1 => /eqP [] -> ->.
-          by exists a.
-
-        rewrite in_set /=.
-        move/imsetP => [] b _ [] H1 H2.
-        exists b.
-        by rewrite /dist_ext1 -H1 -H2 H0.
-      Qed.
-
-      Lemma unnamed1_dist_ext todo x y a: (x,y) \in todo -> dist_ext1 x y a -> (x,y) \in unnamed1 todo.
-      Proof.
-        elim: todo => [|[x' y'] todo IHtd] //.
-        rewrite in_cons => /orP [].
-          move/eqP => [] -> -> /=.
-          case H0: (x' == y').
-            rewrite /dist_ext1.
-            move/eqP: H0 => ->.
-            by rewrite eq_refl.
-          case: pickP => [b H|H] H1.
-            apply/setUP. left.
-            apply/setUP. left.
-            by rewrite in_set1 eq_refl.
-          by rewrite H in H1.
-        rewrite /=.
-        case H0: (x' == y') => //.
-        case: pickP => [b H|H] H1 H2.
-          apply/setUP. left.
-          apply/setUP. right.
-          by apply: IHtd.
-        by apply: IHtd.
-      Qed.
-
-    End Correctness.    
-
-    
+    Lemma unnamed_mono: mono unnamed.
+    Proof.
+    Admitted.
         
+        
+    Lemma f_inv_ref_invariant_L w: f^-1 (f w) \in L = (w \in L).
+    Proof.
+      move: (@ref (f^-1 (f w)) w). 
+      rewrite f_invK eq_refl => H1.
+      move: (H1 is_true_true) => H3.
+      move/eqP: (H3 [::]).
+      by rewrite 2!cats0.
+    Qed.
+    
+    Lemma f_inv_ref_invariant_L_rcons w a: f^-1 (f (rcons w a)) \in L = (rcons w a \in L).
+    Proof.
+      move: (@ref (f^-1 (f (rcons w a))) (rcons w a)). 
+      rewrite f_invK eq_refl => H1.
+      move: (H1 is_true_true) => H3.
+      move/eqP: (H3 [::]).
+      by rewrite 2!cats0.
+    Qed.
+    
+    Lemma f_inv_ref_invariant_L_rcons2 x a: f^-1 (f (rcons (f^-1 x) a)) \in L = (rcons (f^-1 x) a \in L).
+    Proof.
+      by rewrite f_inv_ref_invariant_L_rcons.
+    Qed.
+    
+    Lemma f_inv_ref_invariant_L_cat w1 w2: f^-1 (f (w1 ++ w2)) \in L = (w1 ++ w2 \in L).
+    Proof.
+      elim: w2 w1 => [|a w2 IHw2] w1.
+        rewrite cats0. by apply: f_inv_ref_invariant_L.
+      rewrite -(cat1s a w2).
+      rewrite catA cats1.
+      exact: IHw2.
+    Qed.
+    
+    Lemma dist_not_MN x y:  MN L (f^-1 x) (f^-1 y) -> dist x y -> False. 
+    Proof.
+      move => H.
+      move: (H [::]).
+      rewrite 2!cats0 /dist -topredE /=.
+      by move => ->.
+    Qed.       
+
+    Lemma dist_ext1_not_MN x y a: MN L (f^-1 x) (f^-1 y) -> dist_ext1 x y a -> False. 
+    Proof.
+      move => H.
+      move: (H [::a]).
+      rewrite 2!cats1 /dist_ext1 /dist -2!f_inv_ref_invariant_L_rcons -topredE /=.
+      by move => ->.
+    Qed.       
+    
+    Lemma distinct_final x y:
+      (x,y) \in distinct ->
+      exists w, (f^-1 x) ++ w \in L != ((f^-1 y) ++ w \in L). 
+    Proof.
+      rewrite /distinct.
+      move: x y.
+      apply mu_ind => [|dist IHdist] x y.
+        by rewrite in_set.
+      rewrite /unnamed.
+      rewrite 2!in_setU => /orP [].
+        move/orP => [].
+          rewrite /distinct0 /Minimalization.dist in_set /=.
+          move => H.
+          exists [::]. by rewrite 2!cats0.
+        exact: IHdist.
+      move/imset2P => [] x1 y1 _.
+      rewrite in_set => /andP [] _.
+      move/existsP => [] a H3 [] H4 H5.
+      subst.
+      move: (IHdist (ext x1 y1 a).1 (ext x1 y1 a).2 H3) => [w].
+      rewrite /ext /= => H4.
+      exists (a::w).
+        rewrite -cat1s.
+        rewrite -f_inv_ref_invariant_L_cat.
+        rewrite 2!catA 2!cats1.
+        rewrite f_inv_ref_invariant_L_cat.
+      have/eqP: (f (f^-1 (f (rcons (f^-1 x1) a))) = f (rcons (f^-1 x1) a)).
+        by apply: f_invK.
+      move/ref => H5.
+      move/eqP: (H5 w) => <-.
+      have/eqP: (f (f^-1 (f (rcons (f^-1 y1) a))) = f (rcons (f^-1 y1) a)).
+        by apply: f_invK.
+      move/ref => H6.
+      by move/eqP: (H6 w) => <-.
+    Qed.
+    
+
+    Lemma distinct_notin x y:
+      (x,y) \notin distinct ->
+      (f^-1 x) \in L = ((f^-1 y) \in L).
+    Proof.
+      rewrite /distinct muE -/distinct /unnamed.
+      rewrite 2!in_setU.
+      move /norP => [].
+      move /norP => [].
+      rewrite 3!in_set.
+      rewrite /dist.
+      by move/negPn/eqP.
+      exact unnamed_mono.
+    Qed.
+      
+    Lemma distinct_final' x y: (x, y) \in distinct -> ~ MN L (f^-1 x) (f^-1 y).
+    Proof.
+      move => /distinct_final [w H] H0.
+      move/eqP: (H0 w).
+      move/eqP => H1. move: H.
+      by rewrite H1.
+    Qed.
+
+    Lemma distinct_notin_ext x y a:
+      (x,y) \notin distinct ->
+      ext x y a \notin distinct.
+    Proof.
+      pose (m := unnamed_mono).
+      rewrite /distinct {1}muE -/distinct // /unnamed.
+      rewrite 2!in_set.
+      apply: contraL => H.
+      apply/negPn.
+      apply/orP. right.
+      rewrite mem_imset2 // in_set.
+      apply/andP; split => //.
+      apply/existsP. by exists a.
+    Qed.
+    
+    Lemma distinct_notin_extS x y w:
+      (x,y) \notin distinct ->
+      extS x y w \notin distinct.
+    Proof.
+      move: w x y. 
+      apply: last_ind => [|w a IHw] x y H.
+        by rewrite /extS 2!cats0 2!f_invK.
+      rewrite /extS -!cats1.
+      move: (distinct_notin_ext _ _  a H) => H1.
+      move: (IHw _ _ H) => H2.
+      move: (distinct_notin_ext _ _ a H2).
+      rewrite /ext.
+    Admitted.
+
+    Lemma distinct0_not_refl x:
+      (x,x) \notin distinct0.
+    Proof.
+      by rewrite in_set /dist eq_refl.
+    Qed.
+      
+    Lemma distinct_not_refl x:
+       (x,x) \notin distinct.
+    Proof.
+      rewrite /distinct.
+      move: x.
+      apply mu_ind => [|dist IHdist] x.
+        by rewrite  in_set.
+      rewrite /unnamed /=.
+      rewrite in_setU.
+      rewrite in_setU 2!negb_or.
+      rewrite (IHdist x) distinct0_not_refl /=.
+      apply/imset2P => H. destruct H as [y z _ H1 H2].
+      move: H2 H1 => [H3 H4]. do 2!subst.
+      rewrite in_set => /existsP [] a.
+      apply/negP. exact: IHdist.
+    Qed.
+
+      
+    Lemma distinct_trans_not x y z: (x,y) \notin distinct -> (y,z) \notin distinct -> (x,z) \notin distinct.
+    Proof.
+      move => H1 H2.
+      apply/negP => /distinct_final [w /negP H3].
+      apply: H3.
+      move/distinct_notin: (distinct_notin_extS _ _ w H1) => H3.      
+      move/distinct_notin: (distinct_notin_extS _ _ w H2) => H4.      
+      rewrite -(f_inv_ref_invariant_L_cat (f^-1 x)).
+      rewrite -(f_inv_ref_invariant_L_cat (f^-1 z)).
+      by rewrite H3 H4 eq_refl.
+    Qed.
+
+    Lemma distinct_sym_not x y: (x,y) \notin distinct -> (y,x) \notin distinct.
+      move => H1.
+      apply/negP => /distinct_final [w /negP H3].
+      apply: H3.
+      move/distinct_notin: (distinct_notin_extS _ _ w H1) => H3.      
+      rewrite -(f_inv_ref_invariant_L_cat (f^-1 x)).
+      rewrite -(f_inv_ref_invariant_L_cat (f^-1 y)).
+      by rewrite H3 eq_refl.
+    Qed.
+    
+    
+    Definition dist_repr := [ fun x => [set y | (x,y) \notin distinct] ].
+
+    Lemma dist_repr_refl x : x \in dist_repr x.
+    Proof.
+      by rewrite in_set distinct_not_refl.
+    Qed.
+    
+    Lemma dist_equiv x y: (x, y) \notin distinct -> dist_repr x = dist_repr y.
+    Proof.
+      move => H /=.
+      apply/setP => z.
+      rewrite 2!in_set.
+      apply/idP/idP.
+      move/distinct_sym_not in H.
+        by apply: distinct_trans_not.
+      by apply: distinct_trans_not.
+    Qed.
+        
+    Lemma in_dist_repr x y: y \in dist_repr x = ~~ existsb a, dist_ext1 x y a.
+    Proof.
+      apply/idP/idP.
+        rewrite in_set.
+        apply: contraL.
+        admit.
+      rewrite in_set.
+      apply: contraL.
+      move/distinct_final' => H.
+      apply/negPn.
+      apply/existsP.
+      admit.
+    Qed.
+      
+    Definition X_min := map dist_repr (enum X).
+    Definition X_min_finMixin := seq_sub_finMixin X_min.
+
+    Canonical Structure X_min_finType := FinType _ X_min_finMixin.
+
+    Lemma dist_repr_in_X_min x: dist_repr x \in X_min.
+    Proof.
+      apply/mapP.
+      exists x => //.
+      by rewrite mem_enum.
+    Qed.
+
+    Definition f_min: Fin_eq_cls X_min_finType :=
+      [ fun w => SeqSub _ (dist_repr_in_X_min (f w)) ].
+
+    Lemma f_min_eq_distinct x y: f_min x = f_min y -> (f x, f y) \notin distinct.
+    Proof.
+      move => [] /= /setP H1.
+      move: (H1 (f y)).
+      by rewrite dist_repr_refl in_set => ->.
+    Qed.                                            
+
+    Lemma f_min_distinct_eq x y: (f x, f y) \notin distinct -> f_min x = f_min y.
+    Proof.
+      move => H.
+      rewrite /f_min /=.
+      move: (dist_equiv (f x) (f y)).
+    Admitted.
+      
+      
+    Lemma f_min_MN_rel: MN_rel L f_min.
+    Proof.
+      move => x y.
+      split.
+        
+        move/eqP/f_min_eq_distinct => H.
+
+        move/eqP/f_min_eq_distinct => H.
+
+        (*
+        move/(distinct_notin_extS _ _ z): H.
+        move/distinct_notin => H.
+        rewrite -(f_inv_ref_invariant_L_cat [::] (x++z)).
+        rewrite -(f_inv_ref_invariant_L_cat [::] (y++z)).
+        move/eqP: H => /=.
+        *)
+
+        apply: last_ind => [|z a IHz].
+          rewrite 2!cats0.
+          rewrite -(f_inv_ref_invariant_L_cat [::] x).
+          rewrite -(f_inv_ref_invariant_L_cat [::] y).
+          by move/distinct_notin/eqP: H => /=.
+        rewrite -cats1 catA.
+        rewrite -f_inv_ref_invariant_L_cat.
+        move/(distinct_notin_extS _ _ z): H.
+        move/(distinct_notin_ext _ _ a).
+        move/distinct_notin.
+        rewrite cats1.
+        
+          
+      move => H /=.
+      have: (dist_repr (f x) = dist_repr (f y)).
+      
+      apply/eqP.
+        rewrite /dist_repr.
+        
+        rewrite distinct_correct.
+        
+        rewrite eqEsubset.
+        
+        
+      
   End Minimalization.
   
 
