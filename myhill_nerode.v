@@ -112,7 +112,7 @@ Section MyhillNerode.
 
     Definition ext x y a := (f (rcons (f^-1 x) a), f (rcons (f^-1 y) a)).
     Definition extS x y w := (f (cat (f^-1 x) w), f (cat (f^-1 y) w)).
-    Definition dist x y := L (f^-1 x) != L (f^-1 y).
+    Definition dist x y := (f^-1 x) \in L != ((f^-1 y) \in L).
     Definition dist_ext1 x y a:= dist (f (rcons (f^-1 x) a)) (f (rcons (f^-1 y) a)).
     Definition distinct0 :=
         [set x | dist (fst x) (snd x) ].
@@ -159,7 +159,7 @@ Section MyhillNerode.
       rewrite catA cats1.
       exact: IHw2.
     Qed.
-    
+
     Lemma dist_not_MN x y:  MN L (f^-1 x) (f^-1 y) -> dist x y -> False. 
     Proof.
       move => H.
@@ -211,7 +211,34 @@ Section MyhillNerode.
       move/ref => H6.
       by move/eqP: (H6 w) => <-.
     Qed.
-    
+
+    Lemma distinct_dist_extS x y:
+      (x,y) \in distinct ->
+      forall a, ext x y a \in distinct.
+    Proof.
+      rewrite /distinct.
+      apply mu_ind => [|s IHs].
+        by rewrite in_set.
+      rewrite /unnamed 3!in_set.
+      move/orP => [/orP [H|H]|H] a.
+        rewrite 3!in_set /distinct0.
+      
+    Lemma distinct_mono x y (s: {set _}):
+      (x,y) \in s ->
+      (x,y) \in (unnamed s).
+    Proof.
+      rewrite /unnamed.
+        move => H. rewrite 2!in_set. apply/orP. left.
+        apply/orP. by right.
+    Qed.
+
+    Lemma distinct_mono_not x y (s: {set _}):
+      (x,y) \notin (unnamed s) ->
+      (x,y) \notin s.
+    Proof.
+      rewrite /unnamed 3!in_set 2!negb_or.
+      by move/andP => [/andP [] H1 H2 H3]. 
+    Qed.
 
     Lemma distinct_notin x y:
       (x,y) \notin distinct ->
@@ -226,7 +253,7 @@ Section MyhillNerode.
       by move/negPn/eqP.
       exact unnamed_mono.
     Qed.
-      
+    
     Lemma distinct_final' x y: (x, y) \in distinct -> ~ MN L (f^-1 x) (f^-1 y).
     Proof.
       move => /distinct_final [w H] H0.
@@ -249,20 +276,30 @@ Section MyhillNerode.
       apply/andP; split => //.
       apply/existsP. by exists a.
     Qed.
-    
+
+
     Lemma distinct_notin_extS x y w:
       (x,y) \notin distinct ->
       extS x y w \notin distinct.
     Proof.
-      move: w x y. 
-      apply: last_ind => [|w a IHw] x y H.
+      elim: w x y => [|a w IHw] x y H.
         by rewrite /extS 2!cats0 2!f_invK.
-      rewrite /extS -!cats1.
-      move: (distinct_notin_ext _ _  a H) => H1.
-      move: (IHw _ _ H) => H2.
-      move: (distinct_notin_ext _ _ a H2).
-      rewrite /ext.
+      move/(distinct_notin_ext _ _ a): (H).
+      move/IHw.
+      rewrite /ext /extS.
     Admitted.
+      
+      
+    Lemma distinct_final'' x y:
+      (x,y) \notin distinct ->
+      MN L (f^-1 x) (f^-1 y).
+    Proof.
+      move => H w.
+      rewrite -(f_inv_ref_invariant_L_cat [::] (f^-1 x ++ w)).
+      rewrite -(f_inv_ref_invariant_L_cat [::] (f^-1 y ++ w)).
+      move/(distinct_notin_extS _ _ w): H.
+      by rewrite /extS => /distinct_notin /= /eqP.
+    Qed.
 
     Lemma distinct0_not_refl x:
       (x,x) \notin distinct0.
@@ -334,6 +371,8 @@ Section MyhillNerode.
       apply/idP/idP.
         rewrite in_set.
         apply: contraL.
+        move/existsP => [] a H.
+        rewrite /distinct in_set. apply/negPn.
         admit.
       rewrite in_set.
       apply: contraL.
@@ -365,12 +404,27 @@ Section MyhillNerode.
       by rewrite dist_repr_refl in_set => ->.
     Qed.                                            
 
-    Lemma f_min_distinct_eq x y: (f x, f y) \notin distinct -> f_min x = f_min y.
+    Lemma f_min_distinct_eq x y: (f x, f y) \notin distinct -> f_min x == f_min y.
     Proof.
       move => H.
       rewrite /f_min /=.
-      move: (dist_equiv (f x) (f y)).
-    Admitted.
+      change ([set y0 | (f x, y0) \notin distinct] == [set y0 | (f y, y0) \notin distinct]).
+      apply/eqP.
+      apply/setP => z.
+      rewrite 2!in_set.
+      apply/idP/idP => H0.
+        apply: distinct_sym_not.
+        apply: distinct_trans_not.
+          eapply distinct_sym_not.
+          eassumption.
+        by [].
+      apply: distinct_sym_not.
+      apply: distinct_trans_not.
+        eapply distinct_sym_not.
+        eassumption.
+      apply: distinct_sym_not.
+      by [].
+    Qed.
       
       
     Lemma f_min_MN_rel: MN_rel L f_min.
@@ -378,7 +432,8 @@ Section MyhillNerode.
       move => x y.
       split.
         
-        move/eqP/f_min_eq_distinct => H.
+        move/eqP/f_min_eq_distinct => H z.
+        apply distinct_notin.
 
         move/eqP/f_min_eq_distinct => H.
 
