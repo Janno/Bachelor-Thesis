@@ -370,7 +370,77 @@ Section MyhillNerode.
     f^- (ext x a) \in L = (f^- x ++ [:: a] \in L).
     Proof. apply: L_ext_cat. by rewrite f_invK. Qed.
 
+    Lemma L_distinct u v w: u ++ w \in L != (v ++ w \in L) -> (f u, f v) \in distinct.
+    Proof.
+      elim: w u v => [|a w IHw] u v.
+        rewrite 2!cats0.
+        rewrite /distinct muE -/distinct /unnamed.
+        rewrite -f_inv_ref_invariant_L -(f_inv_ref_invariant_L v).
+        move => H.
+        by rewrite /distinct0 /dist /= 3!in_set /= H.
+      admit.
+      move => H.
+      rewrite /distinct muE -/distinct /unnamed.
+      rewrite 3!in_set. apply/orP. right.
+      rewrite mem_imset2 //=.
+      rewrite in_set.
+      apply/existsP. exists a.
+      apply: IHw.
+      move: H. apply: contraR.
+      move/negPn.
+      rewrite -2!cats1 -2!catA.
+      rewrite cat1s.
+      move: (ref (f^- (f u)) u).
+      rewrite f_invK eq_refl => Hu'.
+      move: (Hu' is_true_true) => Hu.
+      move/eqP: (Hu (a::w)) => ->.
 
+      move: (ref (f^- (f v)) v).
+      rewrite f_invK eq_refl => Hv'.
+      move: (Hv' is_true_true) => Hv.
+      move/eqP: (Hv (a::w)) => ->.
+      by [].
+      admit.
+      Qed.
+      
+Lemma size_induction {Y: Type} (g : Y -> nat) (p: Y ->Prop) :
+( forall x, ( forall y, g y < g x -> p y) -> p x) -> forall x, p x.
+Proof. Admitted.
+      
+    
+    Lemma equiv_f_ext u v w:
+      f u ~= f v ->
+      f (u++w) ~= f (v++w).
+    Proof.
+      apply: contraR.
+      move/negPn.
+      move: u v w. rewrite /distinct.
+      apply mu_ind => [|s IHs] u v w.
+        by rewrite in_set.
+      move: w u v.
+      apply: (size_induction size) => [w IHw] u v.
+      (*elim: w u v => [|a w IHw] u v.*)
+      case: w IHw => [|a [|b w]] IHw.
+          by rewrite 2!cats0.
+        admit.
+      rewrite -1!cat1s -1!cat1s 2!catA.
+      move => H.
+      have H1: (size w < size (a::b::w)). by rewrite /=.
+      move: (IHw _ H1 _ _ H) => H0.
+      case: w IHw H H1 => [|b w] IHw H H1.
+        
+      apply: (IHw [::a]).
+      
+      move: (H0).
+      rewrite /unnamed.
+        rewrite 3!in_set /= => /orP [/orP [H1|H1]|H1].
+        exfalso.
+        
+        
+      apply: unnamed_mono_in.
+      apply: IHs.
+      move: (H0).
+      
     (*
     Lemma equiv_cat_step1 x y a:
       x ~= y ->
@@ -451,9 +521,7 @@ Section MyhillNerode.
       move/imset2P => [] x1 y1 _.
       rewrite in_set => /andP [] _.
       move/existsP => [] a H3 [] H4 H5. move: H3.
-      rewrite in_set => /orP [H3|H3]; subst.
-        exists [::a]. move: H3. by rewrite /pext /distinct0 in_set /Minimalization.dist /= 2!cats1 -2!f_inv_ref_invariant_L_rcons.
-
+      move => H3. subst.
       move: (IHdist (pext x1 y1 a).1 (pext x1 y1 a).2 H3) => [w].
       rewrite /pext /= => H4.
       exists (a::w).
@@ -480,37 +548,13 @@ Section MyhillNerode.
       by rewrite H1.
     Qed.
 
-    Lemma distinct_notin_pextS x y w:
-      (x,y) \notin distinct ->
-      pextS x y w \notin distinct.
-    Proof.
-      elim: w x y => [|a w IHw] x y H.
-        by rewrite /pextS 2!cats0 2!f_invK.
-      move/(distinct_notin_pext _ _ a): (H).
-      move/IHw.
-      rewrite /pext /pextS.
-    Admitted.
-      
-      
-    Lemma distinct_final'' x y:
-      (x,y) \notin distinct ->
-      MN L (f^- x) (f^- y).
-    Proof.
-      move => H w.
-      rewrite -(f_inv_ref_invariant_L_cat [::] (f^- x ++ w)).
-      rewrite -(f_inv_ref_invariant_L_cat [::] (f^- y ++ w)).
-      move/(distinct_notin_pextS _ _ w): H.
-      by rewrite /pextS => /distinct_notin /= /eqP.
-    Qed.
-
-
       
     
     Definition dist_repr := [ fun x => [set y | (x,y) \notin distinct] ].
 
     Lemma dist_repr_refl x : x \in dist_repr x.
     Proof.
-      by rewrite in_set distinct_not_refl.
+      by rewrite in_set equiv_refl.
     Qed.
     
     Lemma dist_equiv x y: (x, y) \notin distinct -> dist_repr x = dist_repr y.
@@ -589,43 +633,7 @@ Section MyhillNerode.
     Proof.
       move => x y.
       split.
-        
-        move/eqP/f_min_eq_distinct => H z.
-        apply distinct_notin.
-
-        move/eqP/f_min_eq_distinct => H.
-
-        (*
-        move/(distinct_notin_pextS _ _ z): H.
-        move/distinct_notin => H.
-        rewrite -(f_inv_ref_invariant_L_cat [::] (x++z)).
-        rewrite -(f_inv_ref_invariant_L_cat [::] (y++z)).
-        move/eqP: H => /=.
-        *)
-
-        apply: last_ind => [|z a IHz].
-          rewrite 2!cats0.
-          rewrite -(f_inv_ref_invariant_L_cat [::] x).
-          rewrite -(f_inv_ref_invariant_L_cat [::] y).
-          by move/distinct_notin/eqP: H => /=.
-        rewrite -cats1 catA.
-        rewrite -f_inv_ref_invariant_L_cat.
-        move/(distinct_notin_pextS _ _ z): H.
-        move/(distinct_notin_pext _ _ a).
-        move/distinct_notin.
-        rewrite cats1.
-        
-          
-      move => H /=.
-      have: (dist_repr (f x) = dist_repr (f y)).
-      
-      apply/eqP.
-        rewrite /dist_repr.
-        
-        rewrite distinct_correct.
-        
-        rewrite eqEsubset.
-        
+      move/eqP/f_min_eq_distinct.
         
       
   End Minimalization.
