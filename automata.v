@@ -499,6 +499,125 @@ Proof. exact: dfa_conj_correct'. Qed.
 
 End BinaryOps.
 
+(* Remove unreachable states *)
+Section Reachability.
+  Definition e := [ fun x y => existsb a, dfa_step A1 x a == y ].
+  Definition reach := [fun x => dfs e #|A1| [::] x].
+
+  Lemma card_A1 {T:finType}: #|A1| <= #|([::]:(seq T))| + #|A1|.
+  Proof. by rewrite card0 leq_addl. Qed.
+
+  Lemma reachP x y: y \in reach x <-> exists w, last x (dfa_run' A1 x w) = y.
+  Proof.
+    split.
+      rewrite /=. move/dfsP => H.
+      move: H => [].
+          exact: card_A1.
+        by rewrite in_nil.
+      move => p.
+      elim: p x y => [|z p IHp] //= x y.
+        move => _ -> H.                   
+        by exists [::].        
+      move/andP => [] /existsP [] a /eqP H0 H1 H2 H3.
+      move: (IHp z y) => [] //.
+        by rewrite disjoint_sym disjoint0.
+      move => w H4.
+      exists (a::w).
+      by rewrite /= H0 H4.
+    move => [] w.
+    elim: w x y => [|a w IHw] x y //=.
+      move => ->.
+      apply/dfsP.
+          exact: card_A1.
+        by rewrite in_nil.
+      econstructor.
+          by instantiate (1 := [::]). 
+        by [].
+      by rewrite disjoint_sym disjoint0.
+    move => H.
+    move/dfsP: (IHw (dfa_step A1 x a) y H) => H0.
+    move: (H0 card_A1). rewrite in_nil /= => H1.
+    move: (H1 is_true_true) => [] p H2 H3 H4.
+    apply/(dfsP _ _ card_A1).
+      by rewrite in_nil.
+    econstructor.
+        instantiate (1 := (dfa_step A1 x a)::p).
+        rewrite /= H2 andbT. apply/existsP. by exists a.  
+      exact H3.
+    by rewrite disjoint_sym disjoint0.
+  Qed.
+
+  Definition reach_s0 := reach (dfa_s0 A1).
+  Definition reachable := [pred x | x \in reach_s0].
+  
+
+  Lemma reach_s0_s0 : dfa_s0 A1 \in reach_s0.
+  Proof.
+    rewrite /reach_s0.
+    apply/dfsP.
+        exact: card_A1.
+      by rewrite /=.
+    econstructor.
+        instantiate (1:=[::]) => //.
+      by [].
+    by rewrite disjoint_sym disjoint0.
+  Qed.
+
+  Lemma reach_step x a: x \in reach_s0 ->  dfa_step A1 x a \in reach_s0.
+  Proof.
+    move/reachP => [] w H.
+    apply/reachP.
+    exists (rcons w a).
+    by rewrite dfa_run'_rcons last_rcons H.
+  Qed.
+    
+  Definition Reach_finMixin := seq_sub_finMixin reach_s0.
+
+  Canonical Structure Reach_finType := FinType _ Reach_finMixin.
+
+  Definition dfa_reachable_step x a :=
+    match x with
+    | SeqSub x H => SeqSub (reach_step _ a H)
+    end.
+
+  Definition dfa_reachable_fin (x: Reach_finType) :=
+    match x with
+    | SeqSub x _ => dfa_fin A1 x
+    end.
+            
+
+  Definition dfa_reachable :=
+    dfaI
+      Reach_finType
+      (SeqSub reach_s0_s0)
+      dfa_reachable_fin
+      dfa_reachable_step.
+
+  Lemma dfa_reachable_last x (Hx: x \in reach_s0) w:
+    ssval (last (SeqSub Hx) (dfa_run' dfa_reachable (SeqSub Hx) w)) = last x (dfa_run' A1 x w).
+  Proof. elim: w x Hx => [|a w IHw] x Hx //=. Qed. 
+  
+  Lemma dfa_reachable_correct' x (Hx: x \in reach_s0) : dfa_accept dfa_reachable (SeqSub Hx) =1 dfa_accept A1 x.
+  Proof. move => w. elim: w x Hx => [|a w IHw] x Hx //=. Qed. 
+
+  Lemma dfa_reachable_correct: dfa_lang dfa_reachable =1 dfa_lang A1.
+  Proof.
+    move => w. by rewrite /dfa_lang /= dfa_reachable_correct'.
+  Qed. 
+
+  Lemma dfa_reachable_repr x (Hx: x \in reach_s0) y (Hy: y \in reach_s0): x \in reach y -> exists w, last (SeqSub Hy) (dfa_run' dfa_reachable (SeqSub Hy) w) = SeqSub Hx.
+  Proof.
+    move/reachP => [] w H.
+    exists w. subst. 
+    elim: w y Hy Hx => [|a w IHw] y Hx Hy //=.
+    have: (Hx = Hy).
+      by apply: bool_irrelevance.
+    by move => ->.
+  Qed.
+              
+End Reachability.
+
+
 End DFAOps.
 
 (** Operations on non-deterministic automata. **)
