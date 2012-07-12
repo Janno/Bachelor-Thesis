@@ -6,6 +6,7 @@ all: chs misc.vo glue.vo regexp.vo automata.vo transitive_closure.vo myhill_nero
 
 chs: 
 	cd constructive-Hstar; make
+	cp constructive-Hstar/base.vo constructive-Hstar/tactics.vo .
 
 doc: all 
 	coqdoc -d docs/html automata.v misc.v transitive_closure.v
