@@ -1,4 +1,4 @@
-Require Import ssreflect ssrbool eqtype fintype finfun seq fingraph ssrfun ssrnat finset.
+Require Import ssreflect ssrbool eqtype fintype choice finfun seq fingraph ssrfun ssrnat finset.
 
 Require Import misc.
 
@@ -321,7 +321,86 @@ Qed.
     
 End Embed.
 
+(** Primitive automata **)
+Section Primitive.
+  Definition dfa_void :=
+    dfaI
+      bool_finType
+      false
+      pred0
+      [fun x a => false].
+  
+  Lemma dfa_void_correct x w: ~~ dfa_accept dfa_void x w.
+  Proof. by elim: w x => [|a w IHw] //= x. Qed.
 
+  Definition dfa_empty :=
+    dfaI
+      bool_finType
+      true
+      (pred1 true)
+      [fun x a => false].
+
+  Lemma dfa_empty_correct w: dfa_lang dfa_empty w = (w == [::]).
+  Proof.
+    have H: (forall w, ~~ dfa_accept dfa_empty false w).
+      by elim => [|a v IHv] //=.
+    elim: w => [|a w IHw] //.
+    apply/idP/idP.
+    exact: H. 
+  Qed.
+      
+  Definition dfa_char a :=
+    dfaI
+      (option_finType (bool_finType))
+      None
+      (pred1 (Some true))
+      [fun x b => if x == None then if b == a then Some true else Some false else Some false ].
+            
+  Lemma dfa_char_correct'' a w: ~~ dfa_accept (dfa_char a) (Some false) w.
+  Proof. by elim: w => [|b v IHv] //=. Qed.
+  Lemma dfa_char_correct' a w: dfa_accept (dfa_char a) (Some true) w = (w == [::]).
+  Proof.
+    elim: w a => [|b w IHw] a //=.
+    apply/idP/idP.
+    exact: dfa_char_correct''.
+  Qed.
+  Lemma dfa_char_correct a w: dfa_lang (dfa_char a) w = (w == [::a]).
+  Proof.
+    elim: w a => [|b w IHw] a //=.
+    case H: (b == a).
+      move/eqP: H => ->.
+      rewrite dfa_char_correct'.
+      by apply/eqP/eqP => [-> | []].
+    apply/idP/eqP.
+      move => H0. move: (dfa_char_correct'' a w). by rewrite H0.
+    move => [] /eqP. by rewrite H.
+  Qed.
+
+  Definition dfa_dot :=
+    dfaI
+      (option_finType (bool_finType))
+      None
+      (pred1 (Some true))
+      [fun x b => if x == None then Some true else Some false ].
+            
+  Lemma dfa_dot_correct'' w: ~~ dfa_accept dfa_dot (Some false) w.
+  Proof. by elim: w => [|b v IHv] //=. Qed.
+  Lemma dfa_dot_correct' w: dfa_accept dfa_dot (Some true) w = (w == [::]).
+  Proof.
+    elim: w => [|b w IHw] //=.
+    apply/idP/idP.
+    exact: dfa_dot_correct''.
+  Qed.
+  Lemma dfa_dot_correct w: dfa_lang dfa_dot w = (size w == 1).
+  Proof.
+    elim: w => [|b w IHw] //=.
+    rewrite dfa_dot_correct'.
+    apply/eqP/eqP => [-> | []] //=.
+    exact: size0nil.
+  Qed.
+
+  
+End Primitive.
 
 (** Operations on non-deterministic automata. **)
 Section DFAOps.
@@ -652,13 +731,13 @@ Qed.
    A1 in x and nfa_plus (resp.). **) 
 Lemma nfa_plus_correct2' x w :
   nfa_accept nfa_plus x w ->
-  ((exists w1, exists w2, (w == w1 ++ w2) && (nfa_accept A1 x w1) && nfa_lang nfa_plus w2
+  ((exists w1, exists w2, (w == w1 ++ w2) && (w1 != [::]) && (nfa_accept A1 x w1) && nfa_lang nfa_plus w2
     ) \/ nfa_accept A1 x w ).
 Proof. elim: w x => [|a w IHw] x.
   move => H0. right.
   exact: H0.
 case/existsP => y /andP [H0 H1].
-case: (IHw _ H1) => [[w1 [w2 /andP [/andP [/eqP H2 H3] H4]]]|H2].
+case: (IHw _ H1) => [[w1 [w2 /andP [/andP [/andP [/eqP H2 H9] H3] H4]]]|H2].
   move: H0 => /orP [H5|].
     left. exists (a::w1). exists w2.
     rewrite H2 eq_refl H4 andbT /=.
@@ -685,10 +764,11 @@ Qed.
    for nfa_plus. **)
 Lemma nfa_plus_correct2 w:
   nfa_lang nfa_plus w ->
-  ((exists w1, exists w2, (w == w1 ++ w2) && (nfa_lang A1 w1) && nfa_lang nfa_plus w2
+  ((exists w1, exists w2, (w == w1 ++ w2) && (w1 != [::]) && (nfa_lang A1 w1) && nfa_lang nfa_plus w2
     ) \/ nfa_lang A1 w ).
 Proof. exact: nfa_plus_correct2'. Qed.
-  
+
+
 
 End NFAOps.
 
