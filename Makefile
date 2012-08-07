@@ -1,14 +1,6 @@
 
 all: tactics.vo base.vo misc.vo glue.vo regexp.vo automata.vo transitive_closure.vo myhill_nerode.vo
 
-tactics.vo: constructive-Hstar/tactics.v
-	cd constructive-Hstar; make
-	cp constructive-Hstar/tactics.vo .
-
-base.vo: constructive-Hstar/base.v
-	cd constructive-Hstar; make
-	cp constructive-Hstar/base.vo .
-
 %.vo: %.v
 	coqc $(subst .vo,.v,$@)
 
