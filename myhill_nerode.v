@@ -413,7 +413,7 @@ Section MyhillNerode.
 
   Section DFA_To_MN.
     Variable A: dfa char.
-    Definition A' := dfa_reachable A.
+    Definition A' := dfa_connected A.
     Definition f : Fin_eq_cls A' := [ fun w => last (dfa_s0 A') (dfa_run A' w) ].
 
     Lemma f_correct: MN_ref (dfa_lang A') f.
@@ -427,8 +427,8 @@ Section MyhillNerode.
       
     Definition f_surj: surj f.
     Proof.
-      move => [] x Hx.
-      move: (dfa_reachable_repr A x Hx (dfa_s0 A) (reach_s0_s0 A) Hx).
+      move => x.
+      move/dfa_connected_repr: (x).
       move => [] w H.
       exists w.
       rewrite /f /=. by rewrite H.
@@ -446,11 +446,11 @@ Section MyhillNerode.
         move: H0.
         rewrite Hf => H0.
         move: (H0 is_true_true w).
-        by rewrite 4!in_simpl 2!dfa_reachable_correct.
+        by rewrite 4!in_simpl 2!dfa_connected_correct.
       move => H2.
       apply: H1 => w.
       move: (H2 w).
-      by rewrite 4!in_simpl 2!dfa_reachable_correct.
+      by rewrite 4!in_simpl 2!dfa_connected_correct.
     Qed.
     
   End DFA_To_MN.
