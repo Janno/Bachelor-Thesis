@@ -1,0 +1,144 @@
+\documentclass[11pt,a4paper,oneside]{book}
+
+\input{macros.tex}
+
+\usepackage{cite} 
+\usepackage{natbib} %citep and citet
+
+\usepackage[hidelinks]{hyperref} 
+
+\title{Constructive Formalization of Regular Languages}
+\author{Jan-Oliver Kaiser}
+
+\begin{document}
+    \maketitle
+    \tableofcontents
+    
+    \chapter{Introduction}
+
+        \paragraph{} We aim to show that an extensive, yet elegant formalization of regular languages can be achieved in constructive type theory.
+
+        \section{Recent work}
+        
+            \paragraph{} There have been many publications on regular languages in recent years. Many of them investigate decidability of equivalence of regular languages, though there have also been new equivalence proofs regarding different characterizations of regular languages.
+
+        \section{Constructivism }
+
+            \paragraph{} By restricting ourselves to a constructive type theory, we ensure that all our proofs are computational. We do not merely show existence but also give algorithms to explicitly construct a witness. 
+
+    \chapter{Framework}
+
+        \paragraph{}
+        We decided to employ the Small Scale Reflection Extension (\textbf{\ssreflect}) for the \textbf{\coq} proof assistant. The most important factors in this decision were \ssreflect's excellent support for finite types, list operations and graphs. \ssreflect{} also introduces many syntactic extensions that can often be used to shorten the bookkeeping overhead of proofs considerably.
+
+    \chapter{Characterizations of Regular Languages}
+        
+        \paragraph{} In our formalization, we consider three well-known characterizations of regular languages: \textbf{Regular expressions} (due to Stephen Cole Kleene \cite{KleeneNets}), \textbf{finite automata}, and the characterization derived from the \textbf{Myhill-Nerode theorem} (John Myhill, Anil Nerode \cite{Nerode1958}) 
+    
+        \section{Regular Expressions}
+
+            \subsection{Definition}
+
+                \paragraph{} Regular expressions are finite expressions over an alphabet consisting of atomic expressions or subexpressions combined by operators. Every regular expressions has an associated language, either directly or by some combination of the subexpressions' languages.
+
+                \subsubsection{Computing Language Membership}
+
+                    \paragraph{}
+
+
+            \subsection{Formalization}
+            
+                \paragraph{} Regular expressions are an inductive data structure and therefore best implemented as an inductive definition in \coq. We take the implementation from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect and comes with a lot of useful infrastructure for our proofs.
+
+        \section{Finite Automata}
+
+            \paragraph{} 
+
+            \subsection{Definition}
+
+                \paragraph{}
+
+                \subsubsection{Determinism and Non-Determinism}
+
+                    \paragraph{}
+
+                \subsubsection{Totality}
+
+                    \paragraph{}
+
+            
+            \subsection{Formalization}
+
+                \paragraph{}
+
+        \section{Myhill-Nerode Theorem}
+
+            \subsection{Myhill-Nerode Relation}
+
+                \paragraph{}
+        
+            \subsection{Statement of the Theorem}
+
+                \paragraph{}
+
+            \subsection{Equivalence Classes and Quotient Types}
+
+                \paragraph{}
+
+            \subsubsection{Refinements of the Myhill-Nerode Relation}
+
+                \paragraph{}
+
+            \subsection{Formalization}
+
+                \paragraph{}
+
+
+    \chapter{Equivalence Results}
+
+        \paragraph{} Our goal is to obtain proofs for the equivalence of the three characterizations presented above. We will show that regular expressions and finite automata are equivalent and that finite automate are equivalent to the Myhill-Nerode characterization, thereby proving equivalence of all three characterizations.
+
+        \section{Regular Expressions and Finite Automata}
+
+            \paragraph{} We proof that there is a finite automaton for every regular expression and vice versa.  
+
+            \subsection{Regular Expressions to Finite Automata}
+
+                \paragraph{}
+
+            \subsection{Deciding Equivalence of Regular Expressions}
+
+                \paragraph{}
+
+            \subsection{Finite Automata to Regular Expressions}
+
+                \paragraph{}
+
+
+        \section{Finite Automata and Myhill-Nerode}
+
+            \paragraph{}
+
+            \subsection{Minimizing Equivalence Classes}
+
+                \paragraph{}
+            
+            \subsection{Finite Automata to Myhill-Nerode}
+
+                \paragraph{}
+
+            \subsection{Myhill-Nerode to Finite Automata}
+
+                \paragraph{}
+
+
+    \chapter{Conclusion}
+
+    \chapter{References}
+
+    \bibliography{bib}{}
+    \bibliographystyle{plain}
+
+
+
+\end{document}
