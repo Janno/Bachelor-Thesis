@@ -239,25 +239,17 @@ Definition nfa_to_dfa :=
 Lemma nfa_to_dfa_correct1 (x: A) w (X: nfa_to_dfa):
   x \in X -> nfa_accept A x w -> dfa_accept nfa_to_dfa X w.
 Proof. move => H0.
-  (* "->" *)
   elim: w X x H0 => [|a w IHw] X x H0.
     (* [::] *)
     move => /= H1. apply/existsP. exists x.
     by rewrite H0 H1.
   (* a::w *)
-  move/nfa_accept_lpath => [] xs [].
-  (* We destruct xs to eliminate the nil case. *)
-  case: xs => [|y xs] H1 H2.
-    by [].
-  (* move => /andP [] H1 H2 H3. *)
-  apply: (IHw _ y).
-    simpl. rewrite cover_imset.
-    apply/bigcupP. exists x.
-      exact: H0.
-    move: H1 => /andP [] H3 _.
-    rewrite in_set. exact: H3.
-  move: H1 => /andP [] _. move/nfa_lpath_accept => H3.
-  exact: (H3 H2).
+  move => /= /existsP [] y /andP [] H1.
+  apply (IHw).
+  rewrite cover_imset.
+  apply/bigcupP.
+  exists x => //.
+  by rewrite in_set.
 Qed.
 
 (** Next we prove that in any set of states X, for every word w,
@@ -267,13 +259,13 @@ Qed.
 Lemma nfa_to_dfa_correct2 (X: nfa_to_dfa) w:
   dfa_accept nfa_to_dfa X w -> existsb x, (x \in X) && nfa_accept A x w.
 Proof. elim: w X => [|a w IHw] X.
-  by [].
-move/IHw => /existsP [] y /andP [].
-rewrite /dfa_step /nfa_to_dfa /=. rewrite cover_imset.
-move/bigcupP => [] x H0 H1 H2.
-apply/existsP. exists x. rewrite H0 andTb.
-apply/existsP. exists y. move: H1. rewrite in_set => ->.
-exact: H2.
+    by [].
+  move/IHw => /existsP [] y /andP [].
+  rewrite /dfa_step /nfa_to_dfa /=. rewrite cover_imset.
+  move/bigcupP => [] x H0 H1 H2.
+  apply/existsP. exists x. rewrite H0 andTb.
+  apply/existsP. exists y. move: H1. rewrite in_set => ->.
+  exact: H2.
 Qed.
 
 (** Finally, we prove that the language of the powerset
