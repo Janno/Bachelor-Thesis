@@ -1,2 +1,8 @@
 \newcommand{\coq}{\textsc{Coq}}
 \newcommand{\ssreflect}{\textsc{SSReflect}}
+
+\newcommand{\lang}[1]{\mathcal{L}(#1)}
+
+\newcommand{\code}[3]{
+    \lstinputlisting[label=#1,caption=#2,language=coq]{../docs/definitions/#3}
+}

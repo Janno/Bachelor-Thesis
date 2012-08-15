@@ -4,3 +4,57 @@
 \usepackage[hidelinks]{hyperref} 
 
 \usepackage{listings}
+%\usepackage{lstlangcoq}
+
+
+\usepackage{color}
+\usepackage{xcolor}
+
+
+
+%% Coq listings
+\lstset{% general command to set parameter(s)
+    basicstyle=\small\sf, % print whole listing small%
+        keywordstyle=\color{red}\bfseries, % underlined bold black keywords %magenta
+        keywordstyle={[2]\color{green!60!black}\bfseries},
+        identifierstyle=, % nothing happens
+            commentstyle=\color{white}, % white comments
+            stringstyle=\ttfamily, % typewriter type for strings+++
+            showstringspaces=false, % no special string spaces
+            columns=flexible,
+        keepspaces=true,
+        literate=
+            %  {<->}{{\large $\leftrightarrow$}}{3}
+    %  {->}{{\large $\rightarrow$}}{2}
+    {⊨}{{$\models$}}{2}
+    {⊆}{{$\subseteq$}}{2}  
+    {∩}{{$\cap$}}{2}
+    {∪}{{$\cup$}}{2}
+    {∀}{{$\forall$}}{2}
+    {⊳}{{$\rhd$}}{2}
+    {~}{{${\sim}$}}{1}
+    {Δ}{{$\mathrm{\Delta}$}}{1}
+    %  {Box}{{$\Box$}}{1}
+}
+\lstdefinelanguage{coq}
+{
+    morekeywords={
+        Definition,Variable,Record,Structure,Fixpoint,Function,Section,End,Inductive,CoInductive,
+        Module,Axiom,Parameter,Lemma,Theorem,Let,Variables,Hypothesis,Corollary,Notation
+    },
+        otherkeywords={Module Type},
+        morekeywords=[2]{
+            match,with,end,if,then,else,is,as,return,let:,forall,exists,exists2,
+            forallb,existsb,existss,alls},
+        sensitive=true,
+}
+%\lstnewenvironment{coq}[1][]{\lstset{language=coq,#1}}{}
+%\lstMakeShortInline[language=coq]!%
+
+\lstset{language=coq}
+%\usepackage{caption}
+
+%\DeclareCaptionFont{white}{\color{white}}
+%\DeclareCaptionFormat{listing}{\colorbox{gray}{\parbox{\textwidth}{#3}}}
+%\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white}
+
