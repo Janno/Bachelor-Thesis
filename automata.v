@@ -230,7 +230,7 @@ Definition nfa_to_dfa :=
     powerset_state
     powerset_s0 
     [ pred X: powerset_state | existsb x: A, (x \in X) && nfa_fin A x]
-    [fun X a => cover [set finset (nfa_step A x a) | x <- X] ]
+    [ fun X a => \bigcup_(x | x \in X) finset (nfa_step A x a) ]
 .
 
 (** We prove that for every state x, the new automaton
@@ -246,7 +246,6 @@ Proof. move => H0.
   (* a::w *)
   move => /= /existsP [] y /andP [] H1.
   apply (IHw).
-  rewrite cover_imset.
   apply/bigcupP.
   exists x => //.
   by rewrite in_set.
@@ -258,14 +257,13 @@ Qed.
    accepts w. **)
 Lemma nfa_to_dfa_correct2 (X: nfa_to_dfa) w:
   dfa_accept nfa_to_dfa X w -> existsb x, (x \in X) && nfa_accept A x w.
-Proof. elim: w X => [|a w IHw] X.
-    by [].
+Proof. elim: w X => [|a w IHw] X => //.
   move/IHw => /existsP [] y /andP [].
-  rewrite /dfa_step /nfa_to_dfa /=. rewrite cover_imset.
-  move/bigcupP => [] x H0 H1 H2.
-  apply/existsP. exists x. rewrite H0 andTb.
-  apply/existsP. exists y. move: H1. rewrite in_set => ->.
-  exact: H2.
+  rewrite /dfa_step /nfa_to_dfa. 
+  move/bigcupP => [] x H0. rewrite in_set => H1 H2 /=.
+  apply/existsP. exists x. rewrite H0 /=.
+  apply/existsP. exists y. 
+  by rewrite H1 H2.
 Qed.
 
 (** Finally, we prove that the language of the powerset
