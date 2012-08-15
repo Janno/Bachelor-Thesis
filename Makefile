@@ -19,7 +19,7 @@ html_doc_beautiful: html_doc
 	python2.6 docs/beautifier.py docs/html/misc.html > docs/html/misc.html.tmp
 	mv docs/html/misc.html.tmp docs/html/misc.html
 
-definitions: all
+definitions: all docs/extract_definitions.py
 	mkdir -p docs/definitions
 	find -type f -name '*.v' -exec sh -c 'cat "{}" | python docs/extract_definitions.py `basename "{}" .v` docs/definitions' \; 
 
