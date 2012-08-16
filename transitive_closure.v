@@ -580,7 +580,7 @@ Section TransitiveClosure.
       by rewrite H4 H3.
     Qed.
 
-    (* w1 \in R^k i k -> w2 \in R^k.+1 k j -> w1++w2 \in R^k i j *) 
+    (* w1 \in R^k i k -> w2 \in R^k.+1 k j -> w1++w2 \in R^k.+1 i j *) 
     Lemma R_catL k i j w1 w2:
       w1 \in R^k i  (k_ord k) ->
       w2 \in R^k.+1 (k_ord k) j ->
