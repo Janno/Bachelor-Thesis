@@ -30,8 +30,10 @@
 
     \section{Definition}
         \paragraph{}
-        An alphabet $\Sigma$ is finite a set of symbols. A word $w \in \Sigma^*$ is a finite concatenation of symbols from $\Sigma$, where $\,^*$ denotes the Kleene star. We will also consider the concatenation ($L_1 \cdot L_2 := \{w \cdot v\ \vert w \in L_1,  \in L_2\}$), and the boolean operations ($\cup$, $\cap$, $\neg$) on languages.
-        A language $L$ is a set of words formed of symbols from an alphabet. 
+        An alphabet $\Sigma$ is finite a set of symbols. 
+        A word $w \in \Sigma^*$ is a finite concatenation of symbols from $\Sigma$, where $\,^*$ denotes the Kleene star. 
+        A language $L \subseteq \Sigma^*$ is a set of words. 
+        Apart from the Kleene star, we will also consider the concatenation ($L_1 \cdot L_2 := \{w \cdot v\ \vert w \in L_1,  \in L_2\}$), and the boolean operations ($\cup$, $\cap$, $\neg$) on languages.
 
         
         \paragraph{} We restrict all further discussion to decidable languages:
@@ -40,7 +42,7 @@
                 \vert \, \exists f \in \mathcal{R}. \, \forall x \in \Sigma^*. \, f(x) = 1 \Leftrightarrow  x \in L. \}
         \] 
 
-        \paragraph{Observation} The decidable languages are closed under $\cdot, \,^*, \cup, \cap$ and $\neg$. This is easily seen by considering (non-empty) substrings for $\cdot$ and $\,^*$. The boolean operators can be applied directly to the decision functions.
+        \paragraph{Observation} The decidable languages are closed under $\cdot, \,^*, \cup, \cap$ and $\neg$. For $\cdot$ and $\,^*$, this is easily seen by considering non-empty substrings, of which there are finitely many. The boolean operations can be applied directly to the decision functions.
 
         \section{Regular Languages}
         
@@ -57,7 +59,7 @@
                     $\forall L_1, L_2 \in REG. \, L_1^* \in REG, \, L_1 \cup L_2 \in REG, \, L_1 \cdot L_2 \in REG$.
             \end{itemize}
 
-            \paragraph{Observation} $REG$ is also closed under $\neg$ and $\cap$.
+            \paragraph{Observation} $REG$ is closed under $\neg$ and $\cap$.
 
 
         \subsection{Regular Expressions}
