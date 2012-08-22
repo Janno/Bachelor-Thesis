@@ -1,6 +1,7 @@
 Require Import ssreflect ssrbool eqtype fintype choice finfun seq fingraph ssrfun ssrnat finset.
 
 Require Import misc.
+Require Import regexp.
 
 Set Implicit Arguments.
 
@@ -236,7 +237,7 @@ Definition nfa_to_dfa :=
 (** We prove that for every state x, the new automaton
    accepts at least the language of the given automaton
    when starting in a set containing x. **)
-Lemma nfa_to_dfa_correct1 (x: A) w (X: nfa_to_dfa):
+Lemma nfa_to_dfa_complete (x: A) w (X: nfa_to_dfa):
   x \in X -> nfa_accept A x w -> dfa_accept nfa_to_dfa X w.
 Proof. move => H0.
   elim: w X x H0 => [|a w IHw] X x H0.
@@ -255,7 +256,7 @@ Qed.
    if the powerset automaton accepts w in X, there exists one
    representative state of that set in which the given automaton
    accepts w. **)
-Lemma nfa_to_dfa_correct2 (X: nfa_to_dfa) w:
+Lemma nfa_to_dfa_sound (X: nfa_to_dfa) w:
   dfa_accept nfa_to_dfa X w -> existsb x, (x \in X) && nfa_accept A x w.
 Proof. elim: w X => [|a w IHw] X => //.
   move/IHw => /existsP [] y /andP [].
@@ -271,8 +272,8 @@ Qed.
    automaton. **)
 Lemma nfa_to_dfa_correct w : nfa_lang A w = dfa_lang nfa_to_dfa w.
 Proof. apply/idP/idP => /=.
-  apply: nfa_to_dfa_correct1. by apply/set1P.
-by move/nfa_to_dfa_correct2 => /existsP [] x /andP [] /set1P ->.
+  apply: nfa_to_dfa_complete. by apply/set1P.
+by move/nfa_to_dfa_sound => /existsP [] x /andP [] /set1P ->.
 Qed.
   
 
@@ -305,7 +306,7 @@ Qed.
 (** We prove that dfa_to_nfa accepts the same language
    as the given automaton in the starting state, i.e. their
    languages are equal. **)
-Lemma dfa_to_nfa_correct w : dfa_lang A w = nfa_lang dfa_to_nfa w.
+Lemma dfa_to_nfa_correct : dfa_lang A =1 nfa_lang dfa_to_nfa.
   exact: dfa_to_nfa_correct'.
 Qed.
     
@@ -648,26 +649,26 @@ Qed.
    some state x and for every word w2 in the language of A2
    w1 ++ w2 will be accepted by the corresponding state in
    nfa_conc. **)
-Lemma nfa_conc_correct1 x w1 w2:
+Lemma nfa_conc_complete x w1 w2:
   nfa_accept A1 x w1 ->
   nfa_lang A2 w2 ->
   nfa_accept nfa_conc (inl _ x) (w1 ++ w2).
 Proof. elim: w1 w2 x => [|a w1 IHw1] w2 x.
-  move => H0 /nfa_accept_lpath [] xs [] H1 H2.
-  move: (nfa_conc_cont _ _ _ H1) => H3.
-  apply/nfa_accept_cat.
-  exists [::] => /=.
-  apply: nfa_conc_fin1.
-    exact: H0.
-  apply: nfa_lpath_accept.
-    by eassumption.
-  exact: H2.
-move => /existsP [] y /andP [] H1 H2 H3 /=.
-apply/existsP. exists (inl _ y).
-rewrite H1 /=.
-apply: IHw1.
-  exact: H2.
-exact: H3.
+    move => H0 /nfa_accept_lpath [] xs [] H1 H2.
+    move: (nfa_conc_cont _ _ _ H1) => H3.
+    apply/nfa_accept_cat.
+    exists [::] => /=.
+    apply: nfa_conc_fin1.
+      exact: H0.
+    apply: nfa_lpath_accept.
+      by eassumption.
+      exact: H2.
+  move => /existsP [] y /andP [] H1 H2 H3 /=.
+  apply/existsP. exists (inl _ y).
+  rewrite H1 /=.
+  apply: IHw1.
+    exact: H2.
+  exact: H3.
 Qed.
 
 (** We prove that every word accepted by some state X in nfa_conc is
@@ -675,17 +676,17 @@ Qed.
    by A1, A2 (resp.) if X corresponds to one of A1's states
    - OR accepted by A2 in the state corresponding to X if X
    corresponds to one of A2's states. **)
-Lemma nfa_conc_correct2 X w :
+Lemma nfa_conc_sound X w :
   nfa_accept nfa_conc X w ->
   match X with
   | inl x => exists w1, exists w2, (w == w1 ++ w2) && (nfa_accept A1 x w1) && nfa_lang A2 w2
   | inr x => nfa_accept A2 x w
 end.
 Proof.
-elim: w X => [|a w IHw] [x|x] //=.
-    move => /andP [] H0 H1. exists [::]. exists [::].
-    simpl. by rewrite H0 H1.
-  move/existsP => [] [y|y] /andP [] H0 /IHw.
+  elim: w X => [|a w IHw] [x|x] //=.
+      move => /andP [] H0 H1. exists [::]. exists [::].
+      by rewrite /= H0 H1.
+    move/existsP => [] [y|y] /andP [] H0 /IHw.
       (* inl / inl *)
       move => [] w1 [] w2 /andP [] /andP [] /eqP H1 H2 /= H3.
       exists (a::w1). exists w2.
@@ -708,10 +709,22 @@ apply/existsP. exists y.
 by rewrite H0 H1.
 Qed.
 
+Lemma nfa_conc_correct: nfa_lang nfa_conc =1 conc (nfa_lang A1) (nfa_lang A2).
+Proof.
+  move => w.
+  apply/idP/concP.
+    move/nfa_conc_sound.
+    rewrite /nfa_conc /nfa_s0 /s0_conc.
+    move => [] w1 [] w2 /andP [] /andP [] /eqP H0 H1 H2.
+    exists w1 => //.
+    by exists w2.
+  move => [] w1 H0 [] w2 H2 ->.
+  by apply/nfa_conc_complete.
+  Qed.  
 
 (** Plus operator for non-deterministic automata. **)
 
-(** The step relation implements the following rules:
+(** The step relation implements the following rule:
    - every edge to a final state will also be duplicated
    to point to s0.
    **)
@@ -789,7 +802,7 @@ Proof. exact: nfa_plus_correct0'. Qed.
    by a suffix accepted by nfa_plus is again accepted
    by nfa_plus. This is the first part of the proof of
    language correctness for nfa_plus. **)
-Lemma nfa_plus_correct1 w1 w2:
+Lemma nfa_plus_complete w1 w2:
   nfa_lang A1 w1 ->
   nfa_lang nfa_plus w2 ->
   nfa_lang nfa_plus (w1 ++ w2).
@@ -811,7 +824,7 @@ Qed.
 (** We prove that every word accepted by some state x in nfa_plus
    is a concatenation of two words w1, w2 which are accpeted by
    A1 in x and nfa_plus (resp.). **) 
-Lemma nfa_plus_correct2' x w :
+Lemma nfa_plus_sound' x w :
   nfa_accept nfa_plus x w ->
   ((exists w1, exists w2, (w == w1 ++ w2) && (w1 != [::]) && (nfa_accept A1 x w1) && nfa_lang nfa_plus w2
     ) \/ nfa_accept A1 x w ).
@@ -834,7 +847,7 @@ case: (IHw _ H1) => [[w1 [w2 /andP [/andP [/andP [/eqP H2 H9] H3] H4]]]|H2].
 move: H0 => /orP [H5|].
   right => /=. apply/existsP. exists y.
   by rewrite H5 H2.
-move/andP => [/eqP H3 /existsP [z /andP [H4 H5]]].
+  move/andP => [/eqP H3 /existsP [z /andP [H4 H5]]].
 move: H3 H1 H2 => -> H1 H2.
 left. exists [::a]. exists w.
 rewrite eq_refl /=. apply/andP. split.
@@ -844,13 +857,79 @@ Qed.
 
 (** We prove the second part of language correctness
    for nfa_plus. **)
-Lemma nfa_plus_correct2 w:
+Lemma nfa_plus_sound w:
   nfa_lang nfa_plus w ->
   ((exists w1, exists w2, (w == w1 ++ w2) && (w1 != [::]) && (nfa_lang A1 w1) && nfa_lang nfa_plus w2
     ) \/ nfa_lang A1 w ).
-Proof. exact: nfa_plus_correct2'. Qed.
+Proof. exact: nfa_plus_sound'. Qed.
 
 
+(* Star operator *)
+Definition nfa_star :=
+  (dfa_disj
+        (dfa_empty)
+        (nfa_to_dfa
+           (nfa_plus)
+        )
+    ).
+
+Lemma nfa_star_sound w: w \in dfa_lang nfa_star -> w \in star (nfa_lang A1).
+Proof.
+  rewrite in_simpl -dfa_disj_correct.
+    rewrite dfa_empty_correct => /orP [].
+      move => /eqP ->.
+      apply/starP. by exists [::].
+
+    rewrite -nfa_to_dfa_correct.
+    move: w.
+    apply: (size_induction size).
+    move => w IHw.
+    move/nfa_plus_sound' => [].
+      move => [] w1 [] w2 [/andP [/andP [/andP [/eqP H1 H2] H3] H4]].
+      have H5: (size w2 < size w).
+        rewrite H1 size_cat addnC -{1}(addn0 (size w2)).
+        rewrite ltn_add2l.
+        by destruct w1.
+      move: (IHw w2 H5 H4) => /starP [] vv H6 H7.
+      apply/starP. exists (w1::vv).
+          by rewrite /= H6 -topredE /= /eps /= H2 /nfa_lang /= -topredE /= H3.
+        by rewrite H1 H7.
+      rewrite /nfa_lang /=.
+
+      case: w IHw => [|a w] IHw H.
+        apply/starP. by exists [::].
+      apply/starP.
+        exists [::(a::w)] => //=.
+        by rewrite -topredE andbT.
+      by rewrite cats0.
+Qed.  
+      
+Lemma nfa_star_complete w: w \in star (nfa_lang A1) -> w \in dfa_lang nfa_star.
+    rewrite /nfa_star in_simpl -dfa_disj_correct -nfa_to_dfa_correct.
+    move/starP => [] vv. elim: vv w => [|v vv IHvv] w.
+      rewrite /= => _ ->. move: (dfa_empty_correct [::]).
+      by rewrite /dfa_lang /=.
+    rewrite [all _ _]/=.
+    move/andP => [] /andP [] H0 H1 H2 H3.
+    rewrite H3 [flatten _]/=.
+    move/orP: (IHvv (flatten vv) H2 (Logic.eq_refl _)) => [].
+      rewrite dfa_empty_correct => /eqP H4.
+      move: H3. rewrite [flatten _]/= H4 cats0.
+      move => H5. subst. apply/orP. right.
+      rewrite H4 in IHvv.
+      by apply nfa_plus_correct0.
+    move => H4.
+    apply/orP. right.
+    by apply: nfa_plus_complete.
+Qed.
+
+Lemma nfa_star_correct: dfa_lang nfa_star =1 star (nfa_lang A1).
+Proof.
+  move => w.
+  apply/idP/idP.
+    by move/nfa_star_sound.
+  by move/nfa_star_complete.
+Qed.
 
 End NFAOps.
 
