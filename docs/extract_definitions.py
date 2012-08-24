@@ -12,8 +12,6 @@ for (D, T, N) in re.findall('((Definition|Inductive|Record|Fixpoint)\s+([^:\s]+)
     f = file('%s/%s_%s' % (target, module, N), 'w')
     f.write(D)
     f.close()
-    #print N, '(%s)' % T
-    #print D 
 
 for (D, H, T, N, S, E) in re.findall('(((Lemma)\s+(\S+).*?:(.*?)\.)\s+Proof\..*?(Qed|Defined)\.)', text, re.S):
     f = file('%s/%s_%s' % (target, module, N), 'w')
@@ -22,5 +20,8 @@ for (D, H, T, N, S, E) in re.findall('(((Lemma)\s+(\S+).*?:(.*?)\.)\s+Proof\..*?
     f = file('%s/%s_%s_head' % (target, module, N), 'w')
     f.write(H)
     f.close()
-    #print N, '(%s)' % T
-    #print D 
+
+for (D, _, N, T) in re.findall('((Variable)\s+([^:\s]+)\s*?:(.+?)\.)', text, re.S):
+    f = file('%s/%s_%s' % (target, module, N), 'w')
+    f.write(D)
+    f.close()
