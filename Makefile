@@ -21,6 +21,7 @@ html_doc_beautiful: html_doc
 
 definitions: all docs/extract_definitions.py
 	mkdir -p docs/definitions
+	rm docs/definitions/*
 	find -type f -name '*.v' -exec sh -c 'cat "{}" | python docs/extract_definitions.py `basename "{}" .v` docs/definitions' \; 
 
 doc: html_doc_beautiful definitions
