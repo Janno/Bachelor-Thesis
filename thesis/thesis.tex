@@ -293,14 +293,18 @@
             \[ 
                 \lang{A} = \lang{A_1} \ominus \lang{A_2} = \lang{A_1} \cap \neg \lang{A_2} \cup \lang{A_2} \cap \neg \lang{A_1}.
             \]
-            \begin{theorem}
-                $\lang{A_1} = \lang{A_2}$ if and only if $\lang{A}$ is empty. 
+            \begin{theorem} The equivalence of $A_1$ and $A_2$ is decidable. 
+                \todo{Something is missing here}
+                \[
+                    \lang{A_1} = \lang{A_2} \mbox{ if and only if } \lang{A} \mbox{ is empty. }
+                \]
             \end{theorem}
             \begin{proof}
-                The correctness of this procedure follows directly from the properties of the symmetric difference operator, i.e.
+                The correctness of this procedure follows from the properties of the symmetric difference operator, i.e.
                 \[ 
                     \lang{A_1} \ominus \lang{A_2} = \emptyset \Leftrightarrow \lang{A_1} = \lang{A_2}.
                 \]
+                The decidability of this procedure follows directly from theorem \ref{AutomatonEmpty}.
             \end{proof}
 
             \todo{add implementation}
