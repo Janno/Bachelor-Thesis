@@ -53,7 +53,11 @@
             The boolean operations can be applied directly to the decision functions.
 
         \paragraph{} 
-            We formalize decidable languages as functions from $\Sigma^*$ to $\mathbb{B}$.
+            We employ finite types to formlaize alphabets \todo{nonemptiness}. 
+            Words are formalized as sequences over the alphabet.
+            Decidable languages are represented by functions from $word$ to $bool$.
+            \code{language}{}{misc_char}
+            \code{language}{}{misc_word}
             \code{language}{}{misc_language}
 
         \section{Regular Languages}
@@ -94,12 +98,28 @@
 
                 \code{regexp_der}{Derivatives of Regular Expressions}{regexp_der}
 
+                \begin{definition}{}
+                    \label{residual}
+                    The residual of a regular expression w.r.t to a character $a$ is the set of words $w$ s.t. $a \cdot w \in L$.
+                    \code{regexp_resiual}{}{regexp_residual}
+                \end{definition}
+
+                \begin{theorem}
+                    \label{der_correct}
+                    For all $r$ w, we have that $w \in der a r$ if and only if $w \in residual a $
+                \end{theorem}
+
                 \paragraph{} 
                     Given the defining property of derivatives, we can easily see that a generalization of $der$ to words suffices to decide language membership. We only need to check if the derivative w.r.t. to a given word accepts the empty word.
 
                 %\code{regexp_wder}{}{regexp_wder}
                 %\vspace{-0.4cm}
                 \code{regexp_mem_der}{}{regexp_mem_der}
+
+                \begin{theorem}
+                    \label{mem_der_correct} 
+                    
+                \end{theorem}
 
             
 
