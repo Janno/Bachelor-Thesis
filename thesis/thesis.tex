@@ -53,7 +53,7 @@
             The boolean operations can be applied directly to the decision functions.
 
         \paragraph{} 
-            We employ finite types to formlaize alphabets \todo{nonemptiness}. 
+            We employ finite types to formalize alphabets \todo{nonemptiness}. 
             Words are formalized as sequences over the alphabet.
             Decidable languages are represented by functions from $word$ to $bool$.
             \code{language}{}{misc_char}
@@ -81,33 +81,64 @@
         \subsection{Regular Expressions}
 
                 \paragraph{} 
-                Regular expressions mirror the definition of regular languages very closely. We will consider extended regular expressions that include $\neg$, $\cap$ and $.$, which is a single-symbol wildcard. 
+                Regular expressions mirror the definition of regular languages very closely. 
+                We will consider \textbf{extended regular expressions} that include negation ($Not$), intersection ($And$) and $.$ ($Dot$), which is a single-symbol wildcard. 
                 %Regular expressions are finite expressions over an alphabet consisting of atomic expressions or subexpressions combined by operators. Every regular expressions has an associated language, either directly or by some combination of the subexpressions' languages.
                 We take the implementation from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
 
                 \code{regexp}{Regular Expressions}{regexp_regular_expression}
 
-                \subsection{Computing Language Membership}
+                \subsection{Deciding Language Membership}
                     \paragraph{}
-                We make use of \textbf{derivatives of regular expressions} (\cite{DBLP:journals/jacm/Brzozowski64}) to decide if a word $w \in \Sigma^*$ is contained in the language $\lang{r}$ of the regular expression $r$. 
-                Derivatives are themselves regular expressions and are computed in respect to a single input character. The derivative $der \,  a \, r$ of $r$ w.r.t. to $a$ is defined such that 
-                \[
-                    \forall w \in \Sigma^*. \, w \, \in \, \lang{der \, a \, r} \Leftrightarrow a\cdot w \, \in \, \lang{r}.
-                \]
-                A suitable implementation is provided by Coquand and Siles.
+                        We make use of \textbf{derivatives of regular expressions} (\cite{DBLP:journals/jacm/Brzozowski64}) to decide if a word $w \in \Sigma^*$ is contained in the language $\lang{r}$ of the regular expression $r$. 
+                        Derivatives are themselves regular expressions and are computed with respect to a single input character. 
+                        In order to define derivatives, we first define a related concept.
 
-                \code{regexp_der}{Derivatives of Regular Expressions}{regexp_der}
+                    \begin{definition}{}
+                        \label{residual}
+                        The residual of a regular expression w.r.t to a character $a$ is the set of words $w$ s.t. $a \cdot w \in L$.
+                        \code{regexp_resiual}{}{regexp_residual}
+                    \end{definition}
 
-                \begin{definition}{}
-                    \label{residual}
-                    The residual of a regular expression w.r.t to a character $a$ is the set of words $w$ s.t. $a \cdot w \in L$.
-                    \code{regexp_resiual}{}{regexp_residual}
-                \end{definition}
+                    \begin{definition}{}
+                        \label{residual}
+                        The derivative $der \,  a \, r$ of $r$ w.r.t. to $a$ is defined such that 
+                        \[
+                            \forall w \in \Sigma^*. \, w \, \in \, \lang{der \, a \, r} \Leftrightarrow w \, \in \, residual \, a \, \lang{r}.
+                        \]
+                    \end{definition}
 
-                \begin{theorem}
-                    \label{der_correct}
-                    For all $r$ w, we have that $w \in der a r$ if and only if $w \in residual a $
-                \end{theorem}
+                    \paragraph{}
+                        A suitable implementation is provided by Coquand and Siles.
+
+                    \code{regexp_der}{Derivatives of Regular Expressions}{regexp_der}
+
+
+                    \begin{theorem}
+                        \label{der_correct}
+                        For all $r$, $w$ and $a$, we have that $w \in der \, a \, r$ if and only if $w \in residual \, a $.
+                    \end{theorem}
+
+                    \begin{proof}
+                        We prove the claim by induction over $r$. Two cases are non-trivial: 
+                        \begin{enumerate}
+                            \item
+                                $der \, a \, (Conc \, r_1 \, r_2)$: 
+                                We have to check if $r_1$ accepts the empty word. 
+                                If it does not, the derivative is $Conc \, (der \, a \, r_1) \, r_2$.
+                                If it does, we also have to consider the case that the caracter $a$ is a prefix of a word in $\lang{r_2}$.
+                            \item
+                                $Star \, r_1$: 
+                                We have that $w \in \lang{r_1^*}$ if and only if 
+                                \todo{Fix one def. of *}
+                                \[
+                                    \, \exists n. \, \exists v_1 .. v_n. \, w \, = \, v_1 \cdot .. \cdot v_n 
+                                    \wedge \forall i. \, 1 \leq i \leq n 
+                                    \Rightarrow
+                                    \, v_i \in \lang{r_1}.
+                                \]
+                        \end{enumerate}
+                    \end{proof}
 
                 \paragraph{} 
                     Given the defining property of derivatives, we can easily see that a generalization of $der$ to words suffices to decide language membership. We only need to check if the derivative w.r.t. to a given word accepts the empty word.
@@ -567,6 +598,8 @@
     \chapter{Conclusion}
 
     \chapter{References}
+
+    \nocite{*}
 
     \bibliography{bib}{}
     \bibliographystyle{plain}
