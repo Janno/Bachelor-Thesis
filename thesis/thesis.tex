@@ -75,8 +75,6 @@
                     $\forall L_1, L_2 \in REG. \, L_1^* \in REG, \, L_1 \cup L_2 \in REG, \, L_1 \cdot L_2 \in REG$.
             \end{itemize}
 
-            \paragraph{Observation} $REG$ is closed under $\neg$ and $\cap$. \todo{Sketch proof.}
-
 
         \subsection{Regular Expressions}
 
@@ -96,7 +94,7 @@
 
                     \begin{definition}{}
                         \label{residual}
-                        The residual of a regular expression w.r.t to a character $a$ is the set of words $w$ s.t. $a \cdot w \in L$.
+                        The residual of a regular expression w.r.t to a character $a$ is the set of words $w$ such that $a \cdot w \in L$.
                         \code{regexp_resiual}{}{regexp_residual}
                     \end{definition}
 
@@ -272,11 +270,12 @@
                 We also have to construct a new transition function that ensures transitions always end in reachable states.
                 Theorem \ref{ConnectedAutomaton} is trivially solved by induction on word.
 
+                \todo{add implementation}
 
         \section{Emptiness}
             \paragraph{}
                 Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain the connected automaton of $A$ and check if there are any final states left. 
-                \begin{theorem} \todo{Statement}
+                \begin{theorem} We can decide emptiness of $\lang{A}$ by computing the cardinality of $A_c$'s set of final states, i.e.
                     \label{AutomatonEmpty}
                     \[
                         F_c = \emptyset \Longleftrightarrow \lang{A} = \emptyset.
@@ -289,6 +288,23 @@
 
                 \todo{add implementation}
 
+        \section{Deciding Equivalence of Finite Automata}
+            Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the language of $A$ is the symmetric difference of the languages of $A_1$ and $A_2$, i.e.,
+            \[ 
+                \lang{A} = \lang{A_1} \ominus \lang{A_2} = \lang{A_1} \cap \neg \lang{A_2} \cup \lang{A_2} \cap \neg \lang{A_1}.
+            \]
+            \begin{theorem}
+                $\lang{A_1} = \lang{A_2}$ if and only if $\lang{A}$ is empty. 
+            \end{theorem}
+            \begin{proof}
+                The correctness of this procedure follows directly from the properties of the symmetric difference operator, i.e.
+                \[ 
+                    \lang{A_1} \ominus \lang{A_2} = \emptyset \Leftrightarrow \lang{A_1} = \lang{A_2}.
+                \]
+            \end{proof}
+
+            \todo{add implementation}
+            
         \section{Regular Expressions and Finite Automata}
 
             \paragraph{} 
@@ -305,18 +321,6 @@
 
                 \paragraph{} 
                     Based on our procedure to construct an equivalent automaton from a regular expression, we can decide equivalence of regular expressions. Given $r_1$ and $r_2$, we construct equivalent DFA $A_1$ and $A_2$ as above.
-                    Next, we construct DFA $A$ such that the language of $A$ is the symmetric difference of the languages of $A_1$ and $A_2$, i.e.,
-                    \[ \lang{A} = \lang{A_1} \ominus \lang{A_2} = \lang{A_1} \cap \neg \lang{A_2} \cup \lang{A_2} \cap \neg \lang{A_1}.
-                    \]
-                    \begin{theorem}
-                        $\lang{A_1} = \lang{A_2}$ if and only if $\lang{A}$ is empty. 
-                    \end{theorem}
-                    \begin{proof}
-                        The correctness of this procedure follows directly from 
-                        \[ 
-                            \lang{A_1} \ominus \lang{A_2} = \emptyset \Leftrightarrow \lang{A_1} = \lang{A_2}.
-                        \]
-                    \end{proof}
                     
 
             \subsection{Finite Automata to Regular Expressions}
@@ -345,7 +349,7 @@
                         We only rely on ordinals for comparison to $k$.
                         \todo{add implementation of $R$}
                     \paragraph{}
-                        We also define $L^k_{i,j} \subseteq \lang{A}$ in terms of runs on the automaton. 
+                        Furthermore, we define $L^k_{i,j} \subseteq \lang{A}$ in terms of runs on the automaton. 
                         The relation of $L^k_{i,j}$ to $\lang{A}$ can be proven very easily.
                         We will also prove it equivalent to $R^k_{i,j}$.
                         This allows us to connect $R^k_{i,j}$ to $\lang{A}$.
