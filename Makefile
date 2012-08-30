@@ -24,6 +24,9 @@ definitions: all docs/extract_definitions.py
 	rm -f docs/definitions/*
 	find -type f -name '*.v' -exec sh -c 'cat "{}" | python docs/extract_definitions.py `basename "{}" .v` docs/definitions' \; 
 
+thesis: definitions
+	cd thesis; latexmk -pdf thesis
+
 doc: html_doc_beautiful definitions
 
 clean:
