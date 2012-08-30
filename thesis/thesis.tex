@@ -37,20 +37,12 @@
         We use $|w|$ to denote the \textbf{length} of a word $w$. 
         We define $\Sigma^k$ to be the \textbf{set of words of length k}.
         The \textbf{set of all words} over an alphabet $\Sigma$ is denoted $\Sigma^*$, i.e.,$\Sigma^* = \bigcup_{k \in \mathbb{N}} \Sigma^k$.
-        \todo{Define Kleene star}%
-        The following operations will be used on languages: Kleene star, concatenation ($L_1 \cdot L_2 := \{w \cdot v\ \vert w \in L_1,  \in L_2\}$), and the boolean operations ($\cup$, $\cap$, $\neg$) on languages.
-
         
         \paragraph{} We restrict all further discussion to \textbf{decidable languages}:
         \[
             \mathcal{L}_{dec} := \{ \, L \, \subseteq \, \Sigma^* \, 
                 \vert \, \exists f. \, \forall x \in \Sigma^*. \, f(x) = 1 \Leftrightarrow  x \in L. \}
         \] 
-
-        \paragraph{Observation} 
-            The decidable languages are closed under $\cdot, \,^*, \cup, \cap$ and $\neg$. 
-            For $\cdot$ and $\,^*$, this is easily seen by considering nonempty substrings, of which there are finitely many. 
-            The boolean operations can be applied directly to the decision functions.
 
         \paragraph{} 
             We employ finite types to formalize alphabets \todo{nonemptiness}. 
@@ -59,6 +51,47 @@
             \code{language}{}{misc_char}
             \code{language}{}{misc_word}
             \code{language}{}{misc_language}
+
+        \subsection{Operators}
+            \todo{Define Kleene star}%
+            The following operations will be used on languages: Kleene star, concatenation ($L_1 \cdot L_2 := \{w \cdot v\ \vert w \in L_1,  \in L_2\}$), and the boolean operations ($\cup$, $\cap$, $\neg$) on languages.
+
+            \paragraph{}
+                We take Coquand and Siles' implementation of the operators.
+
+                \code{lang_conc}{}{regexp_conc}
+                %\vspace{-0.4cm}
+
+                \todo{move def. of residual up from 3.2.2}
+                \code{lang_star}{}{regexp_star}
+                \vspace{-0.4cm}
+                \code{lang_plus}{}{regexp_plus}
+                \vspace{-0.4cm}
+                \code{lang_prod}{}{regexp_prod}
+                \vspace{-0.4cm}
+                \code{lang_compl}{}{regexp_compl}
+                \todo{explain names}
+                \todo{find a consistent ordering}
+
+            \begin{theorem}{}
+                \label{DecLangClosed}
+                The decidable languages are closed under concatenation, Kleene star, union, intersection and negation. 
+            \end{theorem}
+            \begin{proof}
+                For concatenation and the Kleene star, the validity of this claim is easily seen by considering nonempty substrings, of which there are finitely many. 
+                The boolean operations can be applied directly to the decision functions.
+            \end{proof}
+
+            \paragraph{}
+                We have already given decision algorithms for every operator. 
+                It remains to show that they are correct.
+                 
+
+
+
+                
+
+
 
         \section{Regular Languages}
         
@@ -83,6 +116,8 @@
                 We take the implementation from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
 
                 \code{regexp}{Regular Expressions}{regexp_regular_expression}
+
+                \todo{standard regular expressions, boolean predicate}
 
                 \subsection{Deciding Language Membership}
                     \paragraph{}
@@ -143,8 +178,14 @@
 
                 \begin{theorem}
                     \label{mem_der_correct} 
-                    
+                    The language of a regular expression $r$ is decidable, i.e.
+                    \[
+                        w \in \lang{r} \Leftrightarrow \varepsilon \in \lang{mem\_der \, r \, w}.
+                    \]
                 \end{theorem}
+                \begin{proof}
+                    \todo{Proof}.
+                \end{proof}
 
             
 
@@ -381,7 +422,7 @@
                         \]
                     \paragraph{}
                         The induction hypothesis is applied to $w_1$ and $w_3$ to get $w_1 \in L^k_{i,k}$ and $w_3 \in L^k_{k,j}$.
-                        We use a lemma by Coquand and Sile that splits $w_2$ into a sequence of words from $\lang{R^k_{k,k}}$ to which we can apply the induction hypothesis. 
+                        We use a lemma by Coquand and Siles that splits $w_2$ into a sequence of words from $\lang{R^k_{k,k}}$ to which we can apply the induction hypothesis. 
                         Two concatenation lemmas for $L$ are used to merge the sequence of words proven to be in $L^k_{k,k}$,
                         $w_1$ and $w_3$. This shows $\lang{R^k_{i,j}} \subseteq L^k_{i,j}$.
 
