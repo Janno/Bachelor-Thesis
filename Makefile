@@ -1,6 +1,8 @@
 
 all: tactics.vo base.vo misc.vo glue.vo regexp.vo automata.vo transitive_closure.vo myhill_nerode.vo
 
+CHPTS = $(shell ls thesis/chpt_*.tex)
+
 %.vo: %.v
 	coqc $(subst .vo,.v,$@)
 
@@ -24,8 +26,11 @@ definitions: all docs/extract_definitions.py
 	rm -f docs/definitions/*
 	find -type f -name '*.v' -exec sh -c 'cat "{}" | python docs/extract_definitions.py `basename "{}" .v` docs/definitions' \; 
 
-thesis: definitions
+thesis: definitions ${CHPTS}
 	cd thesis; latexmk -pdf thesis
+
+chapters: thesis
+	cd thesis; bash -c 'for i in chpt_*.tex; do j=$${i%.tex}; pdflatex -jobname=job_$$j "\includeonly{$$j,includes.tex}\input{thesis}"; done'
 
 doc: html_doc_beautiful definitions
 

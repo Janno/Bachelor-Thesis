@@ -53,216 +53,216 @@ The new set of states is the powerset of the given NFA's set of states.
 The new starting state is the singleton set containing the original starting state. 
 A state is final if and only if it contains an original final state. 
 The transition function on powerset states is defined as follows:
-\[    (P, a, Q) \in \delta_{det} \Longleftrightarrow Q = \bigcup \limits _{p \in P} \{ q | (p,a,q) \in \delta \}.    \]
+\begin{equation*}    (P, a, Q) \in \delta_{det} \Longleftrightarrow Q = \bigcup \limits _{p \in P} \{ q | (p,a,q) \in \delta \}.    \end{equation*}
 
 
-\code{powerset_state}{Powerset Construction}{automata_powerset_state}
-\vspace{-0.4cm}
-\code{}{}{automata_powerset_s0}
-\vspace{-0.4cm}
-\code{}{}{automata_nfa_to_dfa}
+    \code{powerset_state}{Powerset Construction}{automata_powerset_state}
+    \vspace{-0.4cm}
+    \code{}{}{automata_powerset_s0}
+    \vspace{-0.4cm}
+    \code{}{}{automata_nfa_to_dfa}
 
-\begin{theorem}
-    The powerset automaton $A_{det}$ accepts the same language as $A$, i.e.
-    \[        \lang{A} = \lang{A_{det}}.        \]
-\end{theorem}
+    \begin{theorem}
+        The powerset automaton $A_{det}$ accepts the same language as $A$, i.e.
+        \begin{equation*}        \lang{A} = \lang{A_{det}}.        \end{equation*}
+        \end{theorem}
 
-\begin{proof}
-    We first prove that for every powerset state $X$ and every state $x \in X$ we have that $\acc{x}{A} \subseteq \acc{X}{A_{det}}$. 
-    Applying this to $X=\{s_0\}$ yields $\lang{A} \subseteq \lang{A_{det}}$.
-    We then show that for every powerset state $X$ and word $w$ with $w \in \acc{X}{A_{det}}$ there exists a state $x$ such that $x \in X$ and $w \in \acc{x}{A}$. 
-    For $X = \{s_0\}$, this shows $\lang{A_{det}} \subseteq \lang{A}$.
-    Both proofs are done by induction on word.
-\end{proof}
+        \begin{proof}
+            We first prove that for every powerset state $X$ and every state $x \in X$ we have that $\acc{x}{A} \subseteq \acc{X}{A_{det}}$. 
+            Applying this to $X=\{s_0\}$ yields $\lang{A} \subseteq \lang{A_{det}}$.
+            We then show that for every powerset state $X$ and word $w$ with $w \in \acc{X}{A_{det}}$ there exists a state $x$ such that $x \in X$ and $w \in \acc{x}{A}$. 
+            For $X = \{s_0\}$, this shows $\lang{A_{det}} \subseteq \lang{A}$.
+            Both proofs are done by induction on word.
+        \end{proof}
 
-\paragraph{}
-The formalization of this proof is straight-forward and follows exactly the plan laid out above. 
-The corresponding Lemmas are:
-\code{powerset_complete}{}{automata_nfa_to_dfa_complete_head}
-\vspace{-0.4cm}
-\code{powerset_sound}{}{automata_nfa_to_dfa_sound_head}
-\vspace{-0.4cm}
-\code{powerset_correct}{}{automata_nfa_to_dfa_correct_head}
-
-
-\section{Connected Components}
-\paragraph{} 
-Finite automaton can have isolated subsets of states that are not reachable from the starting state. 
-These states can not contribute to the language of the automaton. 
-It will later be useful to have automata that only contain reachable states. 
-We define a procedure to extract the connected component from a given automaton.
-
-\begin{theorem}
-    \label{ConnectedAutomaton}
-    The language of the connected automaton $A_c$ is identical to that of the original automaton $A$, i.e.
-    \[       \lang{A} = \lang{A_c}.        \]
-\end{theorem}
-
-\begin{proof}
-    By definition, unreachable states have no influence on the language of an automaton because there is no run from the starting state that contains such a state.
-\end{proof}
-
-\paragraph{}
-We make use of \ssreflect's $connect$ predicate to extract a sequence of all states reachable from $s_0$. 
-From this, we construct a finite type and use that as the new set of states. 
-These new states carry a proof of reachability.
-We also have to construct a new transition function that ensures transitions always end in reachable states.
-Theorem \ref{ConnectedAutomaton} is trivially solved by induction on word.
-
-\todo{Add implementation}
-
-\section{Emptiness}
-\paragraph{}
-Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain the connected automaton of $A$ and check if there are any final states left. 
-\begin{theorem} We can decide emptiness of $\lang{A}$ by computing the cardinality of $A_c$'s set of final states, i.e.
-    \label{AutomatonEmpty}
-    \[        F_c = \emptyset \Longleftrightarrow \lang{A} = \emptyset.       \]
-\end{theorem}
-
-\begin{proof}
-    This is correct since $F_c = \emptyset \Leftrightarrow \lang{A_c} = \emptyset$ and $\lang{A_c} = \lang{A}$ by theorem \ref{ConnectedAutomaton}.
-\end{proof}
-
-\todo{Add implementation}
-
-\section{Deciding Equivalence of Finite Automata}
-Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the language of $A$ is the symmetric difference of the languages of $A_1$ and $A_2$, i.e.,
-\[          \lang{A} = \lang{A_1} \ominus \lang{A_2} = \lang{A_1} \cap \neg \lang{A_2} \cup \lang{A_2} \cap \neg \lang{A_1}.      \]
-\begin{theorem} The equivalence of $A_1$ and $A_2$ is decidable, i.e.
-    \[                \lang{A_1} = \lang{A_2} \mbox{ if and only if } \lang{A} \mbox{ is empty. }                \]
-\end{theorem}
-\begin{proof}
-    The correctness of this procedure follows from the properties of the symmetric difference operator, i.e.
-    \[                  \lang{A_1} \ominus \lang{A_2} = \emptyset \Leftrightarrow \lang{A_1} = \lang{A_2}.                  \]
-    The decidability of this procedure follows directly from theorem \ref{AutomatonEmpty}.
-\end{proof}
-
-\todo{Add implementation}
-
-\section{Regular Expressions and Finite Automata}
-
-\paragraph{} 
-We prove that there is a finite automaton for every extended regular expression and vice versa. 
-In fact, we can give a standard regular expression for every finite automaton.
-With this, we will prove that extended regular expressions are equivalent to standard regular expressions, 
-thereby proving closure under intersection and negation.
+        \paragraph{}
+        The formalization of this proof is straight-forward and follows exactly the plan laid out above. 
+        The corresponding Lemmas are:
+        \code{powerset_complete}{}{automata_nfa_to_dfa_complete_head}
+        \vspace{-0.4cm}
+        \code{powerset_sound}{}{automata_nfa_to_dfa_sound_head}
+        \vspace{-0.4cm}
+        \code{powerset_correct}{}{automata_nfa_to_dfa_correct_head}
 
 
-\subsection{Regular Expressions to Finite Automata}
+        \section{Connected Components}
+        \paragraph{} 
+        Finite automaton can have isolated subsets of states that are not reachable from the starting state. 
+        These states can not contribute to the language of the automaton. 
+        It will later be useful to have automata that only contain reachable states. 
+        We define a procedure to extract the connected component from a given automaton.
 
-\paragraph{} 
-We prove that there exists an equivalent automaton for every extended regular expressions.
-The structure of this proof is given by the inductive nature of regular expressions.
-For every constructor, we provide an equivalent automaton.
+        \begin{theorem}
+            \label{ConnectedAutomaton}
+            The language of the connected automaton $A_c$ is identical to that of the original automaton $A$, i.e.
+            \begin{equation*}       \lang{A} = \lang{A_c}.        \end{equation*}
+            \end{theorem}
 
-\todo{Include all proofs?}
+            \begin{proof}
+                By definition, unreachable states have no influence on the language of an automaton because there is no run from the starting state that contains such a state.
+            \end{proof}
 
-\subsection{Deciding Equivalence of Regular Expressions}
+            \paragraph{}
+            We make use of \ssreflect's $connect$ predicate to extract a sequence of all states reachable from $s_0$. 
+            From this, we construct a finite type and use that as the new set of states. 
+            These new states carry a proof of reachability.
+            We also have to construct a new transition function that ensures transitions always end in reachable states.
+            Theorem \ref{ConnectedAutomaton} is trivially solved by induction on word.
 
-\paragraph{} 
-Based on our procedure to construct an equivalent automaton from a regular expression, we can decide equivalence of regular expressions. Given $r_1$ and $r_2$, we construct equivalent DFA $A_1$ and $A_2$ as above.
+            \todo{Add implementation}
 
+            \section{Emptiness}
+            \paragraph{}
+            Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain the connected automaton of $A$ and check if there are any final states left. 
+            \begin{theorem} We can decide emptiness of $\lang{A}$ by computing the cardinality of $A_c$'s set of final states, i.e.
+                \label{AutomatonEmpty}
+                \begin{equation*}        F_c = \emptyset \Longleftrightarrow \lang{A} = \emptyset.       \end{equation*}
+                \end{theorem}
 
-\subsection{Finite Automata to Regular Expressions}
-\paragraph{}
-We prove that there is an equivalent standard regular expression for every finite automaton.
+                \begin{proof}
+                    This is correct since $F_c = \emptyset \Leftrightarrow \lang{A_c} = \emptyset$ and $\lang{A_c} = \lang{A}$ by theorem \ref{ConnectedAutomaton}.
+                \end{proof}
 
+                \todo{Add implementation}
 
-\paragraph{}
-Since we are given an automaton it is not obvious how to partition our proof obligations into smaller parts.
-We use Kleene's original proof, the transitive closure method. 
-This method recursively constructs a regular expression that is equivalent to the given automaton.
-Given a DFA $A$, we first assign some ordering to its states. We then define $R^k_{i,j}$ such that 
-$\lang{R^k_{i,j}}$ is the set of all words that have a run on $A$ starting in state $i$ that ends in state $j$ without ever leaving a state smaller than $k$. 
-The base case $R^{0}_{i,j}$ is the set of all singleton words that are edges between state $i$ and $j$, and $\varepsilon$ if $i=j$. 
-Given $R^k_{i,j}$ we can easily define $R^{k+1}_{i,j}$ based on the observation that only one new state has to be considered:
-\todo{Insert complete formal definition}
-\[                    R^{k+1}_{i,j} = R^{k}_{i,k} \cdot (R^{k}_{k,k})^* \cdot R^{k}_{k,j} + R^{k}_{i,j}.                    \]
-\paragraph{}
-We make use of \ssreflect's ordinals to get an ordering on states. 
-We chose to employ ordinals for $i$ and $j$, but not for $k$. 
-This simplifies the inductive definitions on $k$. 
-It does, however, lead to explicit conversions when $k$ is used in place of $i$ or $j$.
-In fact, $i$ and $j$ are states in our \coq\ implementation. 
-We only rely on ordinals for comparison to $k$.
-\todo{Add implementation of $R$}
-\paragraph{}
-Furthermore, we define $L^k_{i,j} \subseteq \lang{A}$ in terms of runs on the automaton. 
-The relation of $L^k_{i,j}$ to $\lang{A}$ can be proven very easily.
-We will also prove it equivalent to $R^k_{i,j}$.
-This allows us to connect $R^k_{i,j}$ to $\lang{A}$.
-\code{tc_allbutlast}{}{transitive_closure_allbutlast}
-\vspace{-0.3cm} 
-\code{tc_L}{}{transitive_closure_L}
+                \section{Deciding Equivalence of Finite Automata}
+                Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the language of $A$ is the symmetric difference of the languages of $A_1$ and $A_2$, i.e.,
+                \begin{equation*}          \lang{A} = \lang{A_1} \ominus \lang{A_2} = \lang{A_1} \cap \neg \lang{A_2} \cup \lang{A_2} \cap \neg \lang{A_1}.      \end{equation*}
+                    \begin{theorem} The equivalence of $A_1$ and $A_2$ is decidable, i.e.
+                        \begin{equation*}                \lang{A_1} = \lang{A_2} \mbox{ if and only if } \lang{A} \mbox{ is empty. }                \end{equation*}
+                        \end{theorem}
+                        \begin{proof}
+                            The correctness of this procedure follows from the properties of the symmetric difference operator, i.e.
+                            \begin{equation*}                  \lang{A_1} \ominus \lang{A_2} = \emptyset \Leftrightarrow \lang{A_1} = \lang{A_2}.                  \end{equation*}
+                                The decidability of this procedure follows directly from theorem \ref{AutomatonEmpty}.
+                            \end{proof}
 
-\begin{theorem} We can express $\lang{A}$ in terms of $L$. $L$ is equivalent to $R$.
-    \label{LR}
-    \[                          \lang{A} = \bigcup\limits_{f \in F} L^{|Q|}_{s_0, f} = \lang{\sum\limits_{f \in F} R^{|Q|}_{s_0, f}}.                            \]
-\end{theorem}
+                            \todo{Add implementation}
 
-\begin{proof}
-    By definition, every $w \in \lang{A}$ has a run that ends in some $f \in F$. 
-    Then, by definition, $w \in  L^{|Q|}_{s_0, f}$. 
+                            \section{Regular Expressions and Finite Automata}
 
-    \paragraph{}
-    It remains to show that $\lang{R^k_{i,j}} = L^k_{i.j}$. 
-    This claim can be proven by induction over $k$. 
-    We begin with the inclusion of $\lang{R^k_{i,j}}$ in $L^k_{i,j}$. 
-    For $k=0$, we do a case distinction on $i==j$ and unfold $R$. 
-    The resulting three cases ($i==j \wedge w=\varepsilon$, $i==j \wedge |w|=1$, $i<>j \wedge |w|=1$) are easily closed. 
-
-    The inductive step has two cases: A triple concatenation and a simple recursion. 
-    The second case is solved by the inductive hypothesis.
-    In the firs case, we split up the concatenation such that
-    \begin{equation*}
-        w = w_1 \cdot w_2 \cdot w_3 
-        \wedge w_1 \in \lang{R^k_{i,k}} 
-        \wedge w_2 \in \lang{(R^k_{k,k})^*} 
-        \wedge w_3 \in \lang{R^k_{k,j}}.                               
-    \end{equation*}
-    \paragraph{}
-    The induction hypothesis is applied to $w_1$ and $w_3$ to get $w_1 \in L^k_{i,k}$ and $w_3 \in L^k_{k,j}$.
-    We use a lemma by Coquand and Siles that splits $w_2$ into a sequence of words from $\lang{R^k_{k,k}}$ to which we can apply the induction hypothesis. 
-    Two concatenation lemmas for $L$ are used to merge the sequence of words proven to be in $L^k_{k,k}$,
-    $w_1$ and $w_3$. This shows $\lang{R^k_{i,j}} \subseteq L^k_{i,j}$.
-
-    \paragraph{}
-    Next, we show the inclusion of $L^k_{i,j}$ in $\lang{R^k_{i,j}}$, again by induction over k. 
-    The base case is solved by case distinction on $i==j$. 
-    The inductive step requires a \textbf{splitting lemma} for $L$ which shows that every non-empty word in $L^{k+1}_{i,j}$ is either in $L^k_{i,j}$ or has a non-empty prefix in $L^k_{i,k}$ and a corresponding suffix in $L^{k+1}_{k,j}$.
-    The 
-    In the first case, we can apply the induction hypothesis. 
-    In the second case, we use size induction on the word, apply the original induction hypothesis to the prefix and the size induction hypothesis to the suffix. 
-    We use two concatenation lemmas for $R$ to merge the sub-expression. 
-    This finishes the proof.
-\end{proof}
-
-\paragraph{}
-Formalizing theorem \ref{LR} requires infrastructure to deal with $allbutlast$. 
-Once this is in place, we can formalize the concatenation lemmas for $R$ and $L$.
-These are required later to connect sub-results. 
-
-\code{tc_RcatL}{}{transitive_closure_R_catL_head}
-\code{tc_LcatL}{}{transitive_closure_L_catL_head}
-\code{tc_LcatR}{}{transitive_closure_L_catL_head}
-
-\paragraph{}
-We also need the splitting lemma mentioned earlier.
-This is quite intricate. We could split right after the first character and thereby simplify the lemma. 
-However, the current form has the advantage of requiring simple concatenation lemmas.
-
-\code{tc_split}{}{transitive_closure_L_split_head}
-
-\paragraph{}
-These lemmas suffice to show the claim of theorem \ref{LR}.
-\code{tc_RL*}{}{transitive_closure_R_L_star_head}
-\code{tc_RL}{}{transitive_closure_R_L_head}
-\code{tc_LR1}{}{transitive_closure_L_R_1_head}
-\code{tc_LR}{}{transitive_closure_L_R_head}
-\todo{Fix this mess}
+                            \paragraph{} 
+                            We prove that there is a finite automaton for every extended regular expression and vice versa. 
+                            In fact, we can give a standard regular expression for every finite automaton.
+                            With this, we will prove that extended regular expressions are equivalent to standard regular expressions, 
+                            thereby proving closure under intersection and negation.
 
 
-\paragraph{} 
+                            \subsection{Regular Expressions to Finite Automata}
+
+                            \paragraph{} 
+                            We prove that there exists an equivalent automaton for every extended regular expressions.
+                            The structure of this proof is given by the inductive nature of regular expressions.
+                            For every constructor, we provide an equivalent automaton.
+
+                            \todo{Include all proofs?}
+
+                            \subsection{Deciding Equivalence of Regular Expressions}
+
+                            \paragraph{} 
+                            Based on our procedure to construct an equivalent automaton from a regular expression, we can decide equivalence of regular expressions. Given $r_1$ and $r_2$, we construct equivalent DFA $A_1$ and $A_2$ as above.
+
+
+                            \subsection{Finite Automata to Regular Expressions}
+                            \paragraph{}
+                            We prove that there is an equivalent standard regular expression for every finite automaton.
+
+
+                            \paragraph{}
+                            Since we are given an automaton it is not obvious how to partition our proof obligations into smaller parts.
+                            We use Kleene's original proof, the transitive closure method. 
+                            This method recursively constructs a regular expression that is equivalent to the given automaton.
+                            Given a DFA $A$, we first assign some ordering to its states. We then define $R^k_{i,j}$ such that 
+                            $\lang{R^k_{i,j}}$ is the set of all words that have a run on $A$ starting in state $i$ that ends in state $j$ without ever leaving a state smaller than $k$. 
+                            The base case $R^{0}_{i,j}$ is the set of all singleton words that are edges between state $i$ and $j$, and $\varepsilon$ if $i=j$. 
+                            Given $R^k_{i,j}$ we can easily define $R^{k+1}_{i,j}$ based on the observation that only one new state has to be considered:
+                            \todo{Insert complete formal definition}
+                            \begin{equation*}                    R^{k+1}_{i,j} = R^{k}_{i,k} \cdot (R^{k}_{k,k})^* \cdot R^{k}_{k,j} + R^{k}_{i,j}.                    \end{equation*}
+                                \paragraph{}
+                                We make use of \ssreflect's ordinals to get an ordering on states. 
+                                We chose to employ ordinals for $i$ and $j$, but not for $k$. 
+                                This simplifies the inductive definitions on $k$. 
+                                It does, however, lead to explicit conversions when $k$ is used in place of $i$ or $j$.
+                                In fact, $i$ and $j$ are states in our \coq\ implementation. 
+                                We only rely on ordinals for comparison to $k$.
+                                \todo{Add implementation of $R$}
+                                \paragraph{}
+                                Furthermore, we define $L^k_{i,j} \subseteq \lang{A}$ in terms of runs on the automaton. 
+                                The relation of $L^k_{i,j}$ to $\lang{A}$ can be proven very easily.
+                                We will also prove it equivalent to $R^k_{i,j}$.
+                                This allows us to connect $R^k_{i,j}$ to $\lang{A}$.
+                                \code{tc_allbutlast}{}{transitive_closure_allbutlast}
+                                \vspace{-0.3cm} 
+                                \code{tc_L}{}{transitive_closure_L}
+
+                                \begin{theorem} We can express $\lang{A}$ in terms of $L$. $L$ is equivalent to $R$.
+                                    \label{LR}
+                                    \begin{equation*}                          \lang{A} = \bigcup\limits_{f \in F} L^{|Q|}_{s_0, f} = \lang{\sum\limits_{f \in F} R^{|Q|}_{s_0, f}}.                            \end{equation*}
+                                    \end{theorem}
+
+                                    \begin{proof}
+                                        By definition, every $w \in \lang{A}$ has a run that ends in some $f \in F$. 
+                                        Then, by definition, $w \in  L^{|Q|}_{s_0, f}$. 
+
+                                        \paragraph{}
+                                        It remains to show that $\lang{R^k_{i,j}} = L^k_{i.j}$. 
+                                        This claim can be proven by induction over $k$. 
+                                        We begin with the inclusion of $\lang{R^k_{i,j}}$ in $L^k_{i,j}$. 
+                                        For $k=0$, we do a case distinction on $i==j$ and unfold $R$. 
+                                        The resulting three cases ($i==j \wedge w=\varepsilon$, $i==j \wedge |w|=1$, $i<>j \wedge |w|=1$) are easily closed. 
+
+                                        The inductive step has two cases: A triple concatenation and a simple recursion. 
+                                        The second case is solved by the inductive hypothesis.
+                                        In the firs case, we split up the concatenation such that
+                                        \begin{equation*}
+                                            w = w_1 \cdot w_2 \cdot w_3 
+                                            \wedge w_1 \in \lang{R^k_{i,k}} 
+                                            \wedge w_2 \in \lang{(R^k_{k,k})^*} 
+                                            \wedge w_3 \in \lang{R^k_{k,j}}.                               
+                                        \end{equation*}
+                                        \paragraph{}
+                                        The induction hypothesis is applied to $w_1$ and $w_3$ to get $w_1 \in L^k_{i,k}$ and $w_3 \in L^k_{k,j}$.
+                                        We use a lemma by Coquand and Siles that splits $w_2$ into a sequence of words from $\lang{R^k_{k,k}}$ to which we can apply the induction hypothesis. 
+                                        Two concatenation lemmas for $L$ are used to merge the sequence of words proven to be in $L^k_{k,k}$,
+                                        $w_1$ and $w_3$. This shows $\lang{R^k_{i,j}} \subseteq L^k_{i,j}$.
+
+                                        \paragraph{}
+                                        Next, we show the inclusion of $L^k_{i,j}$ in $\lang{R^k_{i,j}}$, again by induction over k. 
+                                        The base case is solved by case distinction on $i==j$. 
+                                        The inductive step requires a \textbf{splitting lemma} for $L$ which shows that every non-empty word in $L^{k+1}_{i,j}$ is either in $L^k_{i,j}$ or has a non-empty prefix in $L^k_{i,k}$ and a corresponding suffix in $L^{k+1}_{k,j}$.
+                                        The 
+                                        In the first case, we can apply the induction hypothesis. 
+                                        In the second case, we use size induction on the word, apply the original induction hypothesis to the prefix and the size induction hypothesis to the suffix. 
+                                        We use two concatenation lemmas for $R$ to merge the sub-expression. 
+                                        This finishes the proof.
+                                    \end{proof}
+
+                                    \paragraph{}
+                                    Formalizing theorem \ref{LR} requires infrastructure to deal with $allbutlast$. 
+                                    Once this is in place, we can formalize the concatenation lemmas for $R$ and $L$.
+                                    These are required later to connect sub-results. 
+
+                                    \code{tc_RcatL}{}{transitive_closure_R_catL_head}
+                                    \code{tc_LcatL}{}{transitive_closure_L_catL_head}
+                                    \code{tc_LcatR}{}{transitive_closure_L_catL_head}
+
+                                    \paragraph{}
+                                    We also need the splitting lemma mentioned earlier.
+                                    This is quite intricate. We could split right after the first character and thereby simplify the lemma. 
+                                    However, the current form has the advantage of requiring simple concatenation lemmas.
+
+                                    \code{tc_split}{}{transitive_closure_L_split_head}
+
+                                    \paragraph{}
+                                    These lemmas suffice to show the claim of theorem \ref{LR}.
+                                    \code{tc_RL*}{}{transitive_closure_R_L_star_head}
+                                    \code{tc_RL}{}{transitive_closure_R_L_head}
+                                    \code{tc_LR1}{}{transitive_closure_L_R_1_head}
+                                    \code{tc_LR}{}{transitive_closure_L_R_head}
+                                    \todo{Fix this mess}
+
+
+                                    \paragraph{} 
 
 
 

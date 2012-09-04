@@ -3,57 +3,57 @@
 \section{Definition}
 \paragraph{}
 We closely follow the definitions from \cite{DBLP:books/daglib/0011126}.
-An \textbf{alphabet} $\Sigma$ is a finite, nonempty set of symbols. 
+An \textbf{alphabet} $\Sigma$ is a finite set of symbols. Throughout this document, we will assume a fixed alphabet.
 A \textbf{word} $w$ is a finite sequence of symbols chosen from some alphabet. 
 We use $|w|$ to denote the \textbf{length} of a word $w$. 
+Given two words $w_1 = a_1 a_2 \cdots a_n$ and $w_2 = b_1 b_2 \cdots b_m$, the \textbf{concatenation} of $w_1$ and $w_2$ is defined as $a_1 a_2 \cdots a_n b_1 b_2 \cdots b_m$ and denoted $w_1 \cdot w_2$ or just $w_1 w_2$.
+A \textbf{language} is a set of words.
+The \textbf{residual language} of a language $L$ with respect $v$ is the set of words $u$ such that $u v$ is in $L$.
 We define $\Sigma^k$ to be the \textbf{set of words of length k}.
 The \textbf{set of all words} over an alphabet $\Sigma$ is denoted $\Sigma^*$, i.e.,$\Sigma^* = \bigcup_{k \in \mathbb{N}} \Sigma^k$.
 
 \paragraph{} We restrict all further discussion to \textbf{decidable languages}:
-\[ \mathcal{L}_{dec} := \{ \, L \, \subseteq \, \Sigma^* \, 
-\vert \, \exists f. \, \forall x \in \Sigma^*. \, f(x) = 1 \Leftrightarrow  x \in L. \} \] 
+\begin{equation*} \mathcal{L}_{dec} := \{ \, L \, \subseteq \, \Sigma^* \, 
+    \vert \, \exists f. \, \forall x \in \Sigma^*. \, f(x) = 1 \Leftrightarrow  x \in L. \} \end{equation*} 
 
-\paragraph{} 
-We employ finite types to formalize alphabets \todo{nonemptiness}. 
-Words are formalized as sequences over the alphabet.
-Decidable languages are represented by functions from $word$ to $bool$.
-\code{language}{}{misc_char}
-\code{language}{}{misc_word}
-\code{language}{}{misc_language}
+    \paragraph{} 
+    We employ finite types to formalize alphabets. 
+    Words are formalized as sequences over the alphabet.
+    Decidable languages are represented by functions from $word$ to $bool$.
+    \code{language}{}{misc_char}
+    \codeblock{language}{}{misc_word}
+    \codeblock{language}{}{misc_language}
 
-\subsection{Operators}
-\todo{Define Kleene star}%
-The following operations will be used on languages: Kleene star, concatenation ($L_1 \cdot L_2 := \{w \cdot v\ \vert w \in L_1,  \in L_2\}$), and the boolean operations ($\cup$, $\cap$, $\neg$) on languages.
+    \subsection{Operation on languages}
 
-\paragraph{}
-We take Coquand and Siles' implementation of the operators.
+    \paragraph{}
 
-\code{lang_conc}{}{regexp_conc}
-                %\vspace{-0.4cm}
+    The \textbf{concatenation of two languages} $L_1$ and $L_2$ is denoted $L_1 \cdot L_2$ and is defined as the set of words $w_1 w_2$ such that $w_1$ is in $L_1$ and $w_2$ is in $L_2$.
+    The \textbf{Kleene Star of a language} (also called Kleene closure) $L$ is denoted $L^*$ and is defined as the set of words $w_1 w_2 \cdots w_k$ such that $w_1, w_2, \cdots w_k$ are in $L$.
+    We define the \textbf{complement} of a language $L$ as $L \backslash \Sigma^*$, which we denote $\neg L$.
+    Furthermore, we make use of the standard set operations \textbf{union} and \textbf{intersection}.
 
-\todo{Move def. of residual up from 3.2.2}
-\code{lang_star}{}{regexp_star}
-\vspace{-0.4cm}
-\code{lang_plus}{}{regexp_plus}
-\vspace{-0.4cm}
-\code{lang_prod}{}{regexp_prod}
-\vspace{-0.4cm}
-\code{lang_compl}{}{regexp_compl}
-\todo{Explain names}
-\todo{Find a consistent ordering}
+    \paragraph{}
+    We take Coquand and Siles's \cite{DBLP:conf/cpp/CoquandS11} implementation of these operators. ``plus'' and ``prod'' refer to union and intersection, respectively.
 
-\begin{theorem}{}
-    \label{DecLangClosed}
-    The decidable languages are closed under concatenation, Kleene star, union, intersection and negation. 
-\end{theorem}
-\begin{proof}
-    For concatenation and the Kleene star, the validity of this claim is easily seen by considering nonempty substrings, of which there are finitely many. 
-    The boolean operations can be applied directly to the decision functions.
-\end{proof}
+    \code{lang_conc}{}{regexp_conc}
+    \codeblock{lang_star}{}{regexp_star}
+    \codeblock{lang_compl}{}{regexp_compl}
+    \codeblock{lang_plus}{}{regexp_plus}
+    \codeblock{lang_prod}{}{regexp_prod}
 
-\paragraph{}
-We have already given decision algorithms for every operator. 
-It remains to show that they are correct.
+    \begin{theorem}{}
+        \label{DecLangClosed}
+        The decidable languages are closed under concatenation, Kleene star, union, intersection and negation. 
+    \end{theorem}
+    \begin{proof}
+        For concatenation and the Kleene star, the validity of this claim is easily seen by considering nonempty substrings, of which there are finitely many. 
+        The boolean operations can be applied directly to the decision functions.
+    \end{proof}
+
+    \paragraph{}
+    We have already given decision algorithms for every operator. 
+    It remains to show that they are correct.
 
 
 
@@ -62,76 +62,76 @@ It remains to show that they are correct.
 
 
 
-\section{Regular Languages}
+    \section{Regular Languages}
 
 
-\begin{definition}{}
-    \label{REG}
-    The set of regular languages $REG$ is defined to be exactly those languages generated by the following inductive definition.
-    \begin{itemize}
-        \item
-            $\emptyset \in REG$, 
-        \item
-            $\forall a \in \Sigma. \, \{a\} \in REG$, 
-        \item
-            $\forall L_1, L_2 \in REG. \, L_1^* \in REG, \, L_1 \cup L_2 \in REG, \, L_1 \cdot L_2 \in REG$.
-    \end{itemize}
-\end{definition}
+    \begin{definition}{}
+        \label{REG}
+        The set of regular languages $REG$ is defined to be exactly those languages generated by the following inductive definition.
+        \begin{itemize}
+            \item
+                $\emptyset \in REG$, 
+            \item
+                $\forall a \in \Sigma. \, \{a\} \in REG$, 
+            \item
+                $\forall L_1, L_2 \in REG. \, L_1^* \in REG, \, L_1 \cup L_2 \in REG, \, L_1 \cdot L_2 \in REG$.
+        \end{itemize}
+    \end{definition}
 
 
-\subsection{Regular Expressions}
+    \subsection{Regular Expressions}
 
-\paragraph{} 
-Regular expressions mirror the definition of regular languages very closely. 
-We will consider \textbf{extended regular expressions} that include negation ($Not$), intersection ($And$) and $.$ ($Dot$), which is a single-symbol wildcard. 
-We take the implementation from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
+    \paragraph{} 
+    Regular expressions mirror the definition of regular languages very closely. 
+    We will consider \textbf{extended regular expressions} that include negation ($Not$), intersection ($And$) and $.$ ($Dot$), which is a single-symbol wildcard. 
+    We take the implementation from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
 
-\code{regexp}{Regular Expressions}{regexp_regular_expression}
+    \code{regexp}{Regular Expressions}{regexp_regular_expression}
 
-\todo{Standard regular expressions, boolean predicate}
+    \todo{Standard regular expressions, boolean predicate}
 
-\paragraph{}
-We will later prove that this definition is equivalent to the inductive definition of regular languages in \ref{REG}.
-In order to do that, we introduce a predicate on regular expressions that distinguishes \textbf{standard regular expressions} 
-from \textbf{extended regular expressions} (as introduced above).
-Standard regular expression consist only of $Void$, $Eps$, $Atom$, $Star$ and $Plus$.
+    \paragraph{}
+    We will later prove that this definition is equivalent to the inductive definition of regular languages in \ref{REG}.
+    In order to do that, we introduce a predicate on regular expressions that distinguishes \textbf{standard regular expressions} 
+    from \textbf{extended regular expressions} (as introduced above).
+    Standard regular expression consist only of $Void$, $Eps$, $Atom$, $Star$ and $Plus$.
 
-\code{re_standard}{}{re_standard_standard}
+    \code{re_standard}{}{re_standard_standard}
 
-\todo{Connect standard regexp to reg. languages}
-
-
-\subsection{Deciding Language Membership}
-\paragraph{}
-We make use of \textbf{derivatives of regular expressions} (\cite{DBLP:journals/jacm/Brzozowski64}) to decide if a word $w \in \Sigma^*$ is contained in the language $\lang{r}$ of the regular expression $r$. 
-Derivatives are themselves regular expressions and are computed with respect to a single input character. 
-In order to define derivatives, we first define a related concept.
-
-\begin{definition}{}
-    \label{residual}
-    The residual of a regular expression w.r.t to a character $a$ is the set of words $w$ such that $a \cdot w \in L$.
-    \code{regexp_resiual}{}{regexp_residual}
-\end{definition}
-
-\begin{definition}{}
-    \label{residual}
-    The derivative $der \,  a \, r$ of $r$ w.r.t. to $a$ is defined such that 
-    \[       \forall w \in \Sigma^*. \, w \, \in \, \lang{der \, a \, r} \Leftrightarrow w \, \in \, residual \, a \, \lang{r}. \]
-\end{definition}
-
-\paragraph{}
-A suitable implementation is provided by Coquand and Siles.
-
-\code{regexp_der}{Derivatives of Regular Expressions}{regexp_der}
+    \todo{Connect standard regexp to reg. languages}
 
 
-\begin{theorem}
-    \label{der_correct}
-    For all $r$, $w$ and $a$, we have that $w \in der \, a \, r$ if and only if $w \in residual \, a $.
-\end{theorem}
+    \subsection{Deciding Language Membership}
+    \paragraph{}
+    We make use of \textbf{derivatives of regular expressions} (\cite{DBLP:journals/jacm/Brzozowski64}) to decide if a word $w \in \Sigma^*$ is contained in the language $\lang{r}$ of the regular expression $r$. 
+    Derivatives are themselves regular expressions and are computed with respect to a single input character. 
+    In order to define derivatives, we first define a related concept.
 
-\begin{proof}
-    We prove the claim by induction over $r$. Two cases are non-trivial: 
+    %\begin{definition}{}
+    %    \label{residual}
+    %    The residual of a regular expression w.r.t to a character $a$ is the set of words $w$ such that $a \cdot w \in L$.
+    %    \code{regexp_resiual}{}{regexp_residual}
+    %\end{definition}
+
+    \begin{definition}{}
+        \label{derivative}
+        The derivative $der \,  a \, r$ of $r$ w.r.t. to $a$ is defined such that 
+        \begin{equation*}       \forall w \in \Sigma^*. \, w \, \in \, \lang{der \, a \, r} \Leftrightarrow w \, \in \, residual \, a \, \lang{r}. \end{equation*}
+        \end{definition}
+
+        \paragraph{}
+        A suitable implementation is provided by Coquand and Siles.
+
+        \code{regexp_der}{Derivatives of Regular Expressions}{regexp_der}
+
+
+        \begin{theorem}
+            \label{der_correct}
+            For all $r$, $w$ and $a$, we have that $w \in der \, a \, r$ if and only if $w \in residual \, a $.
+        \end{theorem}
+
+        \begin{proof}
+            We prove the claim by induction over $r$. Two cases are non-trivial: 
 %                        \begin{enumerate}
 %                            \item
 %                                $der \, a \, (Conc \, r_1 \, r_2)$: 
@@ -142,29 +142,29 @@ A suitable implementation is provided by Coquand and Siles.
 %                                $Star \, r_1$: 
 %                                We have that $w \in \lang{r_1^*}$ if and only if 
 %                                \todo{Fix one def. of *}
-%                                \[
+%                                \begin{equation*}
 %                                    \, \exists n. \, \exists v_1 .. v_n. \, w \, = \, v_1 \cdot .. \cdot v_n 
 %                                    \wedge \forall i. \, 1 \leq i \leq n 
 %                                    \Rightarrow
 %                                    \, v_i \in \lang{r_1}.
-%                                \]
+%                                \end{equation*}
 %                        \end{enumerate}
-    \todo{Proof}
-\end{proof}
+            \todo{Proof}
+        \end{proof}
 
-\paragraph{} 
-Given the defining property of derivatives, we can easily see that a generalization of $der$ to words suffices to decide language membership. We only need to check if the derivative w.r.t. to a given word accepts the empty word.
+        \paragraph{} 
+        Given the defining property of derivatives, we can easily see that a generalization of $der$ to words suffices to decide language membership. We only need to check if the derivative w.r.t. to a given word accepts the empty word.
 
-\code{regexp_mem_der}{}{regexp_mem_der}
+        \code{regexp_mem_der}{}{regexp_mem_der}
 
-\begin{theorem}
-    \label{mem_der_correct} 
-    The language of a regular expression $r$ is decidable, i.e.
-    \[     w \in \lang{r} \Leftrightarrow \varepsilon \in \lang{mem\_der \, r \, w}.      \]
-\end{theorem}
-\begin{proof}
-    \todo{Proof}.
-\end{proof}
+        \begin{theorem}
+            \label{mem_der_correct} 
+            The language of a regular expression $r$ is decidable, i.e.
+            \begin{equation*}     w \in \lang{r} \Leftrightarrow \varepsilon \in \lang{mem\_der \, r \, w}.      \end{equation*}
+            \end{theorem}
+            \begin{proof}
+                \todo{Proof}.
+            \end{proof}
 
 
 

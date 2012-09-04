@@ -17,198 +17,198 @@ We assume $\equiv$ to be an equivalence relation on $\Sigma^*$, and $L$ to be a 
     \item\label{rightcongruent}
                 %\begin{definition}
         $\equiv$ is \textbf{right congruent} if and only if for all $x, y \in \Sigma^*$ and $a \in \Sigma$,
-        \[
+        \begin{equation*}
             x \equiv y \Rightarrow
             x \cdot a \equiv y \cdot a.
-            \]
+        \end{equation*}
                 %\end{definition}
 
 
-        \item\label{refinement}
+    \item\label{refinement}
                 %\begin{definition}
-            $\equiv$ \textbf{refines} $L$ if and only if forall $x,y \in \Sigma^*$,
-            \[
-                x \equiv y \Rightarrow
-                (x \in L \Leftrightarrow y \in L).
-                \]
+        $\equiv$ \textbf{refines} $L$ if and only if forall $x,y \in \Sigma^*$,
+        \begin{equation*}
+            x \equiv y \Rightarrow
+            (x \in L \Leftrightarrow y \in L).
+        \end{equation*}
                 %\end{definition}
 
-            \item\label{finiteindex}
+    \item\label{finiteindex}
                 %\begin{definition}
-                $\equiv$ is of \textbf{finite index} if and only if it has finitely many equivalence classes, i.e.
-                \[
-                    \{[x] | x \in \Sigma^*\} \mbox{ is finite }
-                    \]
+        $\equiv$ is of \textbf{finite index} if and only if it has finitely many equivalence classes, i.e.
+        \begin{equation*}
+            \{[x] | x \in \Sigma^*\} \mbox{ is finite }
+        \end{equation*}
                 %\end{definition}
 
-            \end{enumerate}
+\end{enumerate}
 
-            \begin{definition}
-                \label{MN_relation}
-                A relation is Myhill-Nerode if and only it satisfies properties \ref{rightcongruent}, \ref{refinement} and \ref{finiteindex}.
-            \end{definition}
+\begin{definition}
+    \label{MN_relation}
+    A relation is Myhill-Nerode if and only it satisfies properties \ref{rightcongruent}, \ref{refinement} and \ref{finiteindex}.
+\end{definition}
 
-            \todo{Fix everything below this line}
+\todo{Fix everything below this line}
 
-            \paragraph{} Given a language $L$, the Myhill-Nerode relation $\approx_L$ is defined such that 
-            \[
-                \forall u, v \in \Sigma^*. \,
-                u \approx_L v \, \Longleftrightarrow \, 
-                \forall w \in \Sigma^*.\, u \cdot w \in L \Leftrightarrow v \cdot w \in L.
-                \]
+\paragraph{} Given a language $L$, the Myhill-Nerode relation $\approx_L$ is defined such that 
+\begin{equation*}
+    \forall u, v \in \Sigma^*. \,
+    u \approx_L v \, \Longleftrightarrow \, 
+    \forall w \in \Sigma^*.\, u \cdot w \in L \Leftrightarrow v \cdot w \in L.
+\end{equation*}
 
-                \code{mn}{Myhill-Nerode relation}{myhill_nerode_MN}
+\code{mn}{Myhill-Nerode relation}{myhill_nerode_MN}
 
-                \begin{theorem}{Myhill-Nerode Theorem.}
-                    \label{MN}
-                    A language $L$ is regular if and only if $\,\approx_L$ is of finite index.
-                \end{theorem}
+\begin{theorem}{Myhill-Nerode Theorem.}
+    \label{MN}
+    A language $L$ is regular if and only if $\,\approx_L$ is of finite index.
+\end{theorem}
 
-                \section{Finite Partitionings and Equivalence Classes}
+\section{Finite Partitionings and Equivalence Classes}
 
-                \paragraph{}
-                \coq\ does not have quotient types. 
-                We pair up functions and proofs for certain properties of those functions to emulate quotient types.
+\paragraph{}
+\coq\ does not have quotient types. 
+We pair up functions and proofs for certain properties of those functions to emulate quotient types.
 
-                \paragraph{} 
-                A finite partitioning is a function from $\Sigma^*$ to some finite type $F$. 
-                We use this concept to model equivalent classes in \coq. 
-                A finite partitioning of the Myhill-Nerode relation is a finite partitioning $f$ that also respects the Myhill-Nerode relation, i.e.,
-                \[
-                    \forall u, v \in \Sigma^*. \,
-                    f(u) = f(v) \Leftrightarrow u \approx_L v.
-                    \]
-
-
-                    \code{mn_rel}{Finite partitioning of the Myhill-Nerode relation}{myhill_nerode_MN_rel}
-
-                    \begin{theorem}
-                        $\approx_L$ is of finite index if and only if there exists a finite partitioning of the Myhill-Nerode relation.
-                    \end{theorem}
-
-                    \begin{proof}
-                        If $\approx_L$ is of finite index, we use the set equivalence classes as a finite type and construct $f$ such that
-                        \[
-                            \forall w.\, f(w) = [w]_\approx.
-                            \]
-                            \paragraph{}
-                            $f$ is a finite partitioning of the Myhill-Nerode relation by definition.
-
-                            \paragraph{}
-                            Conversely, if we have a finite partitioning of the Myhill-Nerode relation, we can easily see that $\approx_L$ must be of finite index since $f$'s values directly correspond to equivalence classes. The image of $f$ is finite. Therefore, $\approx_L$ is of finite index.
-                        \end{proof}
-
-                        \paragraph{}
-
-                        A more general concept is that of a refining finite partitioning of the Myhill-Nerode relation:
-                        \[
-                            \forall u, v \in \Sigma^*. \,
-                            f(u) = f(v) \Rightarrow u \approx_L v.
-                            \]
-
-                            \code{mn_ref}{Refining finite partitioning of the Myhill-Nerode relation}{myhill_nerode_MN_ref}
+\paragraph{} 
+A finite partitioning is a function from $\Sigma^*$ to some finite type $F$. 
+We use this concept to model equivalent classes in \coq. 
+A finite partitioning of the Myhill-Nerode relation is a finite partitioning $f$ that also respects the Myhill-Nerode relation, i.e.,
+\begin{equation*}
+    \forall u, v \in \Sigma^*. \,
+    f(u) = f(v) \Leftrightarrow u \approx_L v.
+\end{equation*}
 
 
+\code{mn_rel}{Finite partitioning of the Myhill-Nerode relation}{myhill_nerode_MN_rel}
 
-                            \paragraph{}
-                            We require all partitionings to be surjective.
-                            Therefore, every equivalence class $x$ has at least one class representative which we denote $\crep{x}$.
-                            Mathematically, this is not a restriction since there are no empty equivalence classes.
-                            In our constructive setting we would have to give a procedure that builds a minimal finite type $F'$ from $F$ and a corresponding function $f'$ from $\Sigma^*$ to $F'$ such that $f'$ is surjective and extensionally equal to $f$.
+\begin{theorem}
+    $\approx_L$ is of finite index if and only if there exists a finite partitioning of the Myhill-Nerode relation.
+\end{theorem}
 
-                            \section{Minimizing Equivalence Classes}
+\begin{proof}
+    If $\approx_L$ is of finite index, we use the set equivalence classes as a finite type and construct $f$ such that
+    \begin{equation*}
+        \forall w.\, f(w) = [w]_\approx.
+    \end{equation*}
+    \paragraph{}
+    $f$ is a finite partitioning of the Myhill-Nerode relation by definition.
 
-                            \paragraph{}
-                            We will prove that refining finite partitionings can be converted into finite partitionings. 
-                            For this purpose, we employ the table-filling algorithm to find indistinguishable states under the Myhill-Nerode relation (\cite{DBLP:books/daglib/0011126}).
-                            However, we do not rely on an automaton. 
-                            In fact, we use the finite type $F$, i.e., the equivalence classes, instead of states.
+    \paragraph{}
+    Conversely, if we have a finite partitioning of the Myhill-Nerode relation, we can easily see that $\approx_L$ must be of finite index since $f$'s values directly correspond to equivalence classes. The image of $f$ is finite. Therefore, $\approx_L$ is of finite index.
+\end{proof}
 
-                            \paragraph{}
-                            Given a refining finite partitioning $f$, we construct a fixed-point algorithm.
-                            The algorithm initially outputs the set of equivalence classes that are distinguishable by the inclusion of their class representative in $L$. 
-                            We denote this initial set $dist_0$.
-                            \[
-                                dist_0 := \{ (x,y)  \in F \times F \, | \, \crep{x} \in L \Leftrightarrow \crep{y} \notin L\}.
-                                \]
+\paragraph{}
 
-                                \paragraph{}
-                                To find more distinguishable equivalence classes, we have to identify equivalence classes that lead to distinguishable equivalence classes. 
-                                \begin{definition}
-                                    We say that a pair of equivalence classes $(x,y)$ \textbf{transitions} to $(x', y')$ with $a$ if and only if
-                                    \[
-                                        f (\crep{x}\cdot a) = x' \wedge f (\crep{y} \cdot a) = y'.
-                                        \]
-                                        We denote $(x', y')$ by $ext_a(x,y)$.
-                                    \end{definition}
+A more general concept is that of a refining finite partitioning of the Myhill-Nerode relation:
+\begin{equation*}
+    \forall u, v \in \Sigma^*. \,
+    f(u) = f(v) \Rightarrow u \approx_L v.
+\end{equation*}
 
-                                    The fixed-point algorithm tries to extend the set of distinguishable equivalence classes by looking for a so-far undistinguishable pair of equivalence classes that transitions to a pair of distinguishable equivalence classes.
-
-                                    \begin{definition}
-                                        \[
-                                            unnamed(dist) := dist_0 \cup dist \cup \{ (x,y) \, | \, \exists a. \, ext_a(x,y) \in dist\}
-                                            \]
-                                        \end{definition}
-
-                                        \begin{lemma}
-                                            \label{dist_monotone}
-                                            $unnamed$ is monotone and has a fixed-point.
-                                        \end{lemma}
-                                        \begin{proof}
-                                            Monotonicity follows directly from the monotonicity of $\cup$. 
-                                            The number of sets in $F \times F$ is finite. 
-                                            Therefore, $unnamed$ has a fixed point.
-
-                                        \end{proof}
-                                        \paragraph{}
-                                        Let \textit{\textbf{distinct}} be the fixed point of $unnamed$.
-                                        Let \textit{\textbf{equiv}} be the complement of $distinct$.
-                                        \todo{Finish construction}
-                                        \begin{theorem}
-                                            \label{MN_MIN}
-                                            $f_min$ is a finite partitioning of the Myhill-Nerode relation on $L$.
-                                        \end{theorem}
-
-                                        \todo{Add formalization}
+\code{mn_ref}{Refining finite partitioning of the Myhill-Nerode relation}{myhill_nerode_MN_ref}
 
 
 
-                                        \section{Finite Automata and Myhill-Nerode}
+\paragraph{}
+We require all partitionings to be surjective.
+Therefore, every equivalence class $x$ has at least one class representative which we denote $\crep{x}$.
+Mathematically, this is not a restriction since there are no empty equivalence classes.
+In our constructive setting we would have to give a procedure that builds a minimal finite type $F'$ from $F$ and a corresponding function $f'$ from $\Sigma^*$ to $F'$ such that $f'$ is surjective and extensionally equal to $f$.
 
-                                        \paragraph{}
-                                        We prove theorem \ref{MN} by proving it equivalent to the existence of an automaton that accepts $L$.
+\section{Minimizing Equivalence Classes}
+
+\paragraph{}
+We will prove that refining finite partitionings can be converted into finite partitionings. 
+For this purpose, we employ the table-filling algorithm to find indistinguishable states under the Myhill-Nerode relation (\cite{DBLP:books/daglib/0011126}).
+However, we do not rely on an automaton. 
+In fact, we use the finite type $F$, i.e., the equivalence classes, instead of states.
+
+\paragraph{}
+Given a refining finite partitioning $f$, we construct a fixed-point algorithm.
+The algorithm initially outputs the set of equivalence classes that are distinguishable by the inclusion of their class representative in $L$. 
+We denote this initial set $dist_0$.
+\begin{equation*}
+    dist_0 := \{ (x,y)  \in F \times F \, | \, \crep{x} \in L \Leftrightarrow \crep{y} \notin L\}.
+\end{equation*}
+
+\paragraph{}
+To find more distinguishable equivalence classes, we have to identify equivalence classes that lead to distinguishable equivalence classes. 
+\begin{definition}
+    We say that a pair of equivalence classes $(x,y)$ \textbf{transitions} to $(x', y')$ with $a$ if and only if
+    \begin{equation*}
+        f (\crep{x}\cdot a) = x' \wedge f (\crep{y} \cdot a) = y'.
+    \end{equation*}
+    We denote $(x', y')$ by $ext_a(x,y)$.
+\end{definition}
+
+The fixed-point algorithm tries to extend the set of distinguishable equivalence classes by looking for a so-far undistinguishable pair of equivalence classes that transitions to a pair of distinguishable equivalence classes.
+
+\begin{definition}
+    \begin{equation*}
+        unnamed(dist) := dist_0 \cup dist \cup \{ (x,y) \, | \, \exists a. \, ext_a(x,y) \in dist\}
+    \end{equation*}
+\end{definition}
+
+\begin{lemma}
+    \label{dist_monotone}
+    $unnamed$ is monotone and has a fixed-point.
+\end{lemma}
+\begin{proof}
+    Monotonicity follows directly from the monotonicity of $\cup$. 
+    The number of sets in $F \times F$ is finite. 
+    Therefore, $unnamed$ has a fixed point.
+
+\end{proof}
+\paragraph{}
+Let \textit{\textbf{distinct}} be the fixed point of $unnamed$.
+Let \textit{\textbf{equiv}} be the complement of $distinct$.
+\todo{Finish construction}
+\begin{theorem}
+    \label{MN_MIN}
+    $f_min$ is a finite partitioning of the Myhill-Nerode relation on $L$.
+\end{theorem}
+
+\todo{Add formalization}
 
 
 
-                                        \subsection{Finite Automata to Myhill-Nerode}
-                                        \paragraph{}
-                                        Given DFA $A$, for all words $w$ we define $f(w)$ to be the last state of the run of $w$ on $A$.
+\section{Finite Automata and Myhill-Nerode}
 
-                                        \begin{lemma} 
-                                            \label{DFA_MN_F}
-                                            $f$ is a refining finite partitioning of the Myhill-Nerode relation on $\lang{A}$. 
-                                        \end{lemma} 
-                                        \begin{proof} 
-                                            The set of states of $A$ is finite.
-                                            For all $u, v$ and $w$ we that if $f(u) = f(v) = x$, i.e.,
-                                            the runs of $u$ and $v$ on $A$ end in the exact same state $x$.
-                                            From this, we get that for all $w$, runs of $u \cdot w$ and $v \cdot w$ on $A$ also end in the same state.
-                                            Therefore, $u\cdot w \in \lang{A}$ if and only if $v \cdot w \in \lang{A}$.
-                                        \end{proof}
-
-                                        \begin{theorem}
-                                            If $L$ is accepted by DFA $A$, then there exists a finite partitioning of the Myhill-Nerode relation on $L$.
-                                        \end{theorem}
-                                        \begin{proof}
-                                            From lemma \ref{DFA_MN_F} we get a refining finite partitioning $f$ of the Myhill-Nerode relation on $\lang{A}$. 
-                                            Since $L$ is accepted by $A$, $L = \lang{A}$. 
-                                            Therefore, $f$ is a refining finite partitioning of the Myhill-Nerode relation on $L$.
-                                            By theorem \ref{MN_MIN} there also exists a finite partition of the Myhill-Nerode relation on $L$.
-                                        \end{proof}
+\paragraph{}
+We prove theorem \ref{MN} by proving it equivalent to the existence of an automaton that accepts $L$.
 
 
-                                        \subsection{Myhill-Nerode to Finite Automata}
 
-                                        \paragraph{}
+\subsection{Finite Automata to Myhill-Nerode}
+\paragraph{}
+Given DFA $A$, for all words $w$ we define $f(w)$ to be the last state of the run of $w$ on $A$.
+
+\begin{lemma} 
+    \label{DFA_MN_F}
+    $f$ is a refining finite partitioning of the Myhill-Nerode relation on $\lang{A}$. 
+\end{lemma} 
+\begin{proof} 
+    The set of states of $A$ is finite.
+    For all $u, v$ and $w$ we that if $f(u) = f(v) = x$, i.e.,
+    the runs of $u$ and $v$ on $A$ end in the exact same state $x$.
+    From this, we get that for all $w$, runs of $u \cdot w$ and $v \cdot w$ on $A$ also end in the same state.
+    Therefore, $u\cdot w \in \lang{A}$ if and only if $v \cdot w \in \lang{A}$.
+\end{proof}
+
+\begin{theorem}
+    If $L$ is accepted by DFA $A$, then there exists a finite partitioning of the Myhill-Nerode relation on $L$.
+\end{theorem}
+\begin{proof}
+    From lemma \ref{DFA_MN_F} we get a refining finite partitioning $f$ of the Myhill-Nerode relation on $\lang{A}$. 
+    Since $L$ is accepted by $A$, $L = \lang{A}$. 
+    Therefore, $f$ is a refining finite partitioning of the Myhill-Nerode relation on $L$.
+    By theorem \ref{MN_MIN} there also exists a finite partition of the Myhill-Nerode relation on $L$.
+\end{proof}
+
+
+\subsection{Myhill-Nerode to Finite Automata}
+
+\paragraph{}
 
 
