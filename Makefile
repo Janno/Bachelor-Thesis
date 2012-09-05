@@ -14,7 +14,7 @@ all: ${COQ_TARGETS}
 	coqc $(subst .vo,.v,$@)
 
 thesis/chapters/%.pdf: thesis/%.tex
-	j=$(shell basename $@); cd thesis; pdflatex -jobname=chapters/$$j "\includeonly{$$j,includes.tex}\input{thesis}"
+	j=$(shell basename $@ .pdf); cd thesis; pdflatex -jobname=chapters/$$j "\includeonly{$$j,includes.tex}\input{thesis}"
 
 html_doc: all
 	mkdir -p docs/html
@@ -38,7 +38,10 @@ docs/definitions: ${COQ_TARGETS} docs/extract_definitions.py
 
 definitions: docs/definitions
 
-thesis/thesis.pdf: definitions ${CHPTS}
+thesis/chapters:
+	mkdir thesis/chapters
+
+thesis/thesis.pdf: definitions thesis/*.tex thesis/chapters ${CHPTS}
 	cd thesis; latexmk -pdf thesis
 
 thesis: thesis/thesis.pdf
