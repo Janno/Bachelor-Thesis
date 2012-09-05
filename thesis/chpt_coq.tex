@@ -25,15 +25,17 @@ This allows us to switch back and forth between equivalent boolean and propositi
 \subsection{Boolean Predicates}
 We make use of \ssreflect's syntax to specify boolean predicates.
 This allows us to specify predicates in a way that resembles set-theoretic notation, e.g. 
-\lstinline{[pred x | <boolean expression in x> ]}. 
-The complement of a predicate can be written as \lstinline{[predC p]}.
+\lstinline{[pred x | <boolean expression in x> ]}.
+Furthermore, we can use the functions \lstinline{pred1} and \lstinline{pred0} to specify the singleton predicate and the empty predicate, respectively.
+The complement of a predicate can be written as \lstinline{[predC p]}. 
 The syntax for combining predicates is \lstinline{[pred? p1 & p2 ]}, with \lstinline{?} being replaced with one of 
 \lstinline{U} (union), \lstinline{I} (intersection) or \lstinline{D} (difference).
 There is also syntax for the preimage of a predicate under a function
 which can be written as \lstinline{[preim f of p]}.
-The resulting predicates are called collective predicates. 
-\ssreflect\ allows us to use infix notation, i.e. $x \in p$, for these predicates.
+
+%The resulting predicates are called collective predicates. 
+%\ssreflect\ allows us to use infix notation, i.e. $x \in p$, for these predicates.
 
 \paragraph{}
-There are also applicative (functional) versions of of \lstinline{predC}, \lstinline{predU}, \lstinline{predI}, \lstinline{predD} which are functions that take predicates and return applicative predicates.
+There are also applicative (functional) versions of of \lstinline{predC}, \lstinline{predU}, \lstinline{predI}, \lstinline{predD} which are functions that take predicates and return predicates.
 
