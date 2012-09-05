@@ -30,7 +30,7 @@ thesis: definitions ${CHPTS}
 	cd thesis; latexmk -pdf thesis
 
 chapters: thesis
-	cd thesis; bash -c 'for i in chpt_*.tex; do j=$${i%.tex}; pdflatex -jobname=job_$$j "\includeonly{$$j,includes.tex}\input{thesis}"; done'
+	cd thesis; bash -c 'for i in chpt_*.tex chpt_*.tex; do j=$${i%.tex}; pdflatex -jobname=chapters/$$j "\includeonly{$$j,includes.tex}\input{thesis}"; done'
 
 doc: html_doc_beautiful definitions
 

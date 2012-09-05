@@ -1,6 +1,37 @@
-\chapter{Coq, \ssreflect}
+\chapter{\coq and \ssreflect}
 
 \paragraph{}
 We decided to employ the Small Scale Reflection Extension (\textbf{\ssreflect}) for the \textbf{\coq} proof assistant. 
-The most important factors in this decision were \ssreflect's excellent support for finite types, list operations and graphs. \ssreflect{} also introduces an alternative scripting language that can often be used to shorten the bookkeeping overhead of proofs considerable.
+The most important factors in this decision were \ssreflect's excellent support for finite types, list operations and graphs. \ssreflect{} also introduces an alternative scripting language that can often be used to shorten the bookkeeping overhead of proofs considerably.
+
+\section{\coq}
+
+\section{\ssreflect}
+
+\subsection{Finite Types and Ordinals}
+The most important feature of \ssreflect\ for our purpose are finite types. 
+\ssreflect\ provides boolean versions of the universal and existential quantifiers on finite types, \lstinline{forallb} and \lstinline{existsb}.
+We can compute the number of elements in a finite type F with \lstinline{#|F|}.
+\lstinline{enum} gives a list of all items of a finite type. 
+Finite types also come with enumeration functions which provide a consistent ordering. 
+The corresponding functions are \lstinline{enum_rank} and \lstinline{enum_val}. 
+The input of \lstinline{enum_val} and the result of \lstinline{enum_rank} are ordinals, i.e. values in \lstinline{[0, \#|F|-1]}. 
+The corresponding type can be written as \lstinline{I_#|F|}
+
+\subsection{Boolean Reflection}
+\ssreflect\ offers boolean reflections for decidable propostions. 
+This allows us to switch back and forth between equivalent boolean and propositional predicates.
+
+\subsection{Boolean Predicates}
+We make use of \ssreflect's syntax to specify boolean predicates.
+This allows us to specify predicates in a way that resembles set-theoretic notation, e.g. 
+\lstinline{[pred x | <boolean expression in x> ]}. 
+The complement of a predicate can be written as \lstinline{[predC p]}.
+The syntax for combining precidates is \lstinline{[pred? p1 & p2 ]}, with \lstinline{?} being replaced with one of 
+\lstinline{U} (union), \lstinline{I} (intersection) or \lstinline{D} (difference).
+The resulting predicates are called collective predicates. 
+\ssreflect\ allows us to use infix notation, i.e. $x \in p$, for these predicates.
+
+\paragraph{}
+There are also applicative (functional) versions of of \lstinline{predC}, \lstinline{predU}, \lstinline{predI}, \lstinline{predD} which are functions that take predicates and return applicative predicates.
 

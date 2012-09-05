@@ -5,10 +5,10 @@
 We closely follow the definitions from \cite{DBLP:books/daglib/0011126}.
 An \textbf{alphabet} $\Sigma$ is a finite set of symbols. Throughout this document, we will assume a fixed alphabet.
 A \textbf{word} $w$ is a finite sequence of symbols chosen from some alphabet. 
-We use $|w|$ to denote the \textbf{length} of a word $w$. 
+We use $|w|$ to denote the \textbf{length} of a word $w$. $\varepsilon$ denotes the empty word.
 Given two words $w_1 = a_1 a_2 \cdots a_n$ and $w_2 = b_1 b_2 \cdots b_m$, the \textbf{concatenation} of $w_1$ and $w_2$ is defined as $a_1 a_2 \cdots a_n b_1 b_2 \cdots b_m$ and denoted $w_1 \cdot w_2$ or just $w_1 w_2$.
 A \textbf{language} is a set of words.
-The \textbf{residual language} of a language $L$ with respect $v$ is the set of words $u$ such that $u v$ is in $L$.
+The \textbf{residual language} of a language $L$ with respect to symbol $a$ is the set of words $u$ such that $a v$ is in $L$. It is denoted $res_a(L)$.
 We define $\Sigma^k$ to be the \textbf{set of words of length k}.
 The \textbf{set of all words} over an alphabet $\Sigma$ is denoted $\Sigma^*$, i.e.,$\Sigma^* = \bigcup_{k \in \mathbb{N}} \Sigma^k$.
 
@@ -20,16 +20,17 @@ The \textbf{set of all words} over an alphabet $\Sigma$ is denoted $\Sigma^*$, i
     We employ finite types to formalize alphabets. 
     Words are formalized as sequences over the alphabet.
     Decidable languages are represented by functions from $word$ to $bool$.
-    \code{language}{}{misc_char}
-    \codeblock{language}{}{misc_word}
-    \codeblock{language}{}{misc_language}
+    \code{language_char}{}{misc_char}
+    \codeblock{language_word}{}{misc_word}
+    \codeblock{language_language}{}{misc_language}
+    \codeblock{language_residual}{}{regexp_residual}
 
     \subsection{Operation on languages}
 
     \paragraph{}
 
-    The \textbf{concatenation of two languages} $L_1$ and $L_2$ is denoted $L_1 \cdot L_2$ and is defined as the set of words $w_1 w_2$ such that $w_1$ is in $L_1$ and $w_2$ is in $L_2$.
-    The \textbf{Kleene Star of a language} (also called Kleene closure) $L$ is denoted $L^*$ and is defined as the set of words $w_1 w_2 \cdots w_k$ such that $w_1, w_2, \cdots w_k$ are in $L$.
+    The \textbf{concatenation} of two languages $L_1$ and $L_2$ is denoted $L_1 \cdot L_2$ and is defined as the set of words $w = w_1 w_2$ such that $w_1$ is in $L_1$ and $w_2$ is in $L_2$.
+    The \textbf{Kleene Star} (also called Kleene closure) of a language $L$ is denoted $L^*$ and is defined as the set of words $w = w_1 w_2 \cdots w_k$ such that $w_1, w_2, \cdots w_k$ are in $L$. $\varepsilon$ is contained in $L^*$ ($k=0$).
     We define the \textbf{complement} of a language $L$ as $L \backslash \Sigma^*$, which we denote $\neg L$.
     Furthermore, we make use of the standard set operations \textbf{union} and \textbf{intersection}.
 
@@ -42,24 +43,86 @@ The \textbf{set of all words} over an alphabet $\Sigma$ is denoted $\Sigma^*$, i
     \codeblock{lang_plus}{}{regexp_plus}
     \codeblock{lang_prod}{}{regexp_prod}
 
+    %\paragraph{}
+    %The implementation of \lstinline{star} 
+
+    \begin{lemma}
+        \label{concP}
+        Let $L_1, L_2, w = a_1 a_2 \cdots a_k$ be given. We have that
+        \begin{equation*}
+            w \in L_1 \cdot L_2  \\
+            \mbox{ if and only if }  \\
+            \exists n \in \mathbb{N}. 0 < n \le k \wedge a_1 \cdots a_{n-1} \in L_1 \wedge a_n \cdots a_k \in L_2.
+        \end{equation*}
+    \end{lemma}
+    \begin{proof}
+        ``$\Rightarrow$'' 
+        From $w \in L_1 \cdot L_2$ we have $w_1, w_2$ such that $w = w_1 w_2 \wedge w_1 \in L_1 \wedge w_2 \in L_2$.
+        We chose $n := |w_1|+1$. We then have that $a_1 \cdots a_{n-1} = a_1 \cdots a_{|w_1|} = w_1$ and $w_1 \in L_1$ by assumption.
+        Similarly, $a_{n} \cdots a_k = $$ a_{|w_1| + 1} \cdots a_k = w_2$ and $w_2 \in L_2$ by assumption.
+        \\
+        ``$\Leftarrow$'' 
+        We chose $w_1 := a_1 \cdots a_{n-1}$ and $w_2 := a_n \cdots a_k$. By assumption we have that $w = w_1 w_2$.
+        We also have that $a_1 \cdots a_{n-1} \in L_1$ and $a_{n} \cdots a_k \in L_2$. 
+        It follows that $w_1 \in L_1$ and $w_2 \in L_2$.
+    \end{proof}
+    
+
+    \code{regexp_concP}{Formalization of lemma \ref{concP}}{regexp_concP_head}
+
+    \begin{lemma}
+        \label{starP}
+        Let $L, w = a_1 a_2 \cdots a_k$ be given. We have that
+        \begin{equation*}
+            w \in L^*   
+            \mbox{ if and only if } 
+            a_2 \cdots a_k \in res_{a_1}(L) \cdot L^* \vee w = \varepsilon.
+        \end{equation*}
+    \end{lemma}
+    \begin{proof}
+        ``$\Rightarrow$'' 
+        We do a case distinction on $|w| = 0$.
+        \begin{enumerate}
+            \item
+                $|w| = 0$. It follows that $w = \varepsilon$.
+            \item
+                $|W| \neq 0$, i.e. $|w| > 0$.
+                From $w \in L^*$ we have $w = w_1 w_2 \cdots w_l$ such that $w_1, w_2 \cdots w_l$ are in $L$.
+                There exists a minimal $n$ such that $|w_n| > 0$ and for all $m < n$, $|w_m| = 0$.
+                Let $w_n = b_1 b_2 \cdots b_p$. We have that $b_2 \cdots a_p \in res_{b_1}(L)$.
+                Furthermore, we have that $w_{n+1} \cdots w_l \in L^*$.
+                We also have $a_1 = b_1$ and $w = a_1 a_2 \cdots a_k = w_n \cdots w_l$. 
+                Therefore, we have $a_2 \cdots a_k \in res_{a_1}(L) \cdot L^*$.
+        \end{enumerate}
+        ``$\Leftarrow$'' 
+        We do a case distinction on the disjunction.
+        \begin{enumerate}
+            \item
+                $w = \varepsilon$. Then $w \in L^*$ by definition.
+            \item
+                $a_2 \cdots a_k \in res_{a_1}(L) \cdot L^*$. 
+                By lemma \ref{concP} we have $n$ such that $a_2 \cdots a_{n-1} \in res_{a_1}(L)$ and $a_n \cdots a_k \in L^*$.
+                By definition of $res$, we have $a_1 \cdots a_{n-1} \in L$.
+                Furthermore, we also have $a_n \cdots a_k = w_1 w_2 \cdots w_l$ such that $w_1, w_2 \cdots w_l$ are in $L$.
+                We chose $w_0 := a_1 \cdots a_{n-1}$.
+                It follows that $w = w_0 w_1 \cdots w_l$ with $w_0, w_1, \cdots w_l$ in $L$.
+                Therefore, $w \in L^*$.
+        \end{enumerate}
+    \end{proof}
+
+    \code{regexp_starP}{Formalization of lemma \ref{starP}}{regexp_starP_head}
+
     \begin{theorem}{}
         \label{DecLangClosed}
-        The decidable languages are closed under concatenation, Kleene star, union, intersection and negation. 
+        The decidable languages are closed under concatenation, Kleene star, union, intersection and complement. 
     \end{theorem}
     \begin{proof}
-        For concatenation and the Kleene star, the validity of this claim is easily seen by considering nonempty substrings, of which there are finitely many. 
-        The boolean operations can be applied directly to the decision functions.
+        We have already given algorithms for every operator. 
+        It remains to show that they are correct.
+        For concatenation and the Kleene star, we have shown in lemma \ref{concP} and \ref{starP} that the formalization is equivalent to the formal definition. The remaining operators are applied directly to the decision functions. 
     \end{proof}
 
     \paragraph{}
-    We have already given decision algorithms for every operator. 
-    It remains to show that they are correct.
-
-
-
-
-
-
 
 
     \section{Regular Languages}
