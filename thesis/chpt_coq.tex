@@ -27,8 +27,10 @@ We make use of \ssreflect's syntax to specify boolean predicates.
 This allows us to specify predicates in a way that resembles set-theoretic notation, e.g. 
 \lstinline{[pred x | <boolean expression in x> ]}. 
 The complement of a predicate can be written as \lstinline{[predC p]}.
-The syntax for combining precidates is \lstinline{[pred? p1 & p2 ]}, with \lstinline{?} being replaced with one of 
+The syntax for combining predicates is \lstinline{[pred? p1 & p2 ]}, with \lstinline{?} being replaced with one of 
 \lstinline{U} (union), \lstinline{I} (intersection) or \lstinline{D} (difference).
+There is also syntax for the preimage of a predicate under a function
+which can be written as \lstinline{[preim f of p]}.
 The resulting predicates are called collective predicates. 
 \ssreflect\ allows us to use infix notation, i.e. $x \in p$, for these predicates.
 

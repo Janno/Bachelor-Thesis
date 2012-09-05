@@ -3,7 +3,7 @@
 \section{Definition}
 \paragraph{}
 We closely follow the definitions from \cite{DBLP:books/daglib/0011126}.
-An \textbf{alphabet} $\Sigma$ is a finite set of symbols. Throughout this document, we will assume a fixed alphabet.
+An \textbf{alphabet} $\Sigma$ is a finite set of symbols. 
 A \textbf{word} $w$ is a finite sequence of symbols chosen from some alphabet. 
 We use $|w|$ to denote the \textbf{length} of a word $w$. $\varepsilon$ denotes the empty word.
 Given two words $w_1 = a_1 a_2 \cdots a_n$ and $w_2 = b_1 b_2 \cdots b_m$, the \textbf{concatenation} of $w_1$ and $w_2$ is defined as $a_1 a_2 \cdots a_n b_1 b_2 \cdots b_m$ and denoted $w_1 \cdot w_2$ or just $w_1 w_2$.
@@ -11,13 +11,14 @@ A \textbf{language} is a set of words.
 The \textbf{residual language} of a language $L$ with respect to symbol $a$ is the set of words $u$ such that $a v$ is in $L$. The residual is denoted $res_a(L)$.
 We define $\Sigma^k$ to be the \textbf{set of words of length k}.
 The \textbf{set of all words} over an alphabet $\Sigma$ is denoted $\Sigma^*$, i.e.,$\Sigma^* = \bigcup_{k \in \mathbb{N}} \Sigma^k$.
-
-\paragraph{} We restrict all further discussion to \textbf{decidable languages}:
-\begin{equation*} \mathcal{L}_{dec} := \{ \, L \, \subseteq \, \Sigma^* \, 
-    \vert \, \exists f. \, \forall x \in \Sigma^*. \, f(x) = 1 \Leftrightarrow  x \in L. \} \end{equation*} 
+A language $L$ is \textbf{decidable} if and only if there exists a boolean predicate that decides membership in $L$.
+We will only deal with decidable languages from here on.
+Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
 
     \paragraph{} 
     We employ finite types to formalize alphabets. 
+    In the most definitions, alphabets will not be made explicit.
+    However, the same name and type will be used throughout the entire development.
     Words are formalized as sequences over the alphabet.
     Decidable languages are represented by functions from $word$ to $bool$.
     \code{language_char}{}{misc_char}
