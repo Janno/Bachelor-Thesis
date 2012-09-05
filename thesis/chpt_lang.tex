@@ -8,7 +8,7 @@ A \textbf{word} $w$ is a finite sequence of symbols chosen from some alphabet.
 We use $|w|$ to denote the \textbf{length} of a word $w$. $\varepsilon$ denotes the empty word.
 Given two words $w_1 = a_1 a_2 \cdots a_n$ and $w_2 = b_1 b_2 \cdots b_m$, the \textbf{concatenation} of $w_1$ and $w_2$ is defined as $a_1 a_2 \cdots a_n b_1 b_2 \cdots b_m$ and denoted $w_1 \cdot w_2$ or just $w_1 w_2$.
 A \textbf{language} is a set of words.
-The \textbf{residual language} of a language $L$ with respect to symbol $a$ is the set of words $u$ such that $a v$ is in $L$. It is denoted $res_a(L)$.
+The \textbf{residual language} of a language $L$ with respect to symbol $a$ is the set of words $u$ such that $a v$ is in $L$. The residual is denoted $res_a(L)$.
 We define $\Sigma^k$ to be the \textbf{set of words of length k}.
 The \textbf{set of all words} over an alphabet $\Sigma$ is denoted $\Sigma^*$, i.e.,$\Sigma^* = \bigcup_{k \in \mathbb{N}} \Sigma^k$.
 
@@ -119,7 +119,8 @@ The \textbf{set of all words} over an alphabet $\Sigma$ is denoted $\Sigma^*$, i
     \begin{proof}
         We have already given algorithms for every operator. 
         It remains to show that they are correct.
-        For concatenation and the Kleene star, we have shown in lemma \ref{concP} and \ref{starP} that the formalization is equivalent to the formal definition. The remaining operators are applied directly to the decision functions. 
+        For concatenation and the Kleene star, we have shown in lemma \ref{concP} and \ref{starP} that the formalization is equivalent to the formal definition. 
+        The remaining operators are applied directly to the decision functions. 
     \end{proof}
 
     \paragraph{}
@@ -146,7 +147,25 @@ The \textbf{set of all words} over an alphabet $\Sigma$ is denoted $\Sigma^*$, i
 
     \paragraph{} 
     Regular expressions mirror the definition of regular languages very closely. 
-    We will consider \textbf{extended regular expressions} that include negation ($Not$), intersection ($And$) and $.$ ($Dot$), which is a single-symbol wildcard. 
+    We will consider \textbf{extended regular expressions} that include negation ($Not$), intersection ($And$) and a single-symbol wildcard ($Dot$). 
+    Therefore, we have the following syntax for regular expressions:
+    \begin{equation*}
+        r,s := \emptyset \; | \; \varepsilon \; | \; . \; | \; a \; | \; r^* \; | \; r + s \; | \; r \& s \; | \; r s \; | \; \neg r
+    \end{equation*}
+    \paragraph{} 
+    The semantics of these constructors are as follows:
+    \begin{enumerate}
+        \item $\lang{\emptyset} = \emptyset$
+        \item $\lang{\varepsilon} = \varepsilon$
+        \item $\lang{.} = \Sigma$
+        \item $\lang{a} = \{a\}$
+        \item $\lang{r^*} = \lang{r}^*$
+        \item $\lang{r + s} = \lang{r} \cup \lang{s}$
+        \item $\lang{r \& s} = \lang{r} \cap \lang{s}$
+        \item $\lang{r s} = \lang{r} \cdot \lang{s}$
+
+    \end{enumerate}
+
     We take the implementation from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
 
     \code{regexp}{Regular Expressions}{regexp_regular_expression}
