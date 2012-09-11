@@ -86,7 +86,7 @@ Section MyhillNerode.
     Definition step x (a: char): X :=
       f (rcons (f_inv x) a).
 
-    Definition MN_dfa := dfaI char state s0 fin step.
+    Definition MN_dfa := {|dfa_s0 := s0; dfa_fin := fin; dfa_step := step |}.
 
     
     Lemma MN_dfa_run_f w: last s0 (dfa_run' MN_dfa s0 w) = f w.

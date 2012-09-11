@@ -18,12 +18,13 @@ Section DFA.
 
 (** The type of deterministic finite automata. ***)
 Record dfa : Type :=
-  dfaI {
+  {
     dfa_state :> finType;
     dfa_s0: dfa_state;
     dfa_fin: pred dfa_state;
     dfa_step: dfa_state -> char -> dfa_state
     }.
+
 
 (** Acceptance on DFAs **)
 Section Acceptance.
@@ -122,6 +123,9 @@ End Acceptance.
 
 End DFA.
 
+Print dfa.
+
+Implicit Arguments Build_dfa [dfa_state]. 
 
 
 (** Non-deterministic automata. **)
@@ -129,7 +133,7 @@ Section NFA.
 
 (** The type of non-deterministic finite automata. ***)
 Record nfa : Type :=
-  nfaI {
+  {
     nfa_state :> finType;
     nfa_s0: nfa_state;
     nfa_fin: pred nfa_state;
@@ -212,26 +216,19 @@ End Acceptance.
 
 End NFA.
 
+Implicit Arguments Build_nfa [nfa_state]. 
+
 (** We define the powerset construction to obtain
    a deterministic automaton from a non-deterministic one. **) 
 Section PowersetConstruction.
 
 Variable A: nfa.
 
-(** The new automaton's states are sets of the given
-   automaton' states. **)
-Definition powerset_state : finType := [finType of {set A}].
-
-(** The new starting state is the singleton set containing
-   the given automaton's starting state. **)
-Definition powerset_s0 : powerset_state := set1 (nfa_s0 A).
-
 Definition nfa_to_dfa :=
-  dfaI
-    powerset_state
-    powerset_s0 
-    [ pred X: powerset_state | existsb x: A, (x \in X) && nfa_fin A x]
-    [ fun X a => \bigcup_(x | x \in X) finset (nfa_step A x a) ]
+  {| dfa_s0 := set1 (nfa_s0 A);
+    dfa_fin := [ pred X: {set A} | existsb x: A, (x \in X) && nfa_fin A x];
+    dfa_step := [ fun X a => \bigcup_(x | x \in X) finset (nfa_step A x a) ]
+   |}
 .
 
 (** We prove that for every state x, the new automaton
@@ -286,11 +283,11 @@ Section Embed.
 Variable A: dfa.
 
 Definition dfa_to_nfa : nfa :=
-  nfaI
-    A
-    (dfa_s0 A)
-    (dfa_fin A)
-    [fun x a => fun y => y == dfa_step A x a ].
+  {|
+    nfa_s0 := dfa_s0 A;
+    nfa_fin := dfa_fin A;
+    nfa_step := [fun x a => fun y => y == dfa_step A x a ]
+  |}.
 
 (** We prove that dfa_to_nfa accepts the same language as
    the given automaton in any state. **)
@@ -315,21 +312,21 @@ End Embed.
 (** Primitive automata **)
 Section Primitive.
   Definition dfa_void :=
-    dfaI
-      bool_finType
-      false
-      pred0
-      [fun x a => false].
+   {| 
+      dfa_s0 := false;
+      dfa_fin := pred0;
+      dfa_step := [fun x a => false]
+   |}.
   
   Lemma dfa_void_correct x w: ~~ dfa_accept dfa_void x w.
   Proof. by elim: w x => [|a w IHw] //= x. Qed.
 
   Definition dfa_empty :=
-    dfaI
-      bool_finType
-      true
-      (pred1 true)
-      [fun x a => false].
+    {|
+      dfa_s0 := true;
+      dfa_fin := pred1 true;
+      dfa_step := [fun x a => false]
+     |}.
 
   Lemma dfa_empty_correct w: dfa_lang dfa_empty w = (w == [::]).
   Proof.
@@ -341,11 +338,11 @@ Section Primitive.
   Qed.
       
   Definition dfa_char a :=
-    dfaI
-      (option_finType (bool_finType))
-      None
-      (pred1 (Some true))
-      [fun x b => if x == None then if b == a then Some true else Some false else Some false ].
+    {|
+      dfa_s0 := None;
+      dfa_fin := pred1 (Some true);
+      dfa_step := [fun x b => if x == None then if b == a then Some true else Some false else Some false ]
+    |}.
             
   Lemma dfa_char_correct'' a w: ~~ dfa_accept (dfa_char a) (Some false) w.
   Proof. by elim: w => [|b v IHv] //=. Qed.
@@ -368,11 +365,11 @@ Section Primitive.
   Qed.
 
   Definition dfa_dot :=
-    dfaI
-      (option_finType (bool_finType))
-      None
-      (pred1 (Some true))
-      [fun x b => if x == None then Some true else Some false ].
+    {|
+      dfa_s0 := None;
+      dfa_fin := pred1 (Some true);
+      dfa_step := [fun x b => if x == None then Some true else Some false ]
+    |}.
             
   Lemma dfa_dot_correct'' w: ~~ dfa_accept dfa_dot (Some false) w.
   Proof. by elim: w => [|b v IHv] //=. Qed.
@@ -401,15 +398,13 @@ Variable A1: dfa.
 
 (** Complement automaton **)
   
-(** The only change needed is to negate the finality predicate. **)
-Definition fin_compl := [ fun x1 => ~~ dfa_fin A1 x1 ].
 (** We construct the resulting automaton. **)
 Definition dfa_compl :=
-  dfaI
-    A1
-    (dfa_s0 A1)
-    fin_compl
-    (dfa_step A1).
+ {| 
+    dfa_s0 := dfa_s0 A1;
+    dfa_fin := [ fun x1 => ~~ dfa_fin A1 x1 ];
+    dfa_step := (dfa_step A1)
+  |}.
 
 (** We prove that the complement automaton accepts exactly
    the words not accepted by the original automaton. **)
@@ -431,19 +426,14 @@ Section BinaryOps.
   
 Variable A2: dfa.
 
-(** Cross product of the two state sets **)
-Definition state_prod := prod_finType A1 A2.
-
 (** Disjunction automaton **)
 
-Definition step_disj (x: state_prod) a :=
-  let (x1, x2) := x in (dfa_step A1 x1 a, dfa_step A2 x2 a).
 Definition dfa_disj :=
-  dfaI
-    state_prod
-    (dfa_s0 A1, dfa_s0 A2) 
-    (fun q => let (x1,x2) := q in dfa_fin A1 x1 || dfa_fin A2 x2)
-    step_disj.
+  {|
+    dfa_s0 := (dfa_s0 A1, dfa_s0 A2);
+    dfa_fin := (fun q => let (x1,x2) := q in dfa_fin A1 x1 || dfa_fin A2 x2);
+    dfa_step := [fun x a => (dfa_step A1 x.1 a, dfa_step A2 x.2 a)]
+   |}.
 
 (** Correctness w.r.t. any state. **)
 Lemma dfa_disj_correct' w x1 x2 :
@@ -462,15 +452,12 @@ Proof. exact: dfa_disj_correct'. Qed.
 
 (** Conjunction **) 
   
-Definition step_conj (x: state_prod) a :=
-  let (x1, x2) := x in (dfa_step A1 x1 a, dfa_step A2 x2 a).
 Definition dfa_conj :=
-  dfaI
-    state_prod
-    (dfa_s0 A1, dfa_s0 A2) 
-    (fun q => let (x1,x2) := q in dfa_fin A1 x1 && dfa_fin A2 x2)
-    step_disj
-.
+ {| 
+    dfa_s0 := (dfa_s0 A1, dfa_s0 A2);
+    dfa_fin := (fun q => let (x1,x2) := q in dfa_fin A1 x1 && dfa_fin A2 x2);
+    dfa_step := [fun x a => (dfa_step A1 x.1 a, dfa_step A2 x.2 a)]
+  |}.
 
 (** Correctness w.r.t. any state. **)
 Lemma dfa_conj_correct' w x1 x2 :
@@ -496,10 +483,6 @@ Section Reachability.
 
   Definition connected_s0 := enum (connect e (dfa_s0 A1)).
 
-  Definition Connect_finMixin := seq_sub_finMixin (connected_s0).
-
-  Canonical Structure Connect_finType := FinType _ Connect_finMixin.
-
   Lemma connected_step x a: x \in connected_s0 ->  dfa_step A1 x a \in connected_s0.
   Proof.
     rewrite 2!mem_enum -2!topredE /= => Hx.
@@ -510,20 +493,17 @@ Section Reachability.
     rewrite andbT. apply/existsP. by exists a.
   Qed.
 
-  Definition dfa_connected_step (x: Connect_finType) (a: char) : Connect_finType.
-    elim: x => [x Hx].
-    exact (SeqSub (connected_step _ a Hx)).
-  Defined.
-
   Lemma connected_s0_s0 : dfa_s0 A1 \in connected_s0. 
   Proof. rewrite mem_enum -topredE /= /connected_s0. by apply connect0. Qed.
   
   Definition dfa_connected :=
-    dfaI
-      Connect_finType
-      (SeqSub (connected_s0_s0))
-      (fun x => match x with SeqSub x _ => dfa_fin A1 x end)
-      dfa_connected_step.
+   {| 
+      dfa_s0 := SeqSub (connected_s0_s0);
+      dfa_fin := [fun x => match x with SeqSub x _ => dfa_fin A1 x end];
+      dfa_step := [fun x a => match x with
+        | SeqSub x Hx => SeqSub (connected_step _ a Hx)
+        end]
+    |}.
       
 
   Lemma dfa_connected_correct' x (Hx: x \in connected_s0) : dfa_accept dfa_connected (SeqSub Hx) =1 dfa_accept A1 x.
@@ -561,7 +541,7 @@ Section Reachability.
     assumption.
   Qed.
                    
-  Lemma dfa_connected_repr' (x y: dfa_state dfa_connected): connect e_connected y x -> exists w, last y (dfa_run' dfa_connected y w) = x.
+  Lemma dfa_connected_repr' (x y: dfa_connected): connect e_connected y x -> exists w, last y (dfa_run' dfa_connected y w) = x.
   Proof.
     move/connectP => [] p.
     elim: p x y => [|z p IHp] x y.
@@ -591,30 +571,22 @@ Variable A2: nfa.
 
 (** Concatenation of two non-deterministic automata. **)
 
-Definition state_conc : finType := sum_finType A1 A2.
-
-Definition step_conc x a y :=
-match x,y with
-  | inl x, inl y => nfa_step A1 x a y
-  | inl x, inr y => nfa_fin A1 x && nfa_step A2 (nfa_s0 A2) a y
-  | inr x, inr y => nfa_step A2 x a y
-  | inr x, inl y => false
-end.
-
-Definition fin_conc (x: state_conc) : bool :=
-match x with
-  | inl x => nfa_fin A1 x && nfa_fin A2 (nfa_s0 A2)
-  | inr x => nfa_fin A2 x
-end.
-
-Definition s0_conc : state_conc := inl _ (nfa_s0 A1).
-
 Definition nfa_conc : nfa :=
-  nfaI
-    state_conc
-    s0_conc
-    fin_conc
-    step_conc.
+  {|
+    nfa_s0 := inl _ (nfa_s0 A1);
+    nfa_fin := [fun x => 
+        match x with
+          | inl x => nfa_fin A1 x && nfa_fin A2 (nfa_s0 A2)
+          | inr x => nfa_fin A2 x
+        end];
+     nfa_step := fun x a y =>
+        match x,y with
+          | inl x, inl y => nfa_step A1 x a y
+          | inl x, inr y => nfa_fin A1 x && nfa_step A2 (nfa_s0 A2) a y
+          | inr x, inr y => nfa_step A2 x a y
+          | inr x, inl y => false
+        end
+   |}.
 
 (** We prove that every path of A2 can be mapped to a path
    of nfa_conc. **)
@@ -714,7 +686,7 @@ Proof.
   move => w.
   apply/idP/concP.
     move/nfa_conc_sound.
-    rewrite /nfa_conc /nfa_s0 /s0_conc.
+    rewrite /nfa_conc /nfa_s0.
     move => [] w1 [] w2 /andP [] /andP [] /eqP H0 H1 H2.
     exists w1 => //.
     by exists w2.
@@ -736,13 +708,15 @@ nfa_step A1 x a y || (
 
 (** **)
 Definition nfa_plus : nfa :=
-  nfaI
-    A1
-    (nfa_s0 A1)
-    (nfa_fin A1)
-    step_plus.
-
-
+  {|
+    nfa_s0 := nfa_s0 A1;
+    nfa_fin := nfa_fin A1;
+    nfa_step := fun x a y =>
+        nfa_step A1 x a y || (
+                      (y == nfa_s0 A1)
+                      && existsb z, (nfa_fin A1 z) && (nfa_step A1 x a z)
+                    )
+   |}.
 
 
 (** We prove that every path of A1 can be mapped to a path
