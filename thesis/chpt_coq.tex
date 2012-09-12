@@ -1,12 +1,24 @@
 \chapter{\coq\ and \ssreflect}
 
 \paragraph{}
-We decided to employ the Small Scale Reflection Extension (\textbf{\ssreflect}) for the \textbf{\coq} proof assistant. 
+We decided to employ the Small Scale Reflection Extension (\textbf{\ssreflect}%
+\footnote{http://www.msr-inria.inria.fr/Projects/math-components})
+for the \textbf{\coq}%
+\footnote{http://coq.inria.fr/}
+proof assistant. 
 The most important factors in this decision were \ssreflect's excellent support for finite types, list operations and graphs. \ssreflect{} also introduces an alternative scripting language that can often be used to shorten the bookkeeping overhead of proofs considerably.
 
 \section{\coq}
 
+\paragraph{}
+\todo{Description, citation}
+
 \section{\ssreflect}
+
+\paragraph{}
+\ssreflect\ is a set of extensions to the proof scripting language of the \coq\ proof assistant. 
+They were originally developed to support small-scale reflection. 
+However, most of them are of quite general nature and improve the functionality of \coq\ in most basic areas such as script layout and structuring, proof context management and rewriting \cite{gonthier:inria-00258384}.
 
 \subsection{Finite Types and Ordinals}
 The most important feature of \ssreflect\ for our purpose are finite types. 
