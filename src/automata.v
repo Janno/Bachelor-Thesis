@@ -20,7 +20,7 @@ Section DFA.
 Record dfa : Type :=
   {
     dfa_state :> finType;
-    dfa_s0: dfa_state;
+    dfa_s: dfa_state;
     dfa_fin: pred dfa_state;
     dfa_step: dfa_state -> char -> dfa_state
     }.
@@ -43,8 +43,8 @@ match w with
 end.
 
 (** A simplifying function for a "complete" run
-   (i.e. starting at s0). **)
-Definition dfa_run := [fun w => dfa_run' (dfa_s0 A) w].
+   (i.e. starting at s). **)
+Definition dfa_run := [fun w => dfa_run' (dfa_s A) w].
 
 (** Acceptance of w in x is defined as
    finality of the last state of a run of w on A
@@ -57,7 +57,7 @@ end.
 
 (** We define the language of the deterministic
    automaton, i.e. acceptance in the starting state. **)
-Definition dfa_lang := [pred w | dfa_accept (dfa_s0 A) w].
+Definition dfa_lang := [pred w | dfa_accept (dfa_s A) w].
 
 (** A lemma that helps us avoid cumbersome unfolding of accept **)
 Lemma dfa_acceptS x a w : dfa_accept x (a::w) = dfa_accept (dfa_step A x a) w.
@@ -135,7 +135,7 @@ Section NFA.
 Record nfa : Type :=
   {
     nfa_state :> finType;
-    nfa_s0: nfa_state;
+    nfa_s: nfa_state;
     nfa_fin: pred nfa_state;
     nfa_step: nfa_state -> char -> pred nfa_state
     }.
@@ -154,7 +154,7 @@ end.
 
 (** We define the language of the non-deterministic
    automaton, i.e. acceptance in the starting state. **)
-Definition nfa_lang := [fun w => nfa_accept (nfa_s0 A) w].
+Definition nfa_lang := [fun w => nfa_accept (nfa_s A) w].
 
 (** We define labeled paths over the non-deterministic step relation **)
 Fixpoint nfa_lpath x (xs : seq A) (w: word) {struct xs} :=
@@ -225,7 +225,7 @@ Section PowersetConstruction.
 Variable A: nfa.
 
 Definition nfa_to_dfa :=
-  {| dfa_s0 := set1 (nfa_s0 A);
+  {| dfa_s := set1 (nfa_s A);
     dfa_fin := [ pred X: {set A} | existsb x: A, (x \in X) && nfa_fin A x];
     dfa_step := [ fun X a => \bigcup_(x | x \in X) finset (nfa_step A x a) ]
    |}
@@ -284,7 +284,7 @@ Variable A: dfa.
 
 Definition dfa_to_nfa : nfa :=
   {|
-    nfa_s0 := dfa_s0 A;
+    nfa_s := dfa_s A;
     nfa_fin := dfa_fin A;
     nfa_step := [fun x a => fun y => y == dfa_step A x a ]
   |}.
@@ -313,7 +313,7 @@ End Embed.
 Section Primitive.
   Definition dfa_void :=
    {| 
-      dfa_s0 := false;
+      dfa_s := false;
       dfa_fin := pred0;
       dfa_step := [fun x a => false]
    |}.
@@ -323,7 +323,7 @@ Section Primitive.
 
   Definition dfa_empty :=
     {|
-      dfa_s0 := true;
+      dfa_s := true;
       dfa_fin := pred1 true;
       dfa_step := [fun x a => false]
      |}.
@@ -339,7 +339,7 @@ Section Primitive.
       
   Definition dfa_char a :=
     {|
-      dfa_s0 := None;
+      dfa_s := None;
       dfa_fin := pred1 (Some true);
       dfa_step := [fun x b => if x == None then if b == a then Some true else Some false else Some false ]
     |}.
@@ -366,7 +366,7 @@ Section Primitive.
 
   Definition dfa_dot :=
     {|
-      dfa_s0 := None;
+      dfa_s := None;
       dfa_fin := pred1 (Some true);
       dfa_step := [fun x b => if x == None then Some true else Some false ]
     |}.
@@ -401,7 +401,7 @@ Variable A1: dfa.
 (** We construct the resulting automaton. **)
 Definition dfa_compl :=
  {| 
-    dfa_s0 := dfa_s0 A1;
+    dfa_s := dfa_s A1;
     dfa_fin := [ fun x1 => ~~ dfa_fin A1 x1 ];
     dfa_step := (dfa_step A1)
   |}.
@@ -430,7 +430,7 @@ Variable A2: dfa.
 
 Definition dfa_disj :=
   {|
-    dfa_s0 := (dfa_s0 A1, dfa_s0 A2);
+    dfa_s := (dfa_s A1, dfa_s A2);
     dfa_fin := (fun q => let (x1,x2) := q in dfa_fin A1 x1 || dfa_fin A2 x2);
     dfa_step := [fun x a => (dfa_step A1 x.1 a, dfa_step A2 x.2 a)]
    |}.
@@ -454,7 +454,7 @@ Proof. exact: dfa_disj_correct'. Qed.
   
 Definition dfa_conj :=
  {| 
-    dfa_s0 := (dfa_s0 A1, dfa_s0 A2);
+    dfa_s := (dfa_s A1, dfa_s A2);
     dfa_fin := (fun q => let (x1,x2) := q in dfa_fin A1 x1 && dfa_fin A2 x2);
     dfa_step := [fun x a => (dfa_step A1 x.1 a, dfa_step A2 x.2 a)]
   |}.
@@ -481,7 +481,7 @@ End BinaryOps.
 Section Reachability.
   Definition e := [ fun x y => existsb a, dfa_step A1 x a == y ].
 
-  Definition connected_s0 := enum (connect e (dfa_s0 A1)).
+  Definition connected_s0 := enum (connect e (dfa_s A1)).
 
   Lemma connected_step x a: x \in connected_s0 ->  dfa_step A1 x a \in connected_s0.
   Proof.
@@ -493,12 +493,12 @@ Section Reachability.
     rewrite andbT. apply/existsP. by exists a.
   Qed.
 
-  Lemma connected_s0_s0 : dfa_s0 A1 \in connected_s0. 
+  Lemma connected_s0_s0 : dfa_s A1 \in connected_s0. 
   Proof. rewrite mem_enum -topredE /= /connected_s0. by apply connect0. Qed.
   
   Definition dfa_connected :=
    {| 
-      dfa_s0 := SeqSub (connected_s0_s0);
+      dfa_s := SeqSub (connected_s0_s0);
       dfa_fin := [fun x => match x with SeqSub x _ => dfa_fin A1 x end];
       dfa_step := [fun x a => match x with
         | SeqSub x Hx => SeqSub (connected_step _ a Hx)
@@ -552,10 +552,10 @@ Section Reachability.
     by rewrite /= Ha.
   Qed.
 
-  Definition dfa_connected_repr x : exists w, last (dfa_s0 dfa_connected) (dfa_run dfa_connected w) = x.
+  Definition dfa_connected_repr x : exists w, last (dfa_s dfa_connected) (dfa_run dfa_connected w) = x.
     apply dfa_connected_repr'.
     destruct x as [x Hx].
-    apply (e_e_connected (dfa_s0 A1) x connected_s0_s0).
+    apply (e_e_connected (dfa_s A1) x connected_s0_s0).
     by rewrite mem_enum -topredE /= in Hx.
   Qed.
     
@@ -573,16 +573,16 @@ Variable A2: nfa.
 
 Definition nfa_conc : nfa :=
   {|
-    nfa_s0 := inl _ (nfa_s0 A1);
+    nfa_s := inl _ (nfa_s A1);
     nfa_fin := [fun x => 
         match x with
-          | inl x => nfa_fin A1 x && nfa_fin A2 (nfa_s0 A2)
+          | inl x => nfa_fin A1 x && nfa_fin A2 (nfa_s A2)
           | inr x => nfa_fin A2 x
         end];
      nfa_step := fun x a y =>
         match x,y with
           | inl x, inl y => nfa_step A1 x a y
-          | inl x, inr y => nfa_fin A1 x && nfa_step A2 (nfa_s0 A2) a y
+          | inl x, inr y => nfa_fin A1 x && nfa_step A2 (nfa_s A2) a y
           | inr x, inr y => nfa_step A2 x a y
           | inr x, inl y => false
         end
@@ -686,7 +686,7 @@ Proof.
   move => w.
   apply/idP/concP.
     move/nfa_conc_sound.
-    rewrite /nfa_conc /nfa_s0.
+    rewrite /nfa_conc /nfa_s.
     move => [] w1 [] w2 /andP [] /andP [] /eqP H0 H1 H2.
     exists w1 => //.
     by exists w2.
@@ -702,18 +702,18 @@ Proof.
    **)
 Definition step_plus x a y : bool :=
 nfa_step A1 x a y || (
-                      (y == nfa_s0 A1)
+                      (y == nfa_s A1)
                       && existsb z, (nfa_fin A1 z) && (nfa_step A1 x a z)
                     ).
 
 (** **)
 Definition nfa_plus : nfa :=
   {|
-    nfa_s0 := nfa_s0 A1;
+    nfa_s := nfa_s A1;
     nfa_fin := nfa_fin A1;
     nfa_step := fun x a y =>
         nfa_step A1 x a y || (
-                      (y == nfa_s0 A1)
+                      (y == nfa_s A1)
                       && existsb z, (nfa_fin A1 z) && (nfa_step A1 x a z)
                     )
    |}.
@@ -735,7 +735,7 @@ Qed.
 Lemma nfa_plus_lpath x y xs a w:
   nfa_fin nfa_plus (last x (y::xs)) ->
   nfa_lpath nfa_plus x (y::xs) (a::w) ->
-  nfa_lpath nfa_plus x (rcons (belast y xs) (nfa_s0 A1)) (a::w).
+  nfa_lpath nfa_plus x (rcons (belast y xs) (nfa_s A1)) (a::w).
 Proof. elim: xs x y a w => [|z xs IHxs] x y a [|b w] //=.
       rewrite 2!andbT.
       move => H0 /orP [|/andP [] /eqP].
@@ -784,7 +784,7 @@ Proof.
 move => /nfa_accept_lpath [] [|x xs] []; case: w1 => [|a w1] => //.
 move => H0 H1 H2.
 apply/(nfa_accept_cat).
-exists (rcons (belast x xs) (nfa_s0 A1)).
+exists (rcons (belast x xs) (nfa_s A1)).
 apply/andP. split.
   apply: nfa_plus_lpath.
     exact: H1.
