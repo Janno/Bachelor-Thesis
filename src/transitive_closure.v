@@ -238,7 +238,7 @@ Section TransitiveClosure.
 
   Lemma A_has_states: #|A| > 0.
   apply/card_gt0P.
-  by exists (dfa_s0 A).
+  by exists (dfa_s A).
   Qed.
   
   (* this represents k in 'I_#|A| *)
@@ -809,16 +809,16 @@ Section TransitiveClosure.
         foldr
           (@Plus char)
           (@Void char)
-          (map  (fun f => R^(#|A|) (enum_rank (dfa_s0 A)) (enum_rank f)) (enum (dfa_fin A)))
+          (map  (fun f => R^(#|A|) (enum_rank (dfa_s A)) (enum_rank f)) (enum (dfa_fin A)))
        ).
     move => w.
     apply/idP/idP.
       rewrite /= -dfa_run_accepts => H.
       rewrite foldr_Plus orFb.
       apply/hasP.
-      exists (R^#|A| (enum_rank (dfa_s0 A)) (enum_rank (last (dfa_s0 A) (dfa_run' A (dfa_s0 A) w)))).
+      exists (R^#|A| (enum_rank (dfa_s A)) (enum_rank (last (dfa_s A) (dfa_run' A (dfa_s A) w)))).
         apply/mapP.
-        exists (last (dfa_s0 A) (dfa_run' A (dfa_s0 A) w)) => //.
+        exists (last (dfa_s A) (dfa_run' A (dfa_s A) w)) => //.
         by rewrite mem_enum.
       apply/L_R.
       by rewrite in_simpl 2!enum_rankK dfa_L /=.
