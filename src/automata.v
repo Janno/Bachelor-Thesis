@@ -495,18 +495,18 @@ Section Reachability.
 
   Lemma reachable0 : dfa_s A1 \in reachable. 
   Proof. rewrite mem_enum -topredE /=. by apply connect0. Qed.
-  
+
   Definition dfa_connected :=
    {| 
-      dfa_s := SeqSub (reachable0);
-      dfa_fin := [fun x => match x with SeqSub x _ => dfa_fin A1 x end];
+      dfa_s := {|ssvalP := reachable0|};
+      dfa_fin := [fun x => match x with {|ssval := x |} => dfa_fin A1 x end];
       dfa_step := [fun x a => match x with
-        | SeqSub x Hx => SeqSub (reachable_step _ a Hx)
+        | {|ssvalP := Hx|} => {| ssvalP := (reachable_step _ a Hx) |}
         end]
     |}.
       
 
-  Lemma dfa_connected_correct' x (Hx: x \in reachable) : dfa_accept dfa_connected (SeqSub Hx) =1 dfa_accept A1 x.
+  Lemma dfa_connected_correct' x (Hx: x \in reachable) : dfa_accept dfa_connected {|ssvalP := Hx|} =1 dfa_accept A1 x.
   Proof. move => w. elim: w x Hx => [|a w IHw] x Hx //=. Qed. 
 
   Lemma dfa_connected_correct: dfa_lang dfa_connected =1 dfa_lang A1.
