@@ -1,17 +1,13 @@
 
-.PHONY : all definitions thesis
+.PHONY : all definitions thesis src
 
 CHPTS_TEX = $(shell for c in `cd thesis; ls chpt_*.tex`; do echo thesis/chapters/$$c; done)
 CHPTS = $(subst .tex,.pdf,${CHPTS_TEX})
 
-COQ_FILES = $(shell ls *.v)
-COQ_TARGETS = $(subst .v,.vo,${COQ_FILES})
+all: src thesis 
 
-all: ${COQ_TARGETS} 
-	#tactics.vo base.vo misc.vo glue.vo regexp.vo automata.vo transitive_closure.vo myhill_nerode.vo
-
-%.vo: %.v
-	coqc $(subst .vo,.v,$@)
+src:
+	cd src; make
 
 thesis/chapters/%.pdf: thesis/%.tex
 	j=$(shell basename $@ .pdf); cd thesis; pdflatex -jobname=chapters/$$j "\includeonly{$$j,includes.tex}\input{thesis}"
@@ -31,10 +27,10 @@ html_doc_beautiful: html_doc
 	python2.6 docs/beautifier.py docs/html/misc.html > docs/html/misc.html.tmp
 	mv docs/html/misc.html.tmp docs/html/misc.html
 
-docs/definitions: ${COQ_TARGETS} docs/extract_definitions.py
+docs/definitions: src docs/extract_definitions.py
 	mkdir -p docs/definitions
 	rm -f docs/definitions/*
-	find -type f -name '*.v' -exec sh -c 'cat "{}" | python docs/extract_definitions.py `basename "{}" .v` docs/definitions' \; 
+	find src -type f -name '*.v' -exec sh -c 'cat "{}" | python docs/extract_definitions.py `basename "{}" .v` docs/definitions' \; 
 
 definitions: docs/definitions
 
@@ -53,4 +49,4 @@ thesis: thesis/thesis.pdf
 doc: html_doc_beautiful definitions
 
 clean:
-	rm -r *.vo docs/html/*
+	rm -rf docs/html/* docs/definitions/*
