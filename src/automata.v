@@ -479,11 +479,11 @@ End BinaryOps.
 
 (* Remove unreachable states *)
 Section Reachability.
-  Definition e := [ fun x y => existsb a, dfa_step A1 x a == y ].
+  Definition reachable1 := [ fun x y => existsb a, dfa_step A1 x a == y ].
 
-  Definition connected_s0 := enum (connect e (dfa_s A1)).
+  Definition reachable := enum (connect reachable1 (dfa_s A1)).
 
-  Lemma connected_step x a: x \in connected_s0 ->  dfa_step A1 x a \in connected_s0.
+  Lemma reachable_step x a: x \in reachable ->  dfa_step A1 x a \in reachable.
   Proof.
     rewrite 2!mem_enum -2!topredE /= => Hx.
     eapply connect_trans.
@@ -493,20 +493,20 @@ Section Reachability.
     rewrite andbT. apply/existsP. by exists a.
   Qed.
 
-  Lemma connected_s0_s0 : dfa_s A1 \in connected_s0. 
-  Proof. rewrite mem_enum -topredE /= /connected_s0. by apply connect0. Qed.
+  Lemma reachable0 : dfa_s A1 \in reachable. 
+  Proof. rewrite mem_enum -topredE /=. by apply connect0. Qed.
   
   Definition dfa_connected :=
    {| 
-      dfa_s := SeqSub (connected_s0_s0);
+      dfa_s := SeqSub (reachable0);
       dfa_fin := [fun x => match x with SeqSub x _ => dfa_fin A1 x end];
       dfa_step := [fun x a => match x with
-        | SeqSub x Hx => SeqSub (connected_step _ a Hx)
+        | SeqSub x Hx => SeqSub (reachable_step _ a Hx)
         end]
     |}.
       
 
-  Lemma dfa_connected_correct' x (Hx: x \in connected_s0) : dfa_accept dfa_connected (SeqSub Hx) =1 dfa_accept A1 x.
+  Lemma dfa_connected_correct' x (Hx: x \in reachable) : dfa_accept dfa_connected (SeqSub Hx) =1 dfa_accept A1 x.
   Proof. move => w. elim: w x Hx => [|a w IHw] x Hx //=. Qed. 
 
   Lemma dfa_connected_correct: dfa_lang dfa_connected =1 dfa_lang A1.
@@ -514,8 +514,8 @@ Section Reachability.
     move => w. by rewrite /dfa_lang /= dfa_connected_correct'.
   Qed.
 
-  Definition e_connected := [ fun x y => existsb a, dfa_step dfa_connected x a == y ].
-  Lemma e_e_connected x y (Hx: x \in connected_s0) (Hy: y \in connected_s0) : connect e x y -> connect e_connected (SeqSub Hx) (SeqSub Hy).
+  Definition reachable1_connected := [ fun x y => existsb a, dfa_step dfa_connected x a == y ].
+  Lemma reachable1_connected_complete x y (Hx: x \in reachable) (Hy: y \in reachable) : connect reachable1 x y -> connect reachable1_connected (SeqSub Hx) (SeqSub Hy).
   Proof.
     move/connectP => [p].
     elim: p x Hx y Hy => [|z p IHp] x Hx y Hy //=.
@@ -526,8 +526,8 @@ Section Reachability.
       move => ->.
       apply: connect0.
     move/andP => [] /existsP [] a /eqP Ha Hpz H.
-    have Hz: (z \in connected_s0).
-      rewrite -Ha. by apply connected_step.
+    have Hz: (z \in reachable).
+      rewrite -Ha. by apply reachable_step.
     pose H0 := (IHp _ Hz _ Hy Hpz H).
     eapply connect_trans.
       apply connect1.
@@ -535,13 +535,13 @@ Section Reachability.
       apply/existsP. exists a.
       simpl. move: Hz H0.
       rewrite -Ha => Hz H0.
-      have: Hz = connected_step x a Hx.
+      have: Hz = reachable_step x a Hx.
         apply bool_irrelevance.
       by move => ->.
     assumption.
   Qed.
                    
-  Lemma dfa_connected_repr' (x y: dfa_connected): connect e_connected y x -> exists w, last y (dfa_run' dfa_connected y w) = x.
+  Lemma dfa_connected_repr' (x y: dfa_connected): connect reachable1_connected y x -> exists w, last y (dfa_run' dfa_connected y w) = x.
   Proof.
     move/connectP => [] p.
     elim: p x y => [|z p IHp] x y.
@@ -555,7 +555,7 @@ Section Reachability.
   Definition dfa_connected_repr x : exists w, last (dfa_s dfa_connected) (dfa_run dfa_connected w) = x.
     apply dfa_connected_repr'.
     destruct x as [x Hx].
-    apply (e_e_connected (dfa_s A1) x connected_s0_s0).
+    apply (reachable1_connected_complete (dfa_s A1) x reachable0).
     by rewrite mem_enum -topredE /= in Hx.
   Qed.
     
