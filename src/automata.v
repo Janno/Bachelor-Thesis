@@ -322,16 +322,16 @@ Section Primitive.
   Lemma dfa_void_correct x w: ~~ dfa_accept dfa_void x w.
   Proof. by elim: w x => [|a w IHw] //= x. Qed.
 
-  Definition dfa_empty :=
+  Definition dfa_eps :=
     {|
       dfa_s := true;
       dfa_fin := pred1 true;
       dfa_step := [fun x a => false]
      |}.
 
-  Lemma dfa_empty_correct w: dfa_lang dfa_empty w = (w == [::]).
+  Lemma dfa_eps_correct w: dfa_lang dfa_eps w = (w == [::]).
   Proof.
-    have H: (forall w, ~~ dfa_accept dfa_empty false w).
+    have H: (forall w, ~~ dfa_accept dfa_eps false w).
       by elim => [|a v IHv] //=.
     elim: w => [|a w IHw] //.
     apply/idP/idP.
@@ -910,7 +910,7 @@ Proof. exact: nfa_plus_sound'. Qed.
 (* Star operator *)
 Definition nfa_star :=
   (dfa_disj
-        (dfa_empty)
+        (dfa_eps)
         (nfa_to_dfa
            (nfa_plus)
         )
@@ -919,7 +919,7 @@ Definition nfa_star :=
 Lemma nfa_star_sound w: w \in dfa_lang nfa_star -> w \in star (nfa_lang A1).
 Proof.
   rewrite in_simpl -dfa_disj_correct.
-    rewrite dfa_empty_correct => /orP [].
+    rewrite dfa_eps_correct => /orP [].
       move => /eqP ->.
       apply/starP. by exists [::].
 
@@ -950,13 +950,13 @@ Qed.
 Lemma nfa_star_complete w: w \in star (nfa_lang A1) -> w \in dfa_lang nfa_star.
     rewrite /nfa_star in_simpl -dfa_disj_correct -nfa_to_dfa_correct.
     move/starP => [] vv. elim: vv w => [|v vv IHvv] w.
-      rewrite /= => _ ->. move: (dfa_empty_correct [::]).
+      rewrite /= => _ ->. move: (dfa_eps_correct [::]).
       by rewrite /dfa_lang /=.
     rewrite [all _ _]/=.
     move/andP => [] /andP [] H0 H1 H2 H3.
     rewrite H3 [flatten _]/=.
     move/orP: (IHvv (flatten vv) H2 (Logic.eq_refl _)) => [].
-      rewrite dfa_empty_correct => /eqP H4.
+      rewrite dfa_eps_correct => /eqP H4.
       move: H3. rewrite [flatten _]/= H4 cats0.
       move => H5. subst. apply/orP. right.
       rewrite H4 in IHvv.

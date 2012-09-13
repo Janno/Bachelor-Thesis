@@ -29,8 +29,8 @@ Section RE_FA.
     exists (dfa_void char).
     move => w. apply/idP/idP. exact: dfa_void_correct.
 
-    exists (dfa_empty char).
-    exact: dfa_empty_correct.
+    exists (dfa_eps char).
+    exact: dfa_eps_correct.
     
     exists (dfa_dot char).
     move => w.
