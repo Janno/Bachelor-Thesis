@@ -101,7 +101,7 @@ Section MyhillNerode.
     Lemma MN_dfa_correct: L =1 dfa_lang MN_dfa.
     Proof.
       move => w.
-      rewrite /dfa_lang /= -dfa_run_accepts MN_dfa_run_f in_simpl /=.
+      rewrite /dfa_lang /= -dfa_run_accept MN_dfa_run_f in_simpl /=.
       apply/eqP.
       move: (f_inv_L w).
       by rewrite eq_sym.
@@ -421,7 +421,7 @@ Section MyhillNerode.
       move => w1 w2.
       rewrite /f /=.
       move => /eqP H0 w3.
-      rewrite /dfa_lang /= 2!in_simpl /= -2!dfa_run_accepts 2!dfa_run'_cat 2!last_cat.
+      rewrite /dfa_lang /= 2!in_simpl /= -2!dfa_run_accept 2!dfa_run'_cat 2!last_cat.
       by rewrite H0.
     Qed.
       

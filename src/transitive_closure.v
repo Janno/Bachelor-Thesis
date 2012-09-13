@@ -813,7 +813,7 @@ Section TransitiveClosure.
        ).
     move => w.
     apply/idP/idP.
-      rewrite /= -dfa_run_accepts => H.
+      rewrite /= -dfa_run_accept => H.
       rewrite foldr_Plus orFb.
       apply/hasP.
       exists (R^#|A| (enum_rank (dfa_s A)) (enum_rank (last (dfa_s A) (dfa_run' A (dfa_s A) w)))).
@@ -828,7 +828,7 @@ Section TransitiveClosure.
     rewrite mem_enum.
     move => H0 -> /R_L.
     rewrite in_simpl dfa_L 2!enum_rankK /=.
-    by rewrite -dfa_run_accepts => /eqP ->.
+    by rewrite -dfa_run_accept => /eqP ->.
   Qed.                                    
     
 End TransitiveClosure.

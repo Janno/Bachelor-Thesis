@@ -116,7 +116,7 @@ Qed.
 
 
 (* slightly altered acceptance statement. *)
-Lemma dfa_run_accepts x w: last x (dfa_run' x w) \in dfa_fin A = dfa_accept x w.
+Lemma dfa_run_accept x w: last x (dfa_run' x w) \in dfa_fin A = dfa_accept x w.
 Proof. elim: w x => [|a w IHw] x //. by rewrite /= IHw. Qed.
 
 End Acceptance.
@@ -154,7 +154,7 @@ end.
 
 (** We define the language of the non-deterministic
    automaton, i.e. acceptance in the starting state. **)
-Definition nfa_lang := [fun w => nfa_accept (nfa_s A) w].
+Definition nfa_lang := [ pred w | nfa_accept (nfa_s A) w].
 
 (** We define labeled paths over the non-deterministic step relation **)
 Fixpoint nfa_lpath x (xs : seq A) (w: word) {struct xs} :=
@@ -178,7 +178,8 @@ Qed.
 
 (** We prove that the existence of a path labeled with w
    implies the acceptance of w. **)
-Lemma nfa_lpath_accept x xs w: nfa_lpath x xs w -> nfa_fin A (last x xs) -> nfa_accept x w.
+Lemma nfa_lpath_accept x xs w:
+  nfa_lpath x xs w -> nfa_fin A (last x xs) -> nfa_accept x w.
 Proof. elim: w x xs => [|a w IHw] x xs.
   (* We destruct the path to ensure that it is empty. *)
   case: xs => [|y xs].
@@ -542,7 +543,9 @@ Section Reachability.
     assumption.
   Qed.
                    
-  Lemma dfa_connected_repr' (x y: dfa_connected): connect reachable1_connected y x -> exists w, last y (dfa_run' dfa_connected y w) = x.
+  Lemma dfa_connected_repr' (x y: dfa_connected):
+    connect reachable1_connected y x ->
+    exists w, last y (dfa_run' dfa_connected y w) = x.
   Proof.
     move/connectP => [] p.
     elim: p x y => [|z p IHp] x y.
@@ -553,12 +556,14 @@ Section Reachability.
     by rewrite /= Ha.
   Qed.
 
-  Definition dfa_connected_repr x : exists w, last (dfa_s dfa_connected) (dfa_run dfa_connected w) = x.
+  Lemma dfa_connected_repr x :
+    exists w, last (dfa_s dfa_connected) (dfa_run dfa_connected w) = x.
+  Proof.
     apply dfa_connected_repr'.
     destruct x as [x Hx].
     apply (reachable1_connected_complete (dfa_s A1) x reachable0).
     by rewrite mem_enum -topredE /= in Hx.
-  Qed.
+  Defined.
     
 End Reachability.
 
@@ -576,7 +581,7 @@ Section Emptiness.
     apply/negP.
     move: (dfa_connected_repr x) => [w Hw].
     move: (H w).
-    rewrite /dfa_lang /= -dfa_run_accepts.
+    rewrite /dfa_lang /= -dfa_run_accept.
     rewrite Hw.
     by move/negP.
   Qed. 
@@ -587,7 +592,7 @@ Section Emptiness.
     move => H w.
     apply/idP/idP.
     apply/negP.
-    rewrite /dfa_lang /= -dfa_run_accepts.
+    rewrite /dfa_lang /= -dfa_run_accept.
     by move/eqP/card0_eq: H => ->.
   Qed.
                               
