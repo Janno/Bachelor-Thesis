@@ -1,7 +1,7 @@
 
 \chapter{Finite Automata}
 \paragraph{} 
-Another way of characterizing regular languages are finite automata. 
+Another way of characterizing regular languages are finite automata (FA). 
 We will show that the languages of finite automata are exactly the regular languages. 
 Furthermore, we will also derive a decision procedure for equivalence of regular expressions.
 
@@ -26,23 +26,48 @@ A word $w$ is \textbf{accepted} by $A$ if and only if there exists a run $\sigma
 The \textbf{language} of $A$ is exactly the set of words accepted by $A$ and is denoted $\lang{A}$. 
 It will later be useful to also have a acceptance criterion defined by runs starting in a given state $x \in Q$, for which we will denote the resulting language $\acc{x}{A}$.
 
-\subsection{Determinism and Non-Determinism}
-
-\paragraph{} 
-Finite automata can be non-deterministic in the sense that there exist multiple distinct runs for a word. 
+\subsection{Non-Deterministic Finite Automata}
+Finite automata can be \textbf{non-deterministic} (NFA) in the sense that there exist multiple distinct runs for a word. 
 This is the case if and only if $\delta$ is not functional.
 
 \code{nfa}{Non-Deterministic Finite Automata}{automata_nfa}
-\code{nfa_accept}{}{automata_nfa_accept}
+\codeblock{nfa_accept}{}{automata_nfa_accept}
+\codeblock{nfa_lang}{}{automata_nfa_lang}
 
+\paragraph{}
+The acceptance criterion given here avoids the matter of runs.
+In many cases, this will help us with proofs by in induction on the accepted word.
+However, we will need runs in some of the proofs.
+Due to the fact that runs are not unique on NFAs, 
+we will speak of \textbf{labeled paths} in this context.
+Labeled paths are paths through the graph implied by the automaton's step function.
+They can be valid runs for a word, but they could also be invalid by themselves 
+in that they contain a sub-sequence of states that are not connected by edges.
+Therefore, we give a predicate that decides if a labeled path is a valid run for $w$ on $A$.
+We then show that the acceptance criterion given above corresponds to the mathematical definition.
 
-For functional $\delta$, we speak of \textbf{deterministic finite automata}. 
+\code{nfa_lpath}{}{automata_nfa_lpath}
+\codeblock{nfa_lpath_accept}{}{automata_nfa_lpath_accept_head}
+\codeblock{nfa_accept_lpath}{}{automata_nfa_accept_lpath_head}
+
+\subsection{Deterministic Finite Automata}
+For functional $\delta$, we speak of \textbf{deterministic} finite automata (DFA). 
 In this case, we write $\delta$ as a function in our \coq\ development. 
-This allows us to define the acceptance criterion in terms of the unique sequence of transitions on the automaton. 
+%This allows us to define the acceptance criterion in terms of the unique sequence of transitions on the automaton. 
 
 \code{dfa}{Deterministic Finite Automata}{automata_dfa}
 \codeblock{dfa_accept'}{}{automata_dfa_accept}
 \codeblock{dfa_lang}{}{automata_dfa_lang}
+
+\paragraph{}
+Again, we avoid runs in our formalization of the acceptance criterion.
+In this case, however, we can give a function that computes the unique run of a word on $A$.
+This allows us to give an alternative acceptance criterion that is closer to the mathematical definition.
+We also prove that both criteria are equivalent.
+
+\code{dfa_run'}{}{automata_dfa_run'}
+\codeblock{dfa_run_accept}{}{automata_dfa_run_accept_head}
+
 
 %\paragraph{}
 %We can give simpler formalizations of the acceptance on deterministic and non-deterministic automata.
@@ -224,11 +249,54 @@ Given NFA $A$, we construct an equivalent DFA $A_{det}$ in the following way:
     \code{automata_dfa_connected_correct'}{}{automata_dfa_connected_correct'_head}
     \codeblock{automata_dfa_connected_correct}{}{automata_dfa_connected_correct_head}
 
+    \paragraph{}
+    To make use of the fact that $A_c$ is fully connected, we will proof the characteristic property of $A_c$.
+
+    \begin{definition}
+        A \textbf{representative} of a state $x$ is a word $w$ such that the unique run of $w$ on $A_c$ ends in $x$.
+    \end{definition}
+
+    \begin{lemma}
+        \label{dfa_connected_repr}
+        We can give a representative for every state $x \in Q_c$.
+        \todo{Sigma?}
+    \end{lemma}
+
+    \begin{proof}
+        $x$ carries a proof of reachability.
+        This is equivalent to a path through the graph implied by $\mathrm{reachable1}$ that ends ind $x$.
+        We build the representative by extracting the edges taken in the path and building a word from those.
+    \end{proof}
+
+    \paragraph{}
+    The formalization of theorem \ref{dfa_connected_repr} consists of a more general version of the theorem, 
+    which facilitates the proof by induction over the path, and the theorem itself.
+
+    \code{dfa_connected_repr'}{}{automata_dfa_connected_repr'_head}
+    \codeblock{dfa_connected_repr}{}{automata_dfa_connected_repr_head}
 
 
         \section{Emptiness}
         \paragraph{}
         Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain the connected automaton of $A$ and check if there are any final states left. 
+
+    \begin{lemma}
+        \label{dfa_lang_empty}
+        The language of the connected automaton $A_c$ is empty if and only if its set of final states $F_c$ is empty, i.e.
+        \begin{equation*}
+            A_c = \emptyset \iff F_c = \emptyset.
+        \end{equation*}
+    \end{lemma}
+
+    \begin{proof}
+        ``$\Leftarrow$''
+        We have $A_c = \emptyset$ and have to show that for all $x \in Q_c$, $x \notin F_c$.
+        Let $x \in Q_c$. 
+        By lemma \ref{dfa_connected_repr} we get $w$ such that the unique run of $w$ on $A_c$
+        ends in $x$.
+    \end{proof}
+
+
         \begin{theorem} We can decide emptiness of $\lang{A}$ by computing the cardinality of $A_c$'s set of final states, i.e.
             \label{AutomatonEmpty}
             \begin{equation*}        
@@ -244,7 +312,9 @@ Given NFA $A$, we construct an equivalent DFA $A_{det}$ in the following way:
 
             \section{Deciding Equivalence of Finite Automata}
             Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the language of $A$ is the symmetric difference of the languages of $A_1$ and $A_2$, i.e.,
-            \begin{equation*}          \lang{A} = \lang{A_1} \ominus \lang{A_2} = \lang{A_1} \cap \neg \lang{A_2} \cup \lang{A_2} \cap \neg \lang{A_1}.      \end{equation*}
+            \begin{equation*}          
+                \lang{A} = \lang{A_1} \ominus \lang{A_2} = \lang{A_1} \cap \neg \lang{A_2} \cup \lang{A_2} \cap \neg \lang{A_1}.      
+            \end{equation*}
                 \begin{theorem} The equivalence of $A_1$ and $A_2$ is decidable, i.e.
                     \begin{equation*}                \lang{A_1} = \lang{A_2} \mbox{ if and only if } \lang{A} \mbox{ is empty. }                \end{equation*}
                     \end{theorem}
