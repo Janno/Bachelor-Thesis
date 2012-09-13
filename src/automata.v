@@ -610,6 +610,29 @@ End Emptiness.
 
 End DFAOps.
 
+Section Equivalence.
+  Variable A1 A2: dfa.
+  Definition dfa_sym_diff :=
+    dfa_disj (dfa_conj A1 (dfa_compl A2)) (dfa_conj A2 (dfa_compl A1)).
+
+  Lemma dfa_sym_diff_correct:
+    dfa_lang dfa_sym_diff =1 pred0 <-> dfa_lang A1 =1 dfa_lang A2.
+  Proof.
+    split => H w; move: (H w); rewrite /dfa_sym_diff.
+      rewrite -dfa_disj_correct -2!dfa_conj_correct -2!dfa_compl_correct [pred0 w]/=.
+      move/norP => [] /nandP [] /negP H1 /nandP [] /negP H2;
+      apply/idP/idP; try by [];
+      move/negP: H1; move/negP: H2;
+      auto using negbNE.
+
+    rewrite -dfa_disj_correct -2!dfa_conj_correct -2!dfa_compl_correct [pred0 w]/=.
+    move => ->.
+    by rewrite andbN.
+Qed.    
+
+End Equivalence.
+
+
 (** Operations on non-deterministic automata. **)
 Section NFAOps.
 Variable A1: nfa.
