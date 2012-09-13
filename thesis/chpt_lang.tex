@@ -2,7 +2,7 @@
 
 \paragraph{}
 We give basic definitions for languages, operators on languages and, finally, regular languages.
-We provide the corresponding formalizations from our development.
+We provide the corresponding formalizations from our development and prove their correctness.
 
 \section{Definitions}
 \paragraph{}
@@ -10,7 +10,7 @@ We closely follow the definitions from \cite{DBLP:books/daglib/0011126}.
 An \textbf{alphabet} $\Sigma$ is a finite set of symbols. 
 A \textbf{word} $w$ is a finite sequence of symbols chosen from some alphabet. 
 We use $|w|$ to denote the \textbf{length} of a word $w$. $\varepsilon$ denotes the empty word.
-Given two words $w_1 = a_1 a_2 \cdots a_n$ and $w_2 = b_1 b_2 \cdots b_m$, the \textbf{concatenation} of $w_1$ and $w_2$ is defined as $a_1 a_2 \cdots a_n b_1 b_2 \cdots b_m$ and denoted $w_1 \cdot w_2$ or just $w_1 w_2$.
+Given two words $w_1 = a_1 \cdots a_n$ and $w_2 = b_1 \cdots b_m$, the \textbf{concatenation} of $w_1$ and $w_2$ is defined as $a_1 \cdots a_n \cdot b_1 \cdots b_m$ and denoted $w_1 \cdot w_2$ or just $w_1 w_2$.
 A \textbf{language} is a set of words.
 The \textbf{residual language} of a language $L$ with respect to symbol $a$ is the set of words $u$ such that $a v$ is in $L$. The residual is denoted $res_a(L)$.
 We define $\Sigma^k$ to be the \textbf{set of words of length k}.
@@ -35,12 +35,13 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     \paragraph{}
 
     The \textbf{concatenation} of two languages $L_1$ and $L_2$ is denoted $L_1 \cdot L_2$ and is defined as the set of words $w = w_1 w_2$ such that $w_1$ is in $L_1$ and $w_2$ is in $L_2$.
-    The \textbf{Kleene closure} of a language $L$ (also called Kleene star) is denoted $L^*$ and is defined as the set of words $w = w_1 w_2 \cdots w_k$ such that $w_1, w_2, \cdots w_k$ are in $L$. $\varepsilon$ is contained in $L^*$ ($k=0$).
+    The \textbf{Kleene closure} of a language $L$ (also called Kleene star) is denoted $L^*$ and is defined as the set of words $w = w_1 \cdots w_k$ such that $w_1 \ldots w_k$ are in $L$. $\varepsilon$ is contained in $L^*$ ($k=0$).
     We define the \textbf{complement} of a language $L$ as $L \backslash \Sigma^*$, which we write as $\neg L$.
     Furthermore, we make use of the standard set operations \textbf{union} and \textbf{intersection}.
 
     \paragraph{}
-    We take Coquand and Siles's \cite{DBLP:conf/cpp/CoquandS11} implementation of these operators. 
+    For our \coq\ development,
+    take Coquand and Siles's \cite{DBLP:conf/cpp/CoquandS11} implementation of these operators. 
     \lstinline{plus} and \lstinline{prod} refer to union and intersection, respectively. 
     Additionally, we also introduce the singleton languages (\lstinline{atom}), the empty language (\lstinline{void}) and the language containing only the empty word (\lstinline{eps}).
 
@@ -53,8 +54,8 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     \codeblock{lang_void}{}{regexp_void}
     \codeblock{lang_eps}{}{regexp_eps}
 
-    %\paragraph{}
-    %The implementation of \lstinline{star} 
+    \paragraph{}
+    The definition of \lstinline{conc} is based on a characteristic property of the concatenation of two languages. The following lemma proves this property.
 
     \begin{lemma}
         \label{concP}
@@ -78,8 +79,12 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
         It follows that $w_1 \in L_1$ and $w_2 \in L_2$.
     \end{proof}
     
-
     \code{regexp_concP}{Formalization of lemma \ref{concP}}{regexp_concP_head}
+
+    \paragraph{}
+    The implementation of \lstinline{star} makes use of a characteristic property of the Kleene closure, 
+    which is that any nonempty word in $L^*$ can be seen as the concatenation of a nonempty word in $L$ and a (possibly empty) word in $L^*$.
+    The following lemma proves the correctness of this property.
 
     \begin{lemma}
         \label{starP}
@@ -120,12 +125,21 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
                 $a_2 \cdots a_k \in res_{a_1}(L) \cdot L^*$. 
                 By lemma \ref{concP} we have $n$ such that $a_2 \cdots a_{n-1} \in res_{a_1}(L)$ and $a_n \cdots a_k \in L^*$.
                 By definition of $res$, we have $a_1 \cdots a_{n-1} \in L$.
-                Furthermore, we also have $a_n \cdots a_k = w_1 \cdots w_l$ such that $w_1, w_2 \cdots w_l$ are in $L$.
+                Furthermore, we also have $a_n \cdots a_k = w_1 \cdots w_l$ such that $w_1 \ldots w_l$ are in $L$.
                 We choose $w_0 := a_1 \cdots a_{n-1}$.
                 It follows that $w = w_0 w_1 \cdots w_l$ with $w_0, w_1, \cdots w_l$ in $L$.
                 Therefore, $w \in L^*$.
         \end{enumerate}
     \end{proof}
+
+    \paragraph{}
+    The formalization of lemma \ref{starP} connects the characteristic property used to define \lstinline{star} to the mathematical definition. The propositional formula given here appears slightly more restrictive than our mathemitcal definition as it requires all words from $L$ to be nonempty. 
+    Mathematically, however, this is no restriction. 
+    The advantage of this formalization is can be seen in later proofs, where induction over the length of a word $w \in L^*$ is necessary. 
+    In such places, we will use lemma \ref{starP} to get $w_1 \ldots w_k \in L$ such that $w = w_1 \cdots w_k$ 
+    and proceed by induction over the list of words $w_1 \ldots w_k$. 
+    Since every word $w_i$ has a length of at least one, we shorten $w$ by at least one character. 
+    Thus, we can use the inductive hypothesis of the induction over $|w|$ to prove the claim.
 
     \code{regexp_starP}{Formalization of lemma \ref{starP}}{regexp_starP_head}
 
@@ -136,8 +150,8 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     \begin{proof}
         We have already given algorithms for every operator. 
         It remains to show that they are correct.
-        For concatenation and the Kleene star, we have shown in lemma \ref{concP} and \ref{starP} that the formalization is equivalent to the formal definition. 
-        The remaining operators are applied directly to the decision functions. 
+        For concatenation and the Kleene star, we have shown in lemma \ref{concP} and lemma \ref{starP} that the formalizations are equivalent to the mathematical definitions. 
+        The remaining operators (union, intersection, complement) can be applied directly to the result of the languages' boolean decision functions.
     \end{proof}
 
     \paragraph{}
@@ -184,7 +198,21 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
         \item $\lang{r s} = \lang{r} \cdot \lang{s}$
     \end{enumerate}
 
-    We take the implementation from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
+    \begin{definition}
+        We say that two regular expressions $r$ and $s$ are equivalent if and only if
+        \begin{equation*}
+            \lang{r} = \lang{s}.
+        \end{equation*}
+    \end{definition}
+
+    \paragraph{}
+    We will later show that equivalence of regular expressions is decidable.
+
+
+    \paragraph{}
+    We take the implementation of regular expressions from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
+    They also give a decision function the language associated with a regular expression.
+    
 
     \code{regexp}{Regular Expressions}{regexp_regular_expression}
     \codeblock{regexp_mem_reg}{}{regexp_mem_reg}
@@ -202,5 +230,4 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     %\code{re_standard}{}{re_standard_standard}
 
     \todo{Connect standard regexp to reg. languages}
-
 
