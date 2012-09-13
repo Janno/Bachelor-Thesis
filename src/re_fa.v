@@ -97,7 +97,7 @@ Section RE_FA.
     move => w. rewrite 2!in_simpl /predC /=.
     move: (H w). rewrite -(topredE w s) /= /mem_reg => <-.
     rewrite in_simpl dfa_compl_correct.
-    by apply/idP/negPn.
+    by apply/idP/idP.
 
   Qed.
     

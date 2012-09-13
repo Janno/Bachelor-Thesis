@@ -410,15 +410,15 @@ Definition dfa_compl :=
 (** We prove that the complement automaton accepts exactly
    the words not accepted by the original automaton. **)
 Lemma dfa_compl_correct' w x:
-  dfa_accept A1 x w = ~~ dfa_accept dfa_compl x w.
+  ~~ dfa_accept A1 x w = dfa_accept dfa_compl x w.
 Proof. elim: w x => [|a w IHw] x.  
-  by apply/idP/negPn.
-simpl. by rewrite IHw.
+    by apply/idP/idP.
+  simpl. by rewrite IHw.
 Qed.
 
 (** Language correctness for dfa_compl **)
 Lemma dfa_compl_correct w:
-  dfa_lang A1 w = ~~ dfa_lang dfa_compl w.
+  ~~ dfa_lang A1 w = dfa_lang dfa_compl w.
 Proof. exact: dfa_compl_correct'. Qed.
 
   
