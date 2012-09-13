@@ -86,370 +86,399 @@ Given NFA $A$, we construct an equivalent DFA $A_{det}$ in the following way:
 %A state is final if and only if it contains an original final state. 
 %The transition function on powerset states is defined as follows:
 
+\begin{eqnarray*}
+    Q_{det} & = & \{q \; | \; q \subseteq Q\} \\
+    {s}_{det} & = & \{ s \} \\
+    F_{det} & = & \{ q \; | \; q \in Q_{det} \wedge q \cap F \neq \emptyset \} \\
+    \delta_{det} & = & \{ (p,a,\bigcup \limits _{p \in P} \{ q | (p,a,q) \in \delta \}) \; | \; p, q \in Q_{det}, a \in \Sigma \}.     \\
+    A_{det} &=&  (Q_{det}, s_{det}, F_{det}, \delta_{det}).
+\end{eqnarray*}
+
+\paragraph{}
+The formalization of $A_{det}$ is straight-forward. 
+We leave the set of states implicit.
+
+\code{}{}{automata_nfa_to_dfa}
+
+\begin{lemma}
+    \label{nfa_to_dfa_complete}
+    For all powerset states $X$ and for all states $x$ with $x \in X$ we have that
+    \begin{equation*}
+        \acc{x}{A} \subseteq \acc{X}{A_{det}}.
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+    Let $w \in \acc{x}{A}$. We proof by induction on $w$ that $w \in \acc{X}{A_{det}}$. 
+    \begin{itemize}
+        \item
+            For $w = \varepsilon$ and $\varepsilon \in \acc{x}{A}$ we get $x \in F$ from $\varepsilon \in \acc{x}{A}$. 
+            From $x \in X$ we get $X \cap F \neq \emptyset$ and therefore $\varepsilon \in \acc{X}{A_{det}}$.
+        \item
+            For $w = a w'$ and $a w' \in \acc{x}{A}$ we get $y$ such that $w' \in \acc{y}{A}$ and $(x,a,y) \in \delta$.
+            The latter gives us $y \in Y$ where $Y$ is such that $(X, a, Y) \in \delta_{det}$.
+            We apply the inductive hypothesis to $y$ and $Y$ and $w' \in \acc{y}{A}$, 
+            which gives us $w' \in \acc{Y}{A_{det}}$.
+            With $(X, a, Y) \in \delta_{det}$ we get $a w' \in \acc{X}{A_{det}}$.
+    \end{itemize}
+\end{proof}
+
+
+\begin{lemma}
+    \label{nfa_to_dfa_sound}
+    For all powerset states $X$ and all words $w \in \acc{X}{A_{det}}$ there exists a state $x$ such that 
+    \begin{equation*}
+        x \in X \wedge
+        w \in \acc{x}{A}.
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+    We proof by induction on $w$ that there exists $x$ such that $x \in X \wedge w \in \acc{x}{A}$. 
+    \begin{itemize}
+        \item
+            For $w = \varepsilon$ and $\varepsilon \in \acc{X}{A_{det}}$ we get  $X \cap F \neq \emptyset$.
+            Therefore, there exists $x$ such that $x \in X$ and $x \in F$.
+            Thus, we have $\varepsilon \in \acc{x}{A}$.
+        \item
+            For $w = a w'$ and $a w' \in \acc{X}{A_{det}}$ we get $Y$ such that $w' \in \acc{Y}{A_{det}}$ and $(X,a,Y) \in \delta_{det}$.
+            From the induction hypothesis we get $y$ such that $y \in Y$ and $w' \in \acc{y}{A}$.
+            From $y \in Y$ and $(X, a, Y) \in \delta_{det}$ we get $x$ such that $x \in X$ and $(x, a, y) \in \delta$.
+            Thus, $a w' \in \acc{x}{A}$.
+    \end{itemize}
+\end{proof}
+
+\begin{theorem}
+    The powerset automaton $A_{det}$ accepts the same language as $A$, i.e.
+    \begin{equation*}        
+        \lang{A} = \lang{A_{det}}.        
+    \end{equation*}
+\end{theorem}
+\begin{proof}
+    ``$\subseteq$'' 
+    This follows directly from lemma \ref{nfa_to_dfa_complete} with $x = s$ and $X = {s}_{det}$.
+
+    ``$\supseteq$''
+    From lemma \ref{nfa_to_dfa_sound} with $X = {s}_{det} = \{s\}$ we get 
+    $\acc{s_{det}}{A_{det}} \subseteq \acc{s}{A}$, which proves the claim.
+\end{proof}
+
+\paragraph{}
+The formalization of this proof is straight-forward and follows the plan laid out above. 
+The corresponding Lemmas are:
+\code{powerset_complete}{}{automata_nfa_to_dfa_complete_head}
+\codeblock{powerset_sound}{}{automata_nfa_to_dfa_sound_head}
+\codeblock{powerset_correct}{}{automata_nfa_to_dfa_correct_head}
+
+
+\section{Connected Components}
+\paragraph{} 
+Finite automata can have isolated subsets of states that are not reachable from the starting state. 
+These states can not contribute to the language of the automaton. 
+It will later be useful to have automata that only contain reachable states. 
+Therefore, we define a procedure to extract the connected component from a given automaton.
+
+\begin{definition}
+    Let $A = (\Sigma, Q, s, F, \delta)$ be a DFA.
+    We define $\mathrm{reachable1}$ such that for all x and y, 
+    $y \in \mathrm{reachable}(x) \iff \exists a, (x,a,y) \in \delta$.
+    We write $\mathrm{reachable}$ to denote the transitive closure of $\mathrm{reachable1}(s)$.
     \begin{eqnarray*}
-        Q_{det} & = & \{q \; | \; q \subseteq Q\} \\
-        {s}_{det} & = & \{ s \} \\
-        F_{det} & = & \{ q \; | \; q \in Q_{det} \wedge q \cap F \neq \emptyset \} \\
-        \delta_{det} & = & \{ (p,a,\bigcup \limits _{p \in P} \{ q | (p,a,q) \in \delta \}) \; | \; p, q \in Q_{det}, a \in \Sigma \}.     \\
-        A_{det} &=&  (Q_{det}, s_{det}, F_{det}, \delta_{det}).
+        Q_c & = & Q \cap reachable \\
+        s_c & = & s \\
+        F_c & = & F \cap reachable \\
+        \delta_c & = & \{(x, a, y) \; | \; (x, a, y) \in \delta \wedge x,y \in Q_c \} \\
+        A_c &=& (Q_c, s_c, F_c, \delta_c).
     \end{eqnarray*}
+\end{definition}
 
-    \paragraph{}
-    The formalization of $A_{det}$ is straight-forward. 
-    We leave the set of states implicit.
+\paragraph{}
+We make use of \ssreflect's $connect$ predicate to extract a sequence of all states reachable from $s$. 
+From this, we construct a finite type and use that as the new set of states. 
+These new states carry a proof of reachability (\lstinline{ssvalP}).
+We also have to construct a new transition function that ensures transitions always end in reachable states.
 
-    \code{}{}{automata_nfa_to_dfa}
+\code{automata_reachable1}{}{automata_reachable1}
+\codeblock{automata_reachable}{}{automata_reachable}
+\codeblock{automata_reachable0}{}{automata_reachable0_head}
+\codeblock{automata_reachable_step}{}{automata_reachable_step_head}
+\codeblock{automata_dfa_connected}{}{automata_dfa_connected}
 
-    \begin{lemma}
-        \label{nfa_to_dfa_complete}
-        For all powerset states $X$ and for all states $x$ with $x \in X$ we have that
-        \begin{equation*}
-            \acc{x}{A} \subseteq \acc{X}{A_{det}}.
-        \end{equation*}
-    \end{lemma}
+\begin{lemma}
+    \label{dfa_connected_correct'}
+    For every state $x \in \mathrm{reachable}$ we have that
+    \begin{equation*}
+        \acc{x}{A_c} = \acc{x}{A}.
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    ``$\subseteq$'' Trivial.
+    ``$\supseteq$''
+    We do an induction on $w$.
+    \begin{itemize}
+        \item
+            For $w = \varepsilon$ we have $\varepsilon \in \acc{x}{A}$ and therefore $x \in F$. 
+            With $x \in reachable$ we get $x \in F_c$. 
+            Thus, $\varepsilon \in \acc{x}{A_c}$.
+        \item
+            For $w = a w'$ we have have $y \in Q$ such that $(x, a, y) \in \delta$ and $w' \in \acc{y}{A}$.
+            From $x \in \mathrm{reachable}$ we get $y \in \mathrm{reachable}$ by transitivity.
+            Therefore, $(x,a,y) \in \delta_c$.
+            The induction hypothesis gives us $w' \in \acc{y}{A_c}$. 
+            Thus, $a w' \in \acc{x}{A_c}$.
+    \end{itemize}
+\end{proof}
 
-    \begin{proof}
-        Let $w \in \acc{x}{A}$. We proof by induction on $w$ that $w \in \acc{X}{A_{det}}$. 
-        \begin{itemize}
-            \item
-                For $w = \varepsilon$ and $\varepsilon \in \acc{x}{A}$ we get $x \in F$ from $\varepsilon \in \acc{x}{A}$. 
-                From $x \in X$ we get $X \cap F \neq \emptyset$ and therefore $\varepsilon \in \acc{X}{A_{det}}$.
-            \item
-                For $w = a w'$ and $a w' \in \acc{x}{A}$ we get $y$ such that $w' \in \acc{y}{A}$ and $(x,a,y) \in \delta$.
-                The latter gives us $y \in Y$ where $Y$ is such that $(X, a, Y) \in \delta_{det}$.
-                We apply the inductive hypothesis to $y$ and $Y$ and $w' \in \acc{y}{A}$, 
-                which gives us $w' \in \acc{Y}{A_{det}}$.
-                With $(X, a, Y) \in \delta_{det}$ we get $a w' \in \acc{X}{A_{det}}$.
-        \end{itemize}
-    \end{proof}
+\begin{theorem}
+    \label{dfa_connected_correct}
+    The language of the connected automaton $A_c$ is identical to that of the original automaton $A$, i.e.
+    \begin{equation*}
+        \lang{A} = \lang{A_c}.        
+    \end{equation*}
+\end{theorem}
 
-
-    \begin{lemma}
-        \label{nfa_to_dfa_sound}
-        For all powerset states $X$ and all words $w \in \acc{X}{A_{det}}$ there exists a state $x$ such that 
-        \begin{equation*}
-            x \in X \wedge
-            w \in \acc{x}{A}.
-        \end{equation*}
-    \end{lemma}
-
-    \begin{proof}
-        We proof by induction on $w$ that there exists $x$ such that $x \in X \wedge w \in \acc{x}{A}$. 
-        \begin{itemize}
-            \item
-                For $w = \varepsilon$ and $\varepsilon \in \acc{X}{A_{det}}$ we get  $X \cap F \neq \emptyset$.
-                Therefore, there exists $x$ such that $x \in X$ and $x \in F$.
-                Thus, we have $\varepsilon \in \acc{x}{A}$.
-            \item
-                For $w = a w'$ and $a w' \in \acc{X}{A_{det}}$ we get $Y$ such that $w' \in \acc{Y}{A_{det}}$ and $(X,a,Y) \in \delta_{det}$.
-                From the induction hypothesis we get $y$ such that $y \in Y$ and $w' \in \acc{y}{A}$.
-                From $y \in Y$ and $(X, a, Y) \in \delta_{det}$ we get $x$ such that $x \in X$ and $(x, a, y) \in \delta$.
-                Thus, $a w' \in \acc{x}{A}$.
-        \end{itemize}
-    \end{proof}
-
-    \begin{theorem}
-        The powerset automaton $A_{det}$ accepts the same language as $A$, i.e.
-        \begin{equation*}        
-            \lang{A} = \lang{A_{det}}.        
-        \end{equation*}
-    \end{theorem}
-    \begin{proof}
-        ``$\subseteq$'' 
-        This follows directly from lemma \ref{nfa_to_dfa_complete} with $x = s$ and $X = {s}_{det}$.
-
-        ``$\supseteq$''
-        From lemma \ref{nfa_to_dfa_sound} with $X = {s}_{det} = \{s\}$ we get 
-        $\acc{s_{det}}{A_{det}} \subseteq \acc{s}{A}$, which proves the claim.
-    \end{proof}
-
-    \paragraph{}
-    The formalization of this proof is straight-forward and follows the plan laid out above. 
-    The corresponding Lemmas are:
-    \code{powerset_complete}{}{automata_nfa_to_dfa_complete_head}
-    \codeblock{powerset_sound}{}{automata_nfa_to_dfa_sound_head}
-    \codeblock{powerset_correct}{}{automata_nfa_to_dfa_correct_head}
-
-
-    \section{Connected Components}
-    \paragraph{} 
-    Finite automata can have isolated subsets of states that are not reachable from the starting state. 
-    These states can not contribute to the language of the automaton. 
-    It will later be useful to have automata that only contain reachable states. 
-    Therefore, we define a procedure to extract the connected component from a given automaton.
-
-    \begin{definition}
-        Let $A = (\Sigma, Q, s, F, \delta)$ be a DFA.
-        We define $\mathrm{reachable1}$ such that for all x and y, 
-        $y \in \mathrm{reachable}(x) \iff \exists a, (x,a,y) \in \delta$.
-        We write $\mathrm{reachable}$ to denote the transitive closure of $\mathrm{reachable1}(s)$.
-        \begin{eqnarray*}
-            Q_c & = & Q \cap reachable \\
-            s_c & = & s \\
-            F_c & = & F \cap reachable \\
-            \delta_c & = & \{(x, a, y) \; | \; (x, a, y) \in \delta \wedge x,y \in Q_c \} \\
-            A_c &=& (Q_c, s_c, F_c, \delta_c).
-        \end{eqnarray*}
-    \end{definition}
-
-    \paragraph{}
-    We make use of \ssreflect's $connect$ predicate to extract a sequence of all states reachable from $s$. 
-    From this, we construct a finite type and use that as the new set of states. 
-    These new states carry a proof of reachability (\lstinline{ssvalP}).
-    We also have to construct a new transition function that ensures transitions always end in reachable states.
-
-    \code{automata_reachable1}{}{automata_reachable1}
-    \codeblock{automata_reachable}{}{automata_reachable}
-    \codeblock{automata_reachable0}{}{automata_reachable0_head}
-    \codeblock{automata_reachable_step}{}{automata_reachable_step_head}
-    \codeblock{automata_dfa_connected}{}{automata_dfa_connected}
-
-    \begin{lemma}
-        \label{dfa_connected_correct'}
-        For every state $x \in \mathrm{reachable}$ we have that
-        \begin{equation*}
-            \acc{x}{A_c} = \acc{x}{A}.
-        \end{equation*}
-    \end{lemma}
-    \begin{proof}
-        ``$\subseteq$'' Trivial.
-        ``$\supseteq$''
-        We do an induction on $w$.
-        \begin{itemize}
-            \item
-                For $w = \varepsilon$ we have $\varepsilon \in \acc{x}{A}$ and therefore $x \in F$. 
-                With $x \in reachable$ we get $x \in F_c$. 
-                Thus, $\varepsilon \in \acc{x}{A_c}$.
-            \item
-                For $w = a w'$ we have have $y \in Q$ such that $(x, a, y) \in \delta$ and $w' \in \acc{y}{A}$.
-                From $x \in \mathrm{reachable}$ we get $y \in \mathrm{reachable}$ by transitivity.
-                Therefore, $(x,a,y) \in \delta_c$.
-                The induction hypothesis gives us $w' \in \acc{y}{A_c}$. 
-                Thus, $a w' \in \acc{x}{A_c}$.
-        \end{itemize}
-    \end{proof}
-
-    \begin{theorem}
-        \label{dfa_connected_correct}
-        The language of the connected automaton $A_c$ is identical to that of the original automaton $A$, i.e.
-        \begin{equation*}
-            \lang{A} = \lang{A_c}.        
-        \end{equation*}
-    \end{theorem}
-
-    \begin{proof}
-        By reflexivity, we have $s \in \mathrm{reachable}$. 
-        We use lemma \ref{dfa_connected_correct'} with $x = s$ to prove the claim.
+\begin{proof}
+    By reflexivity, we have $s \in \mathrm{reachable}$. 
+    We use lemma \ref{dfa_connected_correct'} with $x = s$ to prove the claim.
         %Unreachable states have no influence on the language of an automaton because there is no run from the starting state that contains such a state.
-    \end{proof}
+\end{proof}
+
+\paragraph{}
+The formalization of lemma \ref{dfa_connected_correct'} and theorem \ref{dfa_connected_correct} is straight-forward.
+
+\code{automata_dfa_connected_correct'}{}{automata_dfa_connected_correct'_head}
+\codeblock{automata_dfa_connected_correct}{}{automata_dfa_connected_correct_head}
+
+\paragraph{}
+To make use of the fact that $A_c$ is fully connected, we will proof the characteristic property of $A_c$.
+
+\begin{definition}
+    A \textbf{representative} of a state $x$ is a word $w$ such that the unique run of $w$ on $A_c$ ends in $x$.
+\end{definition}
+
+\begin{lemma}
+    \label{dfa_connected_repr}
+    We can give a representative for every state $x \in Q_c$.
+    \todo{Sigma?}
+\end{lemma}
+
+\begin{proof}
+    $x$ carries a proof of reachability.
+    This is equivalent to a path through the graph implied by $\mathrm{reachable1}$ that ends ind $x$.
+    We build the representative by extracting the edges taken in the path and building a word from those.
+\end{proof}
+
+\paragraph{}
+The formalization of theorem \ref{dfa_connected_repr} consists of a more general version of the theorem, 
+which facilitates the proof by induction over the path, and the theorem itself.
+
+\code{dfa_connected_repr'}{}{automata_dfa_connected_repr'_head}
+\codeblock{}{}{automata_dfa_connected_repr_head}
+
+
+\section{Emptiness}
+\paragraph{}
+Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain the connected automaton of $A$ and check if there are any final states left. 
+
+\begin{lemma}
+    \label{dfa_lang_empty}
+    The language of the connected automaton $A_c$ is empty if and only if its set of final states $F_c$ is empty, i.e.
+    \begin{equation*}
+        \lang{A_c} = \emptyset \iff F_c = \emptyset.
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+    ``$\Leftarrow$''
+    We have $\lang{A_c} = \emptyset$ and have to show that for all $x \in Q_c$, $x \notin F_c$.
+    Let $x \in Q_c$. 
+    By lemma \ref{dfa_connected_repr} we get $w$ such that the unique run of $w$ on $A_c$
+    ends in $x$. 
+    We use $\lang{A_c} = \emptyset$ to get $w \notin \lang{A_c}$, 
+    which implies that the run of $w$ on $A_c$ ends in a non-final state.
+    By substituting the last state of the run by $x$ we get $x \notin F_c$.
+    ``$\Rightarrow$''
+    We have $F_c = \emptyset$ and have to show that for all words $w$, $w \notin \lang{A_c}$.
+    We use $F_c = \emptyset$ to show that the last state of the run of $w$ on $A_c$ is non-final.
+    Thus, $w \notin \lang{A_c}$.
+\end{proof}
+
+\begin{theorem} We can decide emptiness of $\lang{A}$ by computing the cardinality of $A_c$'s set of final states, i.e.
+    \label{AutomatonEmpty}
+    \begin{equation*}        
+        F_c = \emptyset \Longleftrightarrow \lang{A} = \emptyset.       
+    \end{equation*}
+\end{theorem}
+
+\begin{proof}
+    We use theorem \ref{dfa_connected_correct} to substitute $\lang{A}$ by $\lang{A_c}$.
+    We then use lemma \ref{dfa_lang_empty} to prove the claim.
+\end{proof}
+
+
+\paragraph{}
+The formalization of lemma \ref{dfa_lang_empty} is split in two parts to facilitate its application. 
+
+\code{}{}{automata_dfa_lang_empty}
+\codeblock{dfa_lang_empty_complete}{}{automata_dfa_lang_empty_complete_head}
+\codeblock{dfa_lang_empty_sound}{}{automata_dfa_lang_empty_sound_head}
+\codeblock{dfa_lang_empty_correct}{}{automata_dfa_lang_empty_correct_head}
+
+
+
+\section{Deciding Equivalence of Finite Automata}
+\begin{definition}
+    We say that two automata are \textbf{equivalent} if and only if their languages are equal.
+\end{definition}
+Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the language of $A$ is the symmetric difference of the languages of $A_1$ and $A_2$, i.e.,
+\begin{equation*}          
+    \lang{A} = \lang{A_1} \ominus \lang{A_2} = \lang{A_1} \cap \neg \lang{A_2} \cup \lang{A_2} \cap \neg \lang{A_1}.      
+\end{equation*}
+\begin{theorem} The equivalence of $A_1$ and $A_2$ is decidable, i.e.
+    \label{dfa_sym_diff_correct}
+    \begin{equation*}                
+        \lang{A_1} = \lang{A_2} \mbox{ if and only if } \lang{A} \mbox{ is empty. }                
+    \end{equation*}
+\end{theorem}
+\begin{proof}
+    The correctness of this procedure follows from the properties of the symmetric difference operator, i.e.
+    \begin{equation*}                  
+        \lang{A_1} \ominus \lang{A_2} = \emptyset \Leftrightarrow \lang{A_1} = \lang{A_2}.                  
+    \end{equation*}
+    The decidability of this procedure follows directly from theorem \ref{AutomatonEmpty}.
+\end{proof}
+
+\code{}{Formalization of theorem \ref{dfa_sym_diff_correct}}{automata_dfa_sym_diff}
+\codeblock{}{}{automata_dfa_sym_diff_correct_head}
+
+\section{Regular Expressions and Finite Automata}
+
+\paragraph{} 
+We prove that there is a finite automaton for every extended regular expression and vice versa. 
+In fact, we can give a standard regular expression for every finite automaton.
+With this, we will prove that extended regular expressions are equivalent to standard regular expressions, 
+thereby proving closure under intersection and negation.
+
+
+\subsection{Regular Expressions to Finite Automata}
+
+\paragraph{} 
+We prove that there exists an equivalent automaton for every extended regular expressions.
+The structure of this proof is given by the inductive nature of regular expressions.
+For every constructor, we provide an equivalent automaton.
+
+\todo{Include all proofs?}
+
+\subsection{Deciding Equivalence of Regular Expressions}
+
+\paragraph{} 
+Based on our procedure to construct an equivalent automaton from a regular expression, we can decide equivalence of regular expressions. Given $r_1$ and $r_2$, we construct equivalent DFA $A_1$ and $A_2$ as above.
+
+
+\subsection{Finite Automata to Regular Expressions}
+\paragraph{}
+We prove that there is an equivalent standard regular expression for every finite automaton.
+
+
+\paragraph{}
+Since we are given an automaton it is not obvious how to partition our proof obligations into smaller parts.
+We use Kleene's original proof, the transitive closure method. 
+This method recursively constructs a regular expression that is equivalent to the given automaton.
+Given a DFA $A$, we first assign some ordering to its states. We then define $R^k_{i,j}$ such that 
+$\lang{R^k_{i,j}}$ is the set of all words that have a run on $A$ starting in state $i$ that ends in state $j$ without ever leaving a state smaller than $k$. 
+The base case $R^{0}_{i,j}$ is the set of all singleton words that are edges between state $i$ and $j$, and $\varepsilon$ if $i=j$. 
+Given $R^k_{i,j}$ we can easily define $R^{k+1}_{i,j}$ based on the observation that only one new state has to be considered:
+\todo{Insert complete formal definition}
+\begin{equation*}                    
+    R^{k+1}_{i,j} = R^{k}_{i,k} \cdot (R^{k}_{k,k})^* \cdot R^{k}_{k,j} + R^{k}_{i,j}.                    
+\end{equation*}
+\paragraph{}
+We make use of \ssreflect's ordinals to get an ordering on states. 
+We chose to employ ordinals for $i$ and $j$, but not for $k$. 
+This simplifies the inductive definitions on $k$. 
+It does, however, lead to explicit conversions when $k$ is used in place of $i$ or $j$.
+In fact, $i$ and $j$ are states in our \coq\ implementation. 
+We only rely on ordinals for comparison to $k$.
+\todo{Add implementation of $R$}
+\paragraph{}
+Furthermore, we define $L^k_{i,j} \subseteq \lang{A}$ in terms of runs on the automaton. 
+The relation of $L^k_{i,j}$ to $\lang{A}$ can be proven very easily.
+We will also prove it equivalent to $R^k_{i,j}$.
+This allows us to connect $R^k_{i,j}$ to $\lang{A}$.
+\code{tc_allbutlast}{}{transitive_closure_allbutlast}
+\vspace{-0.3cm} 
+\code{tc_L}{}{transitive_closure_L}
+
+\begin{theorem} We can express $\lang{A}$ in terms of $L$. $L$ is equivalent to $R$.
+    \label{LR}
+    \begin{equation*}                          
+        \lang{A} = \bigcup\limits_{f \in F} L^{|Q|}_{s, f} = \lang{\sum\limits_{f \in F} R^{|Q|}_{s, f}}.                            
+    \end{equation*}
+\end{theorem}
+
+\begin{proof}
+    By definition, every $w \in \lang{A}$ has a run that ends in some $f \in F$. 
+    Then, by definition, $w \in  L^{|Q|}_{s, f}$. 
 
     \paragraph{}
-    The formalization of lemma \ref{dfa_connected_correct'} and theorem \ref{dfa_connected_correct} is straight-forward.
-    
-    \code{automata_dfa_connected_correct'}{}{automata_dfa_connected_correct'_head}
-    \codeblock{automata_dfa_connected_correct}{}{automata_dfa_connected_correct_head}
+    It remains to show that $\lang{R^k_{i,j}} = L^k_{i.j}$. 
+    This claim can be proven by induction over $k$. 
+    We begin with the inclusion of $\lang{R^k_{i,j}}$ in $L^k_{i,j}$. 
+    For $k=0$, we do a case distinction on $i==j$ and unfold $R$. 
+    The resulting three cases ($i==j \wedge w=\varepsilon$, $i==j \wedge |w|=1$, $i<>j \wedge |w|=1$) are easily closed. 
+
+    The inductive step has two cases: A triple concatenation and a simple recursion. 
+    The second case is solved by the inductive hypothesis.
+    In the firs case, we split up the concatenation such that
+    \begin{equation*}
+        w = w_1 \cdot w_2 \cdot w_3 
+        \wedge w_1 \in \lang{R^k_{i,k}} 
+        \wedge w_2 \in \lang{(R^k_{k,k})^*} 
+        \wedge w_3 \in \lang{R^k_{k,j}}.                               
+    \end{equation*}
+    \paragraph{}
+    The induction hypothesis is applied to $w_1$ and $w_3$ to get $w_1 \in L^k_{i,k}$ and $w_3 \in L^k_{k,j}$.
+    We use a lemma by Coquand and Siles that splits $w_2$ into a sequence of words from $\lang{R^k_{k,k}}$ to which we can apply the induction hypothesis. 
+    Two concatenation lemmas for $L$ are used to merge the sequence of words proven to be in $L^k_{k,k}$,
+    $w_1$ and $w_3$. This shows $\lang{R^k_{i,j}} \subseteq L^k_{i,j}$.
 
     \paragraph{}
-    To make use of the fact that $A_c$ is fully connected, we will proof the characteristic property of $A_c$.
+    Next, we show the inclusion of $L^k_{i,j}$ in $\lang{R^k_{i,j}}$, again by induction over k. 
+    The base case is solved by case distinction on $i==j$. 
+    The inductive step requires a \textbf{splitting lemma} for $L$ which shows that every non-empty word in $L^{k+1}_{i,j}$ is either in $L^k_{i,j}$ or has a non-empty prefix in $L^k_{i,k}$ and a corresponding suffix in $L^{k+1}_{k,j}$.
+    The 
+    In the first case, we can apply the induction hypothesis. 
+    In the second case, we use size induction on the word, apply the original induction hypothesis to the prefix and the size induction hypothesis to the suffix. 
+    We use two concatenation lemmas for $R$ to merge the sub-expression. 
+    This finishes the proof.
+\end{proof}
 
-    \begin{definition}
-        A \textbf{representative} of a state $x$ is a word $w$ such that the unique run of $w$ on $A_c$ ends in $x$.
-    \end{definition}
+\paragraph{}
+Formalizing theorem \ref{LR} requires infrastructure to deal with $allbutlast$. 
+Once this is in place, we can formalize the concatenation lemmas for $R$ and $L$.
+These are required later to connect sub-results. 
 
-    \begin{lemma}
-        \label{dfa_connected_repr}
-        We can give a representative for every state $x \in Q_c$.
-        \todo{Sigma?}
-    \end{lemma}
+\code{tc_RcatL}{}{transitive_closure_R_catL_head}
+\code{tc_LcatL}{}{transitive_closure_L_catL_head}
+\code{tc_LcatR}{}{transitive_closure_L_catL_head}
 
-    \begin{proof}
-        $x$ carries a proof of reachability.
-        This is equivalent to a path through the graph implied by $\mathrm{reachable1}$ that ends ind $x$.
-        We build the representative by extracting the edges taken in the path and building a word from those.
-    \end{proof}
+\paragraph{}
+We also need the splitting lemma mentioned earlier.
+This is quite intricate. We could split right after the first character and thereby simplify the lemma. 
+However, the current form has the advantage of requiring simple concatenation lemmas.
 
-    \paragraph{}
-    The formalization of theorem \ref{dfa_connected_repr} consists of a more general version of the theorem, 
-    which facilitates the proof by induction over the path, and the theorem itself.
+\code{tc_split}{}{transitive_closure_L_split_head}
 
-    \code{dfa_connected_repr'}{}{automata_dfa_connected_repr'_head}
-    \codeblock{dfa_connected_repr}{}{automata_dfa_connected_repr_head}
-
-
-        \section{Emptiness}
-        \paragraph{}
-        Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain the connected automaton of $A$ and check if there are any final states left. 
-
-    \begin{lemma}
-        \label{dfa_lang_empty}
-        The language of the connected automaton $A_c$ is empty if and only if its set of final states $F_c$ is empty, i.e.
-        \begin{equation*}
-            A_c = \emptyset \iff F_c = \emptyset.
-        \end{equation*}
-    \end{lemma}
-
-    \begin{proof}
-        ``$\Leftarrow$''
-        We have $A_c = \emptyset$ and have to show that for all $x \in Q_c$, $x \notin F_c$.
-        Let $x \in Q_c$. 
-        By lemma \ref{dfa_connected_repr} we get $w$ such that the unique run of $w$ on $A_c$
-        ends in $x$.
-    \end{proof}
+\paragraph{}
+These lemmas suffice to show the claim of theorem \ref{LR}.
+\code{tc_RL*}{}{transitive_closure_R_L_star_head}
+\code{tc_RL}{}{transitive_closure_R_L_head}
+\code{tc_LR1}{}{transitive_closure_L_R_1_head}
+\code{tc_LR}{}{transitive_closure_L_R_head}
+\todo{Fix this mess}
 
 
-        \begin{theorem} We can decide emptiness of $\lang{A}$ by computing the cardinality of $A_c$'s set of final states, i.e.
-            \label{AutomatonEmpty}
-            \begin{equation*}        
-                F_c = \emptyset \Longleftrightarrow \lang{A} = \emptyset.       
-            \end{equation*}
-            \end{theorem}
-
-            \begin{proof}
-                This is correct since $F_c = \emptyset \Leftrightarrow \lang{A_c} = \emptyset$ and $\lang{A_c} = \lang{A}$ by theorem \ref{dfa_connected_correct}.
-            \end{proof}
-
-            \todo{Add implementation}
-
-            \section{Deciding Equivalence of Finite Automata}
-            Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the language of $A$ is the symmetric difference of the languages of $A_1$ and $A_2$, i.e.,
-            \begin{equation*}          
-                \lang{A} = \lang{A_1} \ominus \lang{A_2} = \lang{A_1} \cap \neg \lang{A_2} \cup \lang{A_2} \cap \neg \lang{A_1}.      
-            \end{equation*}
-                \begin{theorem} The equivalence of $A_1$ and $A_2$ is decidable, i.e.
-                    \begin{equation*}                \lang{A_1} = \lang{A_2} \mbox{ if and only if } \lang{A} \mbox{ is empty. }                \end{equation*}
-                    \end{theorem}
-                    \begin{proof}
-                        The correctness of this procedure follows from the properties of the symmetric difference operator, i.e.
-                        \begin{equation*}                  \lang{A_1} \ominus \lang{A_2} = \emptyset \Leftrightarrow \lang{A_1} = \lang{A_2}.                  \end{equation*}
-                            The decidability of this procedure follows directly from theorem \ref{AutomatonEmpty}.
-                        \end{proof}
-
-                        \todo{Add implementation}
-
-                        \section{Regular Expressions and Finite Automata}
-
-                        \paragraph{} 
-                        We prove that there is a finite automaton for every extended regular expression and vice versa. 
-                        In fact, we can give a standard regular expression for every finite automaton.
-                        With this, we will prove that extended regular expressions are equivalent to standard regular expressions, 
-                        thereby proving closure under intersection and negation.
-
-
-                        \subsection{Regular Expressions to Finite Automata}
-
-                        \paragraph{} 
-                        We prove that there exists an equivalent automaton for every extended regular expressions.
-                        The structure of this proof is given by the inductive nature of regular expressions.
-                        For every constructor, we provide an equivalent automaton.
-
-                        \todo{Include all proofs?}
-
-                        \subsection{Deciding Equivalence of Regular Expressions}
-
-                        \paragraph{} 
-                        Based on our procedure to construct an equivalent automaton from a regular expression, we can decide equivalence of regular expressions. Given $r_1$ and $r_2$, we construct equivalent DFA $A_1$ and $A_2$ as above.
-
-
-                        \subsection{Finite Automata to Regular Expressions}
-                        \paragraph{}
-                        We prove that there is an equivalent standard regular expression for every finite automaton.
-
-
-                        \paragraph{}
-                        Since we are given an automaton it is not obvious how to partition our proof obligations into smaller parts.
-                        We use Kleene's original proof, the transitive closure method. 
-                        This method recursively constructs a regular expression that is equivalent to the given automaton.
-                        Given a DFA $A$, we first assign some ordering to its states. We then define $R^k_{i,j}$ such that 
-                        $\lang{R^k_{i,j}}$ is the set of all words that have a run on $A$ starting in state $i$ that ends in state $j$ without ever leaving a state smaller than $k$. 
-                        The base case $R^{0}_{i,j}$ is the set of all singleton words that are edges between state $i$ and $j$, and $\varepsilon$ if $i=j$. 
-                        Given $R^k_{i,j}$ we can easily define $R^{k+1}_{i,j}$ based on the observation that only one new state has to be considered:
-                        \todo{Insert complete formal definition}
-                        \begin{equation*}                    R^{k+1}_{i,j} = R^{k}_{i,k} \cdot (R^{k}_{k,k})^* \cdot R^{k}_{k,j} + R^{k}_{i,j}.                    \end{equation*}
-                            \paragraph{}
-                            We make use of \ssreflect's ordinals to get an ordering on states. 
-                            We chose to employ ordinals for $i$ and $j$, but not for $k$. 
-                            This simplifies the inductive definitions on $k$. 
-                            It does, however, lead to explicit conversions when $k$ is used in place of $i$ or $j$.
-                            In fact, $i$ and $j$ are states in our \coq\ implementation. 
-                            We only rely on ordinals for comparison to $k$.
-                            \todo{Add implementation of $R$}
-                            \paragraph{}
-                            Furthermore, we define $L^k_{i,j} \subseteq \lang{A}$ in terms of runs on the automaton. 
-                            The relation of $L^k_{i,j}$ to $\lang{A}$ can be proven very easily.
-                            We will also prove it equivalent to $R^k_{i,j}$.
-                            This allows us to connect $R^k_{i,j}$ to $\lang{A}$.
-                            \code{tc_allbutlast}{}{transitive_closure_allbutlast}
-                            \vspace{-0.3cm} 
-                            \code{tc_L}{}{transitive_closure_L}
-
-                            \begin{theorem} We can express $\lang{A}$ in terms of $L$. $L$ is equivalent to $R$.
-                                \label{LR}
-                                \begin{equation*}                          \lang{A} = \bigcup\limits_{f \in F} L^{|Q|}_{s, f} = \lang{\sum\limits_{f \in F} R^{|Q|}_{s, f}}.                            \end{equation*}
-                                \end{theorem}
-
-                                \begin{proof}
-                                    By definition, every $w \in \lang{A}$ has a run that ends in some $f \in F$. 
-                                    Then, by definition, $w \in  L^{|Q|}_{s, f}$. 
-
-                                    \paragraph{}
-                                    It remains to show that $\lang{R^k_{i,j}} = L^k_{i.j}$. 
-                                    This claim can be proven by induction over $k$. 
-                                    We begin with the inclusion of $\lang{R^k_{i,j}}$ in $L^k_{i,j}$. 
-                                    For $k=0$, we do a case distinction on $i==j$ and unfold $R$. 
-                                    The resulting three cases ($i==j \wedge w=\varepsilon$, $i==j \wedge |w|=1$, $i<>j \wedge |w|=1$) are easily closed. 
-
-                                    The inductive step has two cases: A triple concatenation and a simple recursion. 
-                                    The second case is solved by the inductive hypothesis.
-                                    In the firs case, we split up the concatenation such that
-                                    \begin{equation*}
-                                        w = w_1 \cdot w_2 \cdot w_3 
-                                        \wedge w_1 \in \lang{R^k_{i,k}} 
-                                        \wedge w_2 \in \lang{(R^k_{k,k})^*} 
-                                        \wedge w_3 \in \lang{R^k_{k,j}}.                               
-                                    \end{equation*}
-                                    \paragraph{}
-                                    The induction hypothesis is applied to $w_1$ and $w_3$ to get $w_1 \in L^k_{i,k}$ and $w_3 \in L^k_{k,j}$.
-                                    We use a lemma by Coquand and Siles that splits $w_2$ into a sequence of words from $\lang{R^k_{k,k}}$ to which we can apply the induction hypothesis. 
-                                    Two concatenation lemmas for $L$ are used to merge the sequence of words proven to be in $L^k_{k,k}$,
-                                    $w_1$ and $w_3$. This shows $\lang{R^k_{i,j}} \subseteq L^k_{i,j}$.
-
-                                    \paragraph{}
-                                    Next, we show the inclusion of $L^k_{i,j}$ in $\lang{R^k_{i,j}}$, again by induction over k. 
-                                    The base case is solved by case distinction on $i==j$. 
-                                    The inductive step requires a \textbf{splitting lemma} for $L$ which shows that every non-empty word in $L^{k+1}_{i,j}$ is either in $L^k_{i,j}$ or has a non-empty prefix in $L^k_{i,k}$ and a corresponding suffix in $L^{k+1}_{k,j}$.
-                                    The 
-                                    In the first case, we can apply the induction hypothesis. 
-                                    In the second case, we use size induction on the word, apply the original induction hypothesis to the prefix and the size induction hypothesis to the suffix. 
-                                    We use two concatenation lemmas for $R$ to merge the sub-expression. 
-                                    This finishes the proof.
-                                \end{proof}
-
-                                \paragraph{}
-                                Formalizing theorem \ref{LR} requires infrastructure to deal with $allbutlast$. 
-                                Once this is in place, we can formalize the concatenation lemmas for $R$ and $L$.
-                                These are required later to connect sub-results. 
-
-                                \code{tc_RcatL}{}{transitive_closure_R_catL_head}
-                                \code{tc_LcatL}{}{transitive_closure_L_catL_head}
-                                \code{tc_LcatR}{}{transitive_closure_L_catL_head}
-
-                                \paragraph{}
-                                We also need the splitting lemma mentioned earlier.
-                                This is quite intricate. We could split right after the first character and thereby simplify the lemma. 
-                                However, the current form has the advantage of requiring simple concatenation lemmas.
-
-                                \code{tc_split}{}{transitive_closure_L_split_head}
-
-                                \paragraph{}
-                                These lemmas suffice to show the claim of theorem \ref{LR}.
-                                \code{tc_RL*}{}{transitive_closure_R_L_star_head}
-                                \code{tc_RL}{}{transitive_closure_R_L_head}
-                                \code{tc_LR1}{}{transitive_closure_L_R_1_head}
-                                \code{tc_LR}{}{transitive_closure_L_R_head}
-                                \todo{Fix this mess}
-
-
-                                \paragraph{} 
+\paragraph{} 
 
 
 
