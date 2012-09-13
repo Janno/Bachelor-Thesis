@@ -506,7 +506,8 @@ Section Reachability.
     |}.
       
 
-  Lemma dfa_connected_correct' x (Hx: x \in reachable) : dfa_accept dfa_connected {|ssvalP := Hx|} =1 dfa_accept A1 x.
+  Lemma dfa_connected_correct' x (Hx: x \in reachable) :
+    dfa_accept dfa_connected {|ssvalP := Hx|} =1 dfa_accept A1 x.
   Proof. move => w. elim: w x Hx => [|a w IHw] x Hx //=. Qed. 
 
   Lemma dfa_connected_correct: dfa_lang dfa_connected =1 dfa_lang A1.
@@ -561,6 +562,46 @@ Section Reachability.
     
 End Reachability.
 
+Section Emptiness.
+
+  Definition dfa_lang_empty := #|dfa_fin dfa_connected| == 0.
+
+  Lemma dfa_lang_empty_complete: dfa_lang dfa_connected =1 pred0 -> dfa_lang_empty.
+  Proof.
+    rewrite /dfa_lang_empty.
+    move => H.
+    apply/eqP/eq_card0.
+    move => x.
+    apply/idP/idP.
+    apply/negP.
+    move: (dfa_connected_repr x) => [w Hw].
+    move: (H w).
+    rewrite /dfa_lang /= -dfa_run_accepts.
+    rewrite Hw.
+    by move/negP.
+  Qed. 
+  
+  Lemma dfa_lang_empty_sound: dfa_lang_empty -> dfa_lang dfa_connected =1 pred0.
+  Proof.
+    rewrite /dfa_lang_empty.
+    move => H w.
+    apply/idP/idP.
+    apply/negP.
+    rewrite /dfa_lang /= -dfa_run_accepts.
+    by move/eqP/card0_eq: H => ->.
+  Qed.
+                              
+  Lemma dfa_lang_empty_correct: dfa_lang_empty <-> dfa_lang A1 =1 pred0.
+  Proof.
+    split; move => H.
+      move => w. rewrite -dfa_connected_correct.
+      exact: dfa_lang_empty_sound.
+    apply: dfa_lang_empty_complete.
+    move => w.
+    by rewrite dfa_connected_correct.
+  Qed.
+    
+End Emptiness.
 
 End DFAOps.
 
