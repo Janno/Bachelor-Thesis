@@ -609,6 +609,7 @@ Section TransitiveClosure.
         rewrite /R_F.
 
 
+
     Qed.
         
   End R.
