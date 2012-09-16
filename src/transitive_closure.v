@@ -607,12 +607,8 @@ Section TransitiveClosure.
       elim: n H => [|n IHn] H.
         move: (H 1 (Hn 0) (fun X => R0)) => /=.
         rewrite /R_F.
-      have H0: (n < n.+1)%coq_nat by apply/ltP.
-      move: (H _ H0) => H1.
-      
-        rewrite /= eq_refl /= Plus_dist -topredE /=.
-        apply/orP. by right.
-      by rewrite /= Plus_dist IHk orbT.
+
+
     Qed.
         
   End R.
