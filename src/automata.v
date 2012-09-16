@@ -305,6 +305,7 @@ Qed.
    as the given automaton in the starting state, i.e. their
    languages are equal. **)
 Lemma dfa_to_nfa_correct : dfa_lang A =1 nfa_lang dfa_to_nfa.
+Proof.
   exact: dfa_to_nfa_correct'.
 Qed.
     
@@ -314,9 +315,9 @@ End Embed.
 Section Primitive.
   Definition dfa_void :=
    {| 
-      dfa_s := false;
+      dfa_s := tt;
       dfa_fin := pred0;
-      dfa_step := [fun x a => false]
+      dfa_step := [fun x a => tt]
    |}.
   
   Lemma dfa_void_correct x w: ~~ dfa_accept dfa_void x w.
