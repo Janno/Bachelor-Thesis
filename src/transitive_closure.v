@@ -322,6 +322,9 @@ Section TransitiveClosure.
     move => X x y z /= H; apply/ltP; exact: set_pick_size.
     move => X x y z /= H; apply/ltP; exact: set_pick_size.
   Defined.
+  Functional Scheme R_ind := Induction for R Sort Prop.
+
+  Check R_ind.
   
   Notation "'R^' X" := (R X) (at level 8).
   
@@ -556,24 +559,22 @@ Section TransitiveClosure.
     Qed.
 
     (* w1 \in R^k i k -> w2 \in R^k.+1 k j -> w1++w2 \in R^k.+1 i j *) 
-    Lemma R_catL X x y z w1 w2:
-      w1 \in R^X x z ->
-      w2 \in R^(z |: X) z y ->
-      w1++w2 \in R^(z |: X) x y.
+    Lemma R_catL (X: {set A}) z x y w1 w2:
+      [pick z \in X] = Some z ->
+        w1 \in R^(X :\ z) x z ->
+        w2 \in R^X z y ->
+        w1++w2 \in R^X x y.
     Proof.
-      rewrite /=.
+      rewrite /= => Hp.
+      rewrite (R_equation X z y) Hp.
       move => H0.
-      rewrite 2!R_equation.
-      case: pickP => [z' Hz'|].
       (* see which case of R^k.+1 we are in *)
       rewrite Plus_dist => /orP [].
         (* triple concatenation case *)
         rewrite Conc_assoc -topredE /=.
-        Check Conc_Star_idem.
         move/concP => [] v1.
-        move => Hv1.
-        move: (@Conc_Star_idem _ v1 Hv1).
         move/Conc_Star_idem => H1 [] v2 H2 H3.
+        rewrite R_equation Hp.
         rewrite Plus_dist.
         apply/orP. left.
         rewrite -topredE /=.
@@ -585,6 +586,7 @@ Section TransitiveClosure.
         exists (v2) => //.
                          
       (* basic recursion case *)
+      rewrite (R_equation X) Hp.
       rewrite Plus_dist.
       move => H1.
       apply/orP. left.
@@ -598,9 +600,16 @@ Section TransitiveClosure.
     Qed.
 
     (* Empty word in all R^k i i *)
-    Lemma R_nil k i: [::] \in R^k i i.
+    Lemma R_nil X x: [::] \in R^X x x.
     Proof.
-      elim: k i => [|k IHk] i.
+      apply R_ind => r [] n H _.
+      have Hn: (forall n, n < n.+1)%coq_nat by (move => k; apply/ltP).
+      elim: n H => [|n IHn] H.
+        move: (H 1 (Hn 0) (fun X => R0)) => /=.
+        rewrite /R_F.
+      have H0: (n < n.+1)%coq_nat by apply/ltP.
+      move: (H _ H0) => H1.
+      
         rewrite /= eq_refl /= Plus_dist -topredE /=.
         apply/orP. by right.
       by rewrite /= Plus_dist IHk orbT.
