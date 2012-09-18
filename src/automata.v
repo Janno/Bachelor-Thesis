@@ -154,7 +154,7 @@ end.
 
 (** We define the language of the non-deterministic
    automaton, i.e. acceptance in the starting state. **)
-Definition nfa_lang := [ pred w | nfa_accept (nfa_s A) w].
+Definition nfa_lang := [pred w | nfa_accept (nfa_s A) w].
 
 (** We define labeled paths over the non-deterministic step relation **)
 Fixpoint nfa_lpath x (xs : seq A) (w: word) {struct xs} :=
@@ -164,36 +164,28 @@ match xs,w with
   | _       , _     => false
 end.
 
-(** We prove that there is a path labeled with w induced
-   by nfa_accept starting at x and ending in an accepting
-   state. **)
-Lemma nfa_accept_lpath x w:
-  nfa_accept x w -> exists xs, nfa_lpath x xs w /\ nfa_fin A (last x xs).
-Proof. elim: w x => [|a w IHw] x.
-  by exists [::].
-move => /existsP [] y /andP [] H0 /IHw [xs [H1 H2]].
-exists (y::xs) => /=.
-by rewrite H0 H1 H2.
+Lemma nfa_lpath_accept x w:
+  reflect (exists2 xs, nfa_lpath x xs w & last x xs \in nfa_fin A)
+          (nfa_accept x w).
+Proof.
+  elim: w x => [|a w IHw] x.
+    case H: (nfa_accept x [::]); constructor.
+      by exists [::].
+    move => [[|y xs]] //.
+    move: H => /= H _.
+    by rewrite -topredE /= H.
+  case H: nfa_accept => /=; constructor.
+    move/existsP: H => [] y /andP [] H1 /IHw [] xs H2 H3.
+    exists (y::xs) => //=.
+    by rewrite H1 H2 /=.
+  move => [[|y xs]] //= /andP [] H1 H2 H3.
+  move/existsP: H => H.
+  apply: H. exists y.
+  rewrite H1 /=.
+  apply/IHw.
+  by exists xs.
 Qed.
-
-(** We prove that the existence of a path labeled with w
-   implies the acceptance of w. **)
-Lemma nfa_lpath_accept x xs w:
-  nfa_lpath x xs w -> nfa_fin A (last x xs) -> nfa_accept x w.
-Proof. elim: w x xs => [|a w IHw] x xs.
-  (* We destruct the path to ensure that it is empty. *)
-  case: xs => [|y xs].
-    by [].
-  (* Non-empty paths can not be not be produced by empty words. *)
-  by [].
-case: xs => [|y xs].
-  (* Empty paths can not accept non-empty words. *)
-  by [].
-simpl. move => [] /andP [] H0 H1 H2.
-apply/existsP. exists y.
-rewrite H0 andTb.
-apply: IHw; by eassumption.
-Qed.
+ 
 
 (** Helpful facts **)
 Lemma nfa_accept_cat x w1 w2:
@@ -675,13 +667,14 @@ Lemma nfa_conc_fin1 x1 w:
   nfa_lang A2 w ->
   nfa_accept nfa_conc (inl _ x1) w.
 Proof.
-move => H0 /nfa_accept_lpath [] ys.
-elim: ys w x1 H0 => [|y ys IHys] [|a w] x1 H0 /andP //=.
+move => H0 /nfa_lpath_accept [] ys.
+elim: ys w x1 H0 => [|y ys IHys] [|a w] x1 H0 //=.
   by move: H0 => -> ->.
-move/andP => [] /andP [] H1 H2 H3.
+move => /andP [] H1 H2 H3.
 apply/existsP. exists (inr _ y).
 rewrite H0 H1 /=.
-apply: nfa_lpath_accept.
+apply/nfa_lpath_accept.
+  eexists _.
   apply nfa_conc_cont.
   by eassumption.
 by rewrite last_map /nfa_fin.
@@ -696,15 +689,14 @@ Lemma nfa_conc_complete x w1 w2:
   nfa_lang A2 w2 ->
   nfa_accept nfa_conc (inl _ x) (w1 ++ w2).
 Proof. elim: w1 w2 x => [|a w1 IHw1] w2 x.
-    move => H0 /nfa_accept_lpath [] xs [] H1 H2.
+    move => H0 /nfa_lpath_accept [] xs [] H1 H2.
     move: (nfa_conc_cont _ _ _ H1) => H3.
     apply/nfa_accept_cat.
     exists [::] => /=.
     apply: nfa_conc_fin1.
       exact: H0.
-    apply: nfa_lpath_accept.
-      by eassumption.
-      exact: H2.
+    apply/nfa_lpath_accept.
+      eexists _; by eassumption.
   move => /existsP [] y /andP [] H1 H2 H3 /=.
   apply/existsP. exists (inl _ y).
   rewrite H1 /=.
@@ -830,9 +822,10 @@ Lemma nfa_plus_correct0' x w1 :
   nfa_accept A1 x w1 ->
   nfa_accept nfa_plus x w1.
 Proof.
-move/nfa_accept_lpath => [] xs [].
-move/nfa_plus_cont => H0 H1.
-apply: nfa_lpath_accept; by eassumption.
+  move/nfa_lpath_accept => [] xs [].
+  move/nfa_plus_cont => H0 H1.
+  apply/nfa_lpath_accept.
+  by exists xs. 
 Qed.
 
 (** We prove that every word accepted by A1 is also
@@ -851,7 +844,7 @@ Lemma nfa_plus_complete w1 w2:
   nfa_lang nfa_plus w2 ->
   nfa_lang nfa_plus (w1 ++ w2).
 Proof.
-move => /nfa_accept_lpath [] [|x xs] []; case: w1 => [|a w1] => //.
+move => /nfa_lpath_accept [] [|x xs] []; case: w1 => [|a w1] => //.
 move => H0 H1 H2.
 apply/(nfa_accept_cat).
 exists (rcons (belast x xs) (nfa_s A1)).
