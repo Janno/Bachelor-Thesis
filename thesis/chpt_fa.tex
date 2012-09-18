@@ -11,8 +11,6 @@ A finite automaton consists of
     \item
         finite set of states $Q$, 
     \item 
-        an alphabet $\Sigma$, 
-    \item 
         a starting state $s \in Q$, 
     \item 
         a set of final states $F \subseteq Q$ 
@@ -360,9 +358,61 @@ thereby proving closure under intersection and negation.
 \subsection{Regular Expressions to Finite Automata}
 
 \paragraph{} 
-We prove that there exists an equivalent automaton for every extended regular expressions.
+We prove that there exists an equivalent automaton for every extended regular expression.
 The structure of this proof is given by the inductive nature of regular expressions.
 For every constructor, we provide an equivalent automaton.
+
+\paragraph{}
+Depending on the constructor of the regular expression, we will construct an equivalent DFA or NFA.
+\lstinline{Void}, \lstinline{Eps}, \lstinline{Dot}, \lstinline{Atom}, \lstinline{Plus}, \lstinline{And} and \lstinline{Not} are very easy to implement on DFAs, whereas \lstinline{Star} and \lstinline{Conc} lend themselves well to NFAs.
+
+\subsubsection{Void}
+\begin{definition}
+    We define an empty DFA with a single, non-accepting state, i.e.
+    \begin{equation*}
+        A_\emptyset := (\Sigma, \{T\}, T, \emptyset, \{(T, a, T) \; | \; a \in \Sigma\}).
+    \end{equation*}
+\end{definition}
+
+\begin{lemma}
+    \label{dfa_empty_correct}
+    The language of the empty DFA is empty, i.e.
+    \begin{equation*}
+        \lang{E} = \emptyset.
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+    Let $w \in \Sigma^*$ be given.
+    \todo{Same Proof as in Coq?}
+\end{proof}
+
+\code{}{}{automata_dfa_void}
+\codeblock{}{}{automata_dfa_void_correct_head}
+
+
+\subsubsection{Eps}
+\begin{definition}
+    We define an automaton that accepts only the empty word, i.e.
+    \begin{equation*}
+        A_\varepsilon := (\Sigma, \{t, f\}, t, \{t\}, \{(x, a, f) \; | \; x \in \{t, f\}, a \in \Sigma\}).
+    \end{equation*}
+\end{definition}
+
+\begin{lemma}
+    \label{dfa_eps_correct}
+    The language of $A_\varepsilon$ is exactly the singleton set containing the empty word, i.e.
+    \begin{equation*}
+        \lang{A_\varepsilon} = \{\varepsilon\}.
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+    \todo{Proof}
+\end{proof}
+
+\code{}{}{automata_dfa_eps}
+\codeblock{}{}{automata_dfa_eps_correct_head}
 
 \todo{Include all proofs?}
 
