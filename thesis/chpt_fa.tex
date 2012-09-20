@@ -329,7 +329,7 @@ The formalization of lemma \ref{dfa_lang_empty} is split in two parts to facilit
 \section{Deciding Equivalence of Finite Automata}
 Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the language of $A$ is the symmetric difference of the languages of $A_1$ and $A_2$, i.e.,
 \begin{equation*}          
-    \lang{A} = \lang{A_1} \ominus \lang{A_2} = \lang{A_1} \cap \neg \lang{A_2} \cup \lang{A_2} \cap \neg \lang{A_1}.      
+    \lang{A} := \lang{A_1} \ominus \lang{A_2} = \lang{A_1} \cap \neg \lang{A_2} \cup \lang{A_2} \cap \neg \lang{A_1}.      
 \end{equation*}
 \begin{theorem} The equivalence of $A_1$ and $A_2$ is decidable, i.e.
     \label{dfa_sym_diff_correct}
