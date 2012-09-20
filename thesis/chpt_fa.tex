@@ -87,16 +87,16 @@ Given NFA $A$, we construct an equivalent DFA $A_{det}$ in the following way:
 %The transition function on powerset states is defined as follows:
 
 \begin{eqnarray*}
-    Q_{det} & := & \{q \; | \; q \subseteq Q\} \\
+    Q_{det} & := & 2^Q \\ %\{P \; | \; P \subseteq Q\} \\
     {s}_{det} & := & \{ s \} \\
-    F_{det} & := & \{ q \; | \; q \in Q_{det} \wedge q \cap F \neq \emptyset \} \\
-    \delta_{det} & := & \{ (p,a,\bigcup \limits _{p \in P} \{ q | (p,a,q) \in \delta \}) \; | \; p, q \in Q_{det}, a \in \Sigma \}.     \\
+    F_{det} & := & \{ P \; | \; P \in Q_{det} \wedge P \cap F \neq \emptyset \} \\
+    \delta_{det} & := & \{ (P,a,\bigcup \limits _{p \in P} \{ q \; | \; q \in Q, (p,a,q) \in \delta \}) \; | \; P \in Q_{det}, a \in \Sigma \}.     \\
     A_{det} &:=&  (Q_{det}, s_{det}, F_{det}, \delta_{det}).
 \end{eqnarray*}
 
 \paragraph{}
 The formalization of $A_{det}$ is straight-forward. 
-We leave the set of states implicit.
+We leave the set of states \lstinline!{set A}! implicit.
 
 \code{}{}{automata_nfa_to_dfa}
 
@@ -159,7 +159,7 @@ We leave the set of states implicit.
     This follows directly from lemma \ref{nfa_to_dfa_complete} with $x = s$ and $X = {s}_{det}$.
 
     ``$\supseteq$''
-    From lemma \ref{nfa_to_dfa_sound} with $X = {s}_{det} = \{s\}$ we get 
+    From lemma \ref{nfa_to_dfa_sound} with $X = {s}_{det}$ we get 
     $\acc{s_{det}}{A_{det}} \subseteq \acc{s}{A}$, which proves the claim.
 \end{proof}
 
