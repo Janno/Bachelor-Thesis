@@ -134,7 +134,7 @@ We leave the set of states implicit.
 \end{lemma}
 
 \begin{proof}
-    We proof by induction on $w$ that there exists $x$ such that $x \in X \wedge w \in \acc{x}{A}$. 
+    We do an induction on $w \in \Sigma^*$. %that there exists $x$ such that $x \in X \wedge w \in \acc{x}{A}$. 
     \begin{itemize}
         \item
             For $w = \varepsilon$ and $\varepsilon \in \acc{X}{A_{det}}$ we get  $X \cap F \neq \emptyset$.
@@ -263,7 +263,7 @@ To make use of the fact that $A_c$ is fully connected, we will proof the charact
 \begin{lemma}
     \label{dfa_connected_repr}
     We can give a representative for every state $x \in Q_c$.
-    \todo{Sigma?}
+    %\todo{Sigma?}
 \end{lemma}
 
 \begin{proof}
@@ -436,6 +436,7 @@ Depending on the constructor of the regular expression, we will construct an equ
 
 \code{}{}{automata_dfa_eps}
 \codeblock{}{}{automata_dfa_eps_correct_head}
+\todo{reflect?}
 
 
 \subsubsection{Dot}
@@ -450,6 +451,36 @@ Depending on the constructor of the regular expression, we will construct an equ
     \end{equation*}
 \end{definition}
 
+\begin{lemma}
+    \label{dfa_dot_correct''}
+    $A_{Dot}$ does not accept any word in state $f$, i.e. $\acc{f}{A_{Dot}} = \emptyset$.
+\end{lemma}
+\begin{proof}
+    We prove this by induction on $w \in \Sigma^*$. 
+    For $w = \varepsilon$ we have $\varepsilon \notin \acc{f}{A_{Dot}}$ by $f \notin F_{Dot}$.
+    For $w = aw'$ we have $(f, a, f) \in \delta_{Dot}$ and $w' \notin \acc{f}{A_{Dot}}$ by induction hypothesis.
+    Thus, $aw' \notin \acc{f}{A_{Dot}}$.
+\end{proof}
+
+\begin{lemma}
+    \label{dfa_dot_correct'}
+    $A_{Dot}$ accepts exactly the empty word in state $t$, i.e. $\acc{t}{A_{Dot}} = \{\varepsilon\}$.
+\end{lemma}
+\begin{proof}
+    Let $w \in \Sigma^*$. 
+    We do a case distinction on $w$.
+    For $w = \varepsilon$ we have $\varepsilon in \acc{t}{A_{Dot}}$ by $t \in F_{Dot}$. We also have $\varepsilon \in \{\varepsilon\}$.
+    For $w = aw'$ we get $(t, a, f) \in \delta_{Dot}$. 
+    Since $aw' \notin \{\varepsilon\}$ it suffices to show that 
+    $w' \notin \acc{f}{A_{Dot}}$,
+    which we have by lemma \ref{dfa_dot_correct''}.
+\end{proof}
+
+\code{}{}{automata_dfa_dot}
+\codeblock{}{}{automata_dfa_dot_correct''_head}
+\codeblock{}{}{automata_dfa_dot_correct'_head}
+\codeblock{}{}{automata_dfa_dot_correct_head}
+\todo{reflect?}
 
 \todo{Include all proofs?}
 
