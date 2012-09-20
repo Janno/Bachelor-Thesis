@@ -198,13 +198,15 @@ Therefore, we define a procedure to extract the connected component containing t
 We make use of \ssreflect's $connect$ predicate to extract a sequence of all states reachable from $s$. 
 From this, we construct a finite type and use that as the new set of states. 
 These new states carry a proof of reachability. %(\lstinline{ssvalP}).
-We also have to construct a new transition function that ensures transitions always end in reachable states.
+We also have to give a transition function that ensures transitions always end in reachable states.
 
 \code{automata_reachable1}{}{automata_reachable1}
 \codeblock{automata_reachable}{}{automata_reachable}
 \codeblock{automata_reachable0}{}{automata_reachable0_head}
 \codeblock{automata_reachable_step}{}{automata_reachable_step_head}
 \codeblock{automata_dfa_connected}{}{automata_dfa_connected}
+
+\todo{Make this understandable}
 
 \begin{lemma}
     \label{dfa_connected_correct'}
@@ -282,15 +284,20 @@ which facilitates the proof by induction over the path.
 \paragraph{}
 Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain the connected automaton of $A$ and check if there are any final states left. 
 
-\begin{lemma}
+\begin{theorem}
     \label{dfa_lang_empty}
     The language of the connected automaton $A_c$ is empty if and only if its set of final states $F_c$ is empty, i.e.
     \begin{equation*}
-        \lang{A_c} = \emptyset \iff F_c = \emptyset.
+        \lang{A} = \emptyset \iff F_c = \emptyset.
     \end{equation*}
-\end{lemma}
+\end{theorem}
 
 \begin{proof}
+    By theorem \ref{dfa_connected_correct} we have $\lang{A} = \lang{A_c}$.
+    Therefore, it suffices to show
+    \begin{equation*}
+        \lang{A_c} = \emptyset \iff F_c = \emptyset.
+    \end{equation*}
     ``$\Leftarrow$''
     We have $\lang{A_c} = \emptyset$ and have to show that for all $x \in Q_c$, $x \notin F_c$.
     Let $x \in Q_c$. 
@@ -334,7 +341,7 @@ Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the langua
     \begin{equation*}                  
         \lang{A_1} \ominus \lang{A_2} = \emptyset \Leftrightarrow \lang{A_1} = \lang{A_2}.                  
     \end{equation*}
-    The decidability of this procedure follows directly from theorem \ref{AutomatonEmpty}.
+    The decidability of this procedure follows directly from theorem \ref{dfa_lang_empty}.
 \end{proof}
 
 \code{}{Formalization of theorem \ref{dfa_sym_diff_correct}}{automata_dfa_sym_diff}
