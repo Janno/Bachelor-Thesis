@@ -430,26 +430,26 @@ Definition dfa_disj :=
    |}.
 
 (** Correctness w.r.t. any state. **)
-Lemma dfa_disj_correct' w x1 x2 :
-  dfa_accept A1 x1 w || dfa_accept A2 x2 w
-    = dfa_accept dfa_disj (x1, x2) w.
-Proof. elim: w x1 x2 => [|a w IHw].
-  by [].
-move => x1 x2. by exact: IHw.
+Lemma dfa_disj_correct' w x:
+  dfa_accept A1 x.1 w || dfa_accept A2 x.2 w
+    = dfa_accept dfa_disj x w.
+Proof. elim: w x => [|a w IHw].
+  by move => [].
+move => x /=. by rewrite -IHw.
 Qed.
 
 (** Language correctness. **)
 Lemma dfa_disj_correct w:
   dfa_lang A1 w || dfa_lang A2 w
     = dfa_lang dfa_disj w.
-Proof. exact: dfa_disj_correct'. Qed.
+Proof. move => /=. by rewrite -dfa_disj_correct'. Qed.
 
 (** Conjunction **) 
   
 Definition dfa_conj :=
  {| 
     dfa_s := (dfa_s A1, dfa_s A2);
-    dfa_fin := (fun q => let (x1,x2) := q in dfa_fin A1 x1 && dfa_fin A2 x2);
+    dfa_fin := (fun x => dfa_fin A1 x.1 && dfa_fin A2 x.2);
     dfa_step := [fun x a => (dfa_step A1 x.1 a, dfa_step A2 x.2 a)]
   |}.
 
