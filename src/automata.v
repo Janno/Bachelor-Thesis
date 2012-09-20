@@ -157,15 +157,15 @@ end.
 Definition nfa_lang := [pred w | nfa_accept (nfa_s A) w].
 
 (** We define labeled paths over the non-deterministic step relation **)
-Fixpoint nfa_lpath x (xs : seq A) (w: word) {struct xs} :=
+Fixpoint nfa_run x (xs : seq A) (w: word) {struct xs} :=
 match xs,w with
-  | y :: xs', a::w' => nfa_step A x a y && nfa_lpath y xs' w'
+  | y :: xs', a::w' => nfa_step A x a y && nfa_run y xs' w'
   | [::]    , [::]  => true
   | _       , _     => false
 end.
 
-Lemma nfa_lpath_accept x w:
-  reflect (exists2 xs, nfa_lpath x xs w & last x xs \in nfa_fin A)
+Lemma nfa_run_accept x w:
+  reflect (exists2 xs, nfa_run x xs w & last x xs \in nfa_fin A)
           (nfa_accept x w).
 Proof.
   elim: w x => [|a w IHw] x.
@@ -191,7 +191,7 @@ Qed.
 Lemma nfa_accept_cat x w1 w2:
   nfa_accept x (w1 ++ w2) <->
   exists xs,
-    nfa_lpath x xs w1
+    nfa_run x xs w1
     && nfa_accept (last x xs) w2.
 Proof. split.
   elim: w1 w2 x => [|a w1 IHw1] w2 x.
@@ -659,8 +659,8 @@ Definition nfa_conc : nfa :=
 (** We prove that every path of A2 can be mapped to a path
    of nfa_conc. **)
 Lemma nfa_conc_cont x xs w:
-  nfa_lpath A2 x xs w
-  -> nfa_lpath nfa_conc (inr _ x) (map (@inr A1 A2) xs) w.
+  nfa_run A2 x xs w
+  -> nfa_run nfa_conc (inr _ x) (map (@inr A1 A2) xs) w.
 Proof. elim: xs x w => [|y xs IHxs] x w; case: w => [|a w] => //.
 simpl. by move/andP => [] -> /IHxs ->.
 Qed.
@@ -673,13 +673,13 @@ Lemma nfa_conc_fin1 x1 w:
   nfa_lang A2 w ->
   nfa_accept nfa_conc (inl _ x1) w.
 Proof.
-move => H0 /nfa_lpath_accept [] ys.
+move => H0 /nfa_run_accept [] ys.
 elim: ys w x1 H0 => [|y ys IHys] [|a w] x1 H0 //=.
   by move: H0 => -> ->.
 move => /andP [] H1 H2 H3.
 apply/existsP. exists (inr _ y).
 rewrite H0 H1 /=.
-apply/nfa_lpath_accept.
+apply/nfa_run_accept.
   eexists _.
   apply nfa_conc_cont.
   by eassumption.
@@ -695,13 +695,13 @@ Lemma nfa_conc_complete x w1 w2:
   nfa_lang A2 w2 ->
   nfa_accept nfa_conc (inl _ x) (w1 ++ w2).
 Proof. elim: w1 w2 x => [|a w1 IHw1] w2 x.
-    move => H0 /nfa_lpath_accept [] xs [] H1 H2.
+    move => H0 /nfa_run_accept [] xs [] H1 H2.
     move: (nfa_conc_cont _ _ _ H1) => H3.
     apply/nfa_accept_cat.
     exists [::] => /=.
     apply: nfa_conc_fin1.
       exact: H0.
-    apply/nfa_lpath_accept.
+    apply/nfa_run_accept.
       eexists _; by eassumption.
   move => /existsP [] y /andP [] H1 H2 H3 /=.
   apply/existsP. exists (inl _ y).
@@ -790,8 +790,8 @@ Definition nfa_plus : nfa :=
 (** We prove that every path of A1 can be mapped to a path
    of nfa_plus. **)
 Lemma nfa_plus_cont x xs w:
-  nfa_lpath A1 x xs w
-  -> nfa_lpath nfa_plus x xs w.
+  nfa_run A1 x xs w
+  -> nfa_run nfa_plus x xs w.
 Proof. elim: xs x w => [|y xs IHxs] x w; case: w => [|a w] => //.
 move/andP => [] H0 /= /IHxs ->.
 by rewrite /step_plus H0 orTb.
@@ -802,8 +802,8 @@ Qed.
    A1's starting state. This new path need not be accepting. **)
 Lemma nfa_plus_lpath x y xs a w:
   nfa_fin nfa_plus (last x (y::xs)) ->
-  nfa_lpath nfa_plus x (y::xs) (a::w) ->
-  nfa_lpath nfa_plus x (rcons (belast y xs) (nfa_s A1)) (a::w).
+  nfa_run nfa_plus x (y::xs) (a::w) ->
+  nfa_run nfa_plus x (rcons (belast y xs) (nfa_s A1)) (a::w).
 Proof. elim: xs x y a w => [|z xs IHxs] x y a [|b w] //=.
       rewrite 2!andbT.
       move => H0 /orP [|/andP [] /eqP].
@@ -828,9 +828,9 @@ Lemma nfa_plus_correct0' x w1 :
   nfa_accept A1 x w1 ->
   nfa_accept nfa_plus x w1.
 Proof.
-  move/nfa_lpath_accept => [] xs [].
+  move/nfa_run_accept => [] xs [].
   move/nfa_plus_cont => H0 H1.
-  apply/nfa_lpath_accept.
+  apply/nfa_run_accept.
   by exists xs. 
 Qed.
 
@@ -850,7 +850,7 @@ Lemma nfa_plus_complete w1 w2:
   nfa_lang nfa_plus w2 ->
   nfa_lang nfa_plus (w1 ++ w2).
 Proof.
-move => /nfa_lpath_accept [] [|x xs] []; case: w1 => [|a w1] => //.
+move => /nfa_run_accept [] [|x xs] []; case: w1 => [|a w1] => //.
 move => H0 H1 H2.
 apply/(nfa_accept_cat).
 exists (rcons (belast x xs) (nfa_s A1)).

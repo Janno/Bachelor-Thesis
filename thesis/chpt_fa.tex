@@ -37,13 +37,11 @@ The acceptance criterion given here avoids the matter of runs.
 In many cases, this will help us with proofs by in induction on the accepted word.
 However, we will need runs in some of the proofs.
 Due to the fact that runs are not unique on NFAs, 
-we will speak of \textbf{labeled paths} in this context.
-Labeled paths are paths through the graph implied by the automaton's step function.
-We give a predicate that decides if a path is a labeled path for $w$ on $A$.
-We then show that the acceptance criterion given above corresponds to the mathematical definition.
+we give a predicate that decides if a run on $A$ is valid for a word $w$.
+We then show that the acceptance criterion given above corresponds to the mathematical definition in terms of runs.
 
-\code{nfa_lpath}{}{automata_nfa_lpath}
-\codeblock{nfa_lpath_accept}{}{automata_nfa_lpath_accept_head}
+\code{nfa_run}{}{automata_nfa_run}
+\codeblock{nfa_run_accept}{}{automata_nfa_run_accept_head}
 
 \subsection{Deterministic Finite Automata}
 For functional $\delta$, we speak of \textbf{deterministic} finite automata (DFA). 
@@ -66,7 +64,7 @@ We also prove that both criteria are equivalent.
 
 %\paragraph{}
 %We can give simpler formalizations of the acceptance on deterministic and non-deterministic automata.
-%These will allow us to hide runs and labeled paths as much as possible and instead work with a simple, inductive, boolean predicate.
+%These will allow us to hide runs and runs as much as possible and instead work with a simple, inductive, boolean predicate.
 
 %\code{automata_dfa_accept}{}{automata_dfa_accept}
 
