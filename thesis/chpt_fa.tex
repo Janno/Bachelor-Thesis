@@ -254,7 +254,7 @@ The formalization of lemma \ref{dfa_connected_correct'} and theorem \ref{dfa_con
 \codeblock{automata_dfa_connected_correct}{}{automata_dfa_connected_correct_head}
 
 \paragraph{}
-To make use of the fact that $A_c$ is fully connected, we will proof the characteristic property of $A_c$.
+To make use of the fact that $A_c$ is fully connected, we will proof a characteristic property of $A_c$. 
 
 \begin{definition}
     A \textbf{representative} of a state $x$ is a word $w$ such that the unique run of $w$ on $A_c$ ends in $x$.
@@ -268,8 +268,9 @@ To make use of the fact that $A_c$ is fully connected, we will proof the charact
 
 \begin{proof}
     $x$ carries a proof of reachability.
-    This is equivalent to a path through the graph implied by $\mathrm{reachable1}$ that ends ind $x$.
-    We build the representative by extracting the edges taken in the path and building a word from those.
+    From this, we get a path through the graph of $\mathrm{reachable1}$ that ends ind $x$.
+    We build the representative by extracting the edges of the path and building a word from those.
+    \todo{Choice?}
 \end{proof}
 
 \paragraph{}
