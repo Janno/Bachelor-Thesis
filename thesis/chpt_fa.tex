@@ -18,11 +18,11 @@ A finite automaton consists of
         and a state-transition relation $\delta$. \cite{DBLP:books/daglib/0011126}
 \end{enumerate}
 
-We define a \textbf{run} of a word $w \in \Sigma^*$ on an automaton $A = (\Sigma, Q, s, F, \delta)$ as any sequence of states $\sigma$ such that 
+We define a \textbf{run} of a word $w \in \Sigma^*$ on an automaton $A = (Q, s, F, \delta)$ as any sequence of states $\sigma$ such that 
 $\forall \, 0 <= i < \vert\sigma\vert-2. \, (\sigma_i, w_i, \sigma_{i-1}) \in \delta$.
-A word $w$ is \textbf{accepted} by $A$ if and only if there exists a run $\sigma$ of $w$ on $A$ such that $\sigma_0 = s \, \wedge \, \sigma_{\vert\sigma\vert-1} \in F$.
-The \textbf{language} of $A$ is exactly the set of words accepted by $A$ and is denoted $\lang{A}$. 
-It will later be useful to also have a acceptance criterion defined by runs starting in a given state $x \in Q$, for which we will denote the resulting language $\acc{x}{A}$.
+A word $w$ is \textbf{accepted} by $A$ in state $x$ if and only if there exists a run $\sigma$ of $w$ on $A$ such that $\sigma_0 = x \, \wedge \, \sigma_{\vert\sigma\vert-1} \in F$.
+The resulting set of accepted words is denoted by $\acc{x}{A}$.
+The \textbf{language} of $A$ is exactly $\acc{s}{A}$ and is denoted $\lang{A}$. 
 
 \subsection{Non-Deterministic Finite Automata}
 Finite automata can be \textbf{non-deterministic} (NFA) in the sense that there exist multiple distinct runs for a word. 
@@ -70,6 +70,11 @@ We also prove that both criteria are equivalent.
 
 %\code{automata_dfa_accept}{}{automata_dfa_accept}
 
+\subsubsection{Equivalence of Automata}
+\begin{definition}
+    We say that two automata are \textbf{equivalent} if and only if their languages are equal.
+\end{definition}
+
 \subsubsection{Equivalence between DFA and NFA}
 \paragraph{} 
 Deterministic and non-deterministic finite automata are equally expressive. 
@@ -112,8 +117,8 @@ We leave the set of states \lstinline!{set A}! implicit.
         \item
             For $w = a w'$ and $a w' \in \acc{x}{A}$ we get $y$ such that $w' \in \acc{y}{A}$ and $(x,a,y) \in \delta$.
             The latter gives us $y \in Y$ where $Y$ is such that $(X, a, Y) \in \delta_{det}$.
-            We apply the inductive hypothesis to $y$ and $Y$ and $w' \in \acc{y}{A}$, 
-            which gives us $w' \in \acc{Y}{A_{det}}$.
+            With $y \in Y$ and $w' \in \acc{y}{A}$ we get 
+            which gives us $w' \in \acc{Y}{A_{det}}$ by induction hypothesis.
             With $(X, a, Y) \in \delta_{det}$ we get $a w' \in \acc{X}{A_{det}}$.
     \end{itemize}
 \end{proof}
@@ -129,7 +134,7 @@ We leave the set of states \lstinline!{set A}! implicit.
 \end{lemma}
 
 \begin{proof}
-    We proof by induction on $w$ that there exists $x$ such that $x \in X \wedge w \in \acc{x}{A}$. 
+    We do an induction on $w \in \Sigma^*$. %that there exists $x$ such that $x \in X \wedge w \in \acc{x}{A}$. 
     \begin{itemize}
         \item
             For $w = \varepsilon$ and $\varepsilon \in \acc{X}{A_{det}}$ we get  $X \cap F \neq \emptyset$.
@@ -169,15 +174,17 @@ The corresponding Lemmas are:
 \section{Connected Components}
 \paragraph{} 
 Finite automata can have isolated subsets of states that are not reachable from the starting state. 
-These states can not contribute to the language of the automaton. 
+These states can not contribute to the language of the automaton since there are no runs from the starting state to any of those unreachable states.
 It will later be useful to have automata that only contain reachable states. 
-Therefore, we define a procedure to extract the connected component from a given automaton.
+Therefore, we define a procedure to extract the connected component containing the starting state from a given automaton.
 
 \begin{definition}
-    Let $A = (\Sigma, Q, s, F, \delta)$ be a DFA.
+    Let $A = (Q, s, F, \delta)$ be a DFA.
     We define $\mathrm{reachable1}$ such that for all x and y, 
-    $y \in \mathrm{reachable}(x) \iff \exists a, (x,a,y) \in \delta$.
-    We write $\mathrm{reachable}$ to denote the transitive closure of $\mathrm{reachable1}(s)$.
+    $(x,y) \in \mathrm{reachable1} \iff \exists a, (x,a,y) \in \delta$.
+    We define $\mathrm{reachable} := \{y \; | \; (s,y) \in \mathrm{reachable1}^*\}$, 
+    where $\mathrm{reachable1}^*$ denotes the transitive closure of $\mathrm{reachable1}$.
+    With this, we can define the connected automaton $A_c$:
     \begin{eqnarray*}
         Q_c & = & Q \cap reachable \\
         s_c & = & s \\
@@ -190,14 +197,16 @@ Therefore, we define a procedure to extract the connected component from a given
 \paragraph{}
 We make use of \ssreflect's $connect$ predicate to extract a sequence of all states reachable from $s$. 
 From this, we construct a finite type and use that as the new set of states. 
-These new states carry a proof of reachability (\lstinline{ssvalP}).
-We also have to construct a new transition function that ensures transitions always end in reachable states.
+These new states carry a proof of reachability. %(\lstinline{ssvalP}).
+We also have to give a transition function that ensures transitions always end in reachable states.
 
 \code{automata_reachable1}{}{automata_reachable1}
 \codeblock{automata_reachable}{}{automata_reachable}
 \codeblock{automata_reachable0}{}{automata_reachable0_head}
 \codeblock{automata_reachable_step}{}{automata_reachable_step_head}
 \codeblock{automata_dfa_connected}{}{automata_dfa_connected}
+
+\todo{Make this understandable}
 
 \begin{lemma}
     \label{dfa_connected_correct'}
@@ -245,7 +254,7 @@ The formalization of lemma \ref{dfa_connected_correct'} and theorem \ref{dfa_con
 \codeblock{automata_dfa_connected_correct}{}{automata_dfa_connected_correct_head}
 
 \paragraph{}
-To make use of the fact that $A_c$ is fully connected, we will proof the characteristic property of $A_c$.
+To make use of the fact that $A_c$ is fully connected, we will proof a characteristic property of $A_c$. 
 
 \begin{definition}
     A \textbf{representative} of a state $x$ is a word $w$ such that the unique run of $w$ on $A_c$ ends in $x$.
@@ -254,18 +263,19 @@ To make use of the fact that $A_c$ is fully connected, we will proof the charact
 \begin{lemma}
     \label{dfa_connected_repr}
     We can give a representative for every state $x \in Q_c$.
-    \todo{Sigma?}
+    %\todo{Sigma?}
 \end{lemma}
 
 \begin{proof}
     $x$ carries a proof of reachability.
-    This is equivalent to a path through the graph implied by $\mathrm{reachable1}$ that ends ind $x$.
-    We build the representative by extracting the edges taken in the path and building a word from those.
+    From this, we get a path through the graph of $\mathrm{reachable1}$ that ends ind $x$.
+    We build the representative by extracting the edges of the path and building a word from those.
+    \todo{Choice?}
 \end{proof}
 
 \paragraph{}
-The formalization of theorem \ref{dfa_connected_repr} consists of a more general version of the theorem, 
-which facilitates the proof by induction over the path, and the theorem itself.
+The formalization of theorem \ref{dfa_connected_repr} includes a more general version of the theorem, 
+which facilitates the proof by induction over the path.
 
 \code{dfa_connected_repr'}{}{automata_dfa_connected_repr'_head}
 \codeblock{}{}{automata_dfa_connected_repr_head}
@@ -275,15 +285,20 @@ which facilitates the proof by induction over the path, and the theorem itself.
 \paragraph{}
 Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain the connected automaton of $A$ and check if there are any final states left. 
 
-\begin{lemma}
+\begin{theorem}
     \label{dfa_lang_empty}
     The language of the connected automaton $A_c$ is empty if and only if its set of final states $F_c$ is empty, i.e.
     \begin{equation*}
-        \lang{A_c} = \emptyset \iff F_c = \emptyset.
+        \lang{A} = \emptyset \iff F_c = \emptyset.
     \end{equation*}
-\end{lemma}
+\end{theorem}
 
 \begin{proof}
+    By theorem \ref{dfa_connected_correct} we have $\lang{A} = \lang{A_c}$.
+    Therefore, it suffices to show
+    \begin{equation*}
+        \lang{A_c} = \emptyset \iff F_c = \emptyset.
+    \end{equation*}
     ``$\Leftarrow$''
     We have $\lang{A_c} = \emptyset$ and have to show that for all $x \in Q_c$, $x \notin F_c$.
     Let $x \in Q_c$. 
@@ -296,18 +311,8 @@ Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain
     We have $F_c = \emptyset$ and have to show that for all words $w$, $w \notin \lang{A_c}$.
     We use $F_c = \emptyset$ to show that the last state of the run of $w$ on $A_c$ is non-final.
     Thus, $w \notin \lang{A_c}$.
-\end{proof}
 
-\begin{theorem} We can decide emptiness of $\lang{A}$ by computing the cardinality of $A_c$'s set of final states, i.e.
-    \label{AutomatonEmpty}
-    \begin{equation*}        
-        F_c = \emptyset \Longleftrightarrow \lang{A} = \emptyset.       
-    \end{equation*}
-\end{theorem}
-
-\begin{proof}
-    We use theorem \ref{dfa_connected_correct} to substitute $\lang{A}$ by $\lang{A_c}$.
-    We then use lemma \ref{dfa_lang_empty} to prove the claim.
+    Thus, emptiness is decidable.
 \end{proof}
 
 
@@ -322,12 +327,9 @@ The formalization of lemma \ref{dfa_lang_empty} is split in two parts to facilit
 
 
 \section{Deciding Equivalence of Finite Automata}
-\begin{definition}
-    We say that two automata are \textbf{equivalent} if and only if their languages are equal.
-\end{definition}
 Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the language of $A$ is the symmetric difference of the languages of $A_1$ and $A_2$, i.e.,
 \begin{equation*}          
-    \lang{A} = \lang{A_1} \ominus \lang{A_2} = \lang{A_1} \cap \neg \lang{A_2} \cup \lang{A_2} \cap \neg \lang{A_1}.      
+    \lang{A} := \lang{A_1} \ominus \lang{A_2} = \lang{A_1} \cap \neg \lang{A_2} \cup \lang{A_2} \cap \neg \lang{A_1}.      
 \end{equation*}
 \begin{theorem} The equivalence of $A_1$ and $A_2$ is decidable, i.e.
     \label{dfa_sym_diff_correct}
@@ -340,7 +342,7 @@ Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the langua
     \begin{equation*}                  
         \lang{A_1} \ominus \lang{A_2} = \emptyset \Leftrightarrow \lang{A_1} = \lang{A_2}.                  
     \end{equation*}
-    The decidability of this procedure follows directly from theorem \ref{AutomatonEmpty}.
+    The decidability of this procedure follows directly from theorem \ref{dfa_lang_empty}.
 \end{proof}
 
 \code{}{Formalization of theorem \ref{dfa_sym_diff_correct}}{automata_dfa_sym_diff}
@@ -370,7 +372,7 @@ Depending on the constructor of the regular expression, we will construct an equ
 \begin{definition}
     We define an empty DFA with a single, non-accepting state, i.e.
     \begin{equation*}
-        A_\emptyset := (\Sigma, \{T\}, T, \emptyset, \{(T, a, T) \; | \; a \in \Sigma\}).
+        A_\emptyset := (\{t\}, t, \emptyset, \{(t, a, t) \; | \; a \in \Sigma\}).
     \end{equation*}
 \end{definition}
 
@@ -383,9 +385,9 @@ Depending on the constructor of the regular expression, we will construct an equ
 \end{lemma}
 
 \begin{proof}
-    Let $w \in \Sigma^*$ be given.
-    \todo{Same Proof as in Coq?}
+    $A_\emptyset$ has no final states, i.e. no run can end in a final state.
 \end{proof}
+
 
 \code{}{}{automata_dfa_void}
 \codeblock{}{}{automata_dfa_void_correct_head}
@@ -395,9 +397,25 @@ Depending on the constructor of the regular expression, we will construct an equ
 \begin{definition}
     We define an automaton that accepts only the empty word, i.e.
     \begin{equation*}
-        A_\varepsilon := (\Sigma, \{t, f\}, t, \{t\}, \{(x, a, f) \; | \; x \in \{t, f\}, a \in \Sigma\}).
+        A_\varepsilon := (\{t, f\}, t, \{f\}, \{(x, a, f) \; | \; x \in \{t, f\}, a \in \Sigma\}).
     \end{equation*}
 \end{definition}
+
+\begin{lemma}
+    \label{dfa_eps_correct'}
+    $A_\varepsilon$ accepts no word in state $f$, i.e. for all w,
+    \begin{equation*}
+        w \notin \acc{f}{A_\varepsilon}.
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    Let $w \in \Sigma^*$.
+    We do an induction on $w$. 
+    For $w = \varepsilon$ we get $\varepsilon \notin \acc{f}{A_\varepsilon}$ by $f \notin F_\varepsilon$. 
+    For $w = aw'$ we have $w' \notin \acc{f}{A_\varepsilon}$. 
+    Furthermore, $(f, a, f) \in \delta_\varepsilon$.
+    Therefore, $aw' \notin \acc{f}{A_\varepsilon}$.
+\end{proof}
 
 \begin{lemma}
     \label{dfa_eps_correct}
@@ -408,11 +426,90 @@ Depending on the constructor of the regular expression, we will construct an equ
 \end{lemma}
 
 \begin{proof}
-    \todo{Proof}
+    Let $w \in \Sigma^*$.
+    We do an induction on $w$. 
+    For $w = \varepsilon$ we have $\varepsilon \in \lang{A_\varepsilon}$ and $\varepsilon \in \{\varepsilon\}$.
+    Therefore, both directions are trivial.
+    For $w = aw'$ we consider both directions independently. \\
+    ``$\Rightarrow$'' We have $(t, a, f) \in \delta_\varepsilon$ and $w' \in \acc{f}{A_\varepsilon}$. By lemma \ref{dfa_eps_correct'}, this is a contradiction. \\
+    ``$\Leftarrow$'' We get a straigt-forward contradiction from $aw' \in \{\varepsilon\}$.
 \end{proof}
 
 \code{}{}{automata_dfa_eps}
 \codeblock{}{}{automata_dfa_eps_correct_head}
+\todo{reflect?}
+
+
+\subsubsection{Dot}
+\begin{definition}
+    We define an automaton that accepts the set of all singleton words, i.e.
+    \begin{equation*}
+        A_{Dot} := (\{s, t, f\}, s, \{t\}, 
+        \{(s, a, t) \; | \; a \in \Sigma\}
+        \; \cup \;
+        \{(x, a, f) \; | \; x \in \{t, f\}, a \in \Sigma\}
+        ).
+    \end{equation*}
+\end{definition}
+
+\begin{lemma}
+    \label{dfa_dot_correct''}
+    $A_{Dot}$ does not accept any word in state $f$, i.e. $\acc{f}{A_{Dot}} = \emptyset$.
+\end{lemma}
+\begin{proof}
+    We prove this by induction on $w \in \Sigma^*$. 
+    For $w = \varepsilon$ we have $\varepsilon \notin \acc{f}{A_{Dot}}$ by $f \notin F_{Dot}$.
+    For $w = aw'$ we have $(f, a, f) \in \delta_{Dot}$ and $w' \notin \acc{f}{A_{Dot}}$ by induction hypothesis.
+    Thus, $aw' \notin \acc{f}{A_{Dot}}$.
+\end{proof}
+
+\begin{lemma}
+    \label{dfa_dot_correct'}
+    $A_{Dot}$ accepts exactly the empty word in state $t$, i.e. $\acc{t}{A_{Dot}} = \{\varepsilon\}$.
+\end{lemma}
+\begin{proof}
+    Let $w \in \Sigma^*$. 
+    We do a case distinction on $w$.
+    For $w = \varepsilon$ we have $\varepsilon in \acc{t}{A_{Dot}}$ by $t \in F_{Dot}$. We also have $\varepsilon \in \{\varepsilon\}$.
+    For $w = aw'$ we get $(t, a, f) \in \delta_{Dot}$. 
+    Since $aw' \notin \{\varepsilon\}$ it suffices to show that 
+    $w' \notin \acc{f}{A_{Dot}}$,
+    which we have by lemma \ref{dfa_dot_correct''}.
+\end{proof}
+
+\code{}{}{automata_dfa_dot}
+\codeblock{}{}{automata_dfa_dot_correct''_head}
+\codeblock{}{}{automata_dfa_dot_correct'_head}
+\codeblock{}{}{automata_dfa_dot_correct_head}
+\todo{reflect?}
+
+\subsubsection{Complement}
+\begin{definition}
+    Given DFA $A=(Q,s,F,\delta)$, the complement automaton $A_\neg$ is constructed by switching accepting and non-accepting states, i.e.
+    \begin{equation*}
+       A_\neg := (Q,s,Q\backslash F,\delta). 
+    \end{equation*}
+\end{definition}
+
+\begin{lemma}
+    \label{dfa_compl_correct'}
+    For every state $x \in Q$, we have that $w \in \Sigma^*$ is accepted in $x$ by $A_\neg$ if and only if it is not accepted in $x$ by $A$, i.e. $\acc{x}{A_\neg} = \Sigma^* \backslash \acc{x}{A}$ 
+\end{lemma}
+\begin{proof}
+    We do an induction on $w$.
+    For $w = \varepsilon$ we have $\varepsilon \in \acc{x}{A_\neg} \iff \varepsilon \in \acc{x}{A}$ from
+    $x \in F \iff x \notin Q\backslash F$.
+    For $w = aw'$ we get $(y,a,x) \in \delta$. 
+    By induction hypothesis, $w' \in \acc{x}{A_\neg} \iff w' \notin \acc{x}{A}$
+    Thus, $aw' \in \acc{x}{A_\neg} \iff aw' \notin \acc{x}{A}$.
+\end{proof}
+\begin{lemma}
+    $A_\neg$ accepts the complement language of $A$, i.e. $\lang{A_\neg} = \Sigma^* \backslash \lang{A}$.
+    \label{dfa_compl_correct}
+\end{lemma}
+\begin{proof}
+    Follows directly from lemma \ref{dfa_compl_correct'} with $x = s$.
+\end{proof}
 
 \todo{Include all proofs?}
 

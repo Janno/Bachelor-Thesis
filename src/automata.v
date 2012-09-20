@@ -492,10 +492,10 @@ Section Reachability.
 
   Definition dfa_connected :=
    {| 
-      dfa_s := {|ssvalP := reachable0|};
-      dfa_fin := [fun x => match x with {|ssval := x |} => dfa_fin A1 x end];
+      dfa_s := SeqSub reachable0;
+      dfa_fin := [fun x => match x with SeqSub x _ => dfa_fin A1 x end];
       dfa_step := [fun x a => match x with
-        | {|ssvalP := Hx|} => {| ssvalP := (reachable_step _ a Hx) |}
+        | SeqSub _ Hx => SeqSub (reachable_step _ a Hx)
         end]
     |}.
       
@@ -589,11 +589,15 @@ Section Emptiness.
     by move/eqP/card0_eq: H => ->.
   Qed.
                               
-  Lemma dfa_lang_empty_correct: dfa_lang_empty <-> dfa_lang A1 =1 pred0.
+  Lemma dfa_lang_empty_correct:
+    reflect (dfa_lang A1 =1 pred0)
+            dfa_lang_empty.
   Proof.
-    split; move => H.
-      move => w. rewrite -dfa_connected_correct.
+    apply/iffP.
+    eexact (@idP dfa_lang_empty ).
+      move => H w. rewrite -dfa_connected_correct.
       exact: dfa_lang_empty_sound.
+    move => H.
     apply: dfa_lang_empty_complete.
     move => w.
     by rewrite dfa_connected_correct.
@@ -609,15 +613,17 @@ Section Equivalence.
     dfa_disj (dfa_conj A1 (dfa_compl A2)) (dfa_conj A2 (dfa_compl A1)).
 
   Lemma dfa_sym_diff_correct:
-    dfa_lang dfa_sym_diff =1 pred0 <-> dfa_lang A1 =1 dfa_lang A2.
+    dfa_lang_empty dfa_sym_diff <-> dfa_lang A1 =1 dfa_lang A2.
   Proof.
-    split => H w; move: (H w); rewrite /dfa_sym_diff.
+    split; rewrite /dfa_sym_diff.
+      move/dfa_lang_empty_correct => H w.
+      move: (H w).
       rewrite -dfa_disj_correct -2!dfa_conj_correct -2!dfa_compl_correct [pred0 w]/=.
       move/norP => [] /nandP [] /negP H1 /nandP [] /negP H2;
       apply/idP/idP; try by [];
       move/negP: H1; move/negP: H2;
       auto using negbNE.
-
+    move => H. apply/dfa_lang_empty_correct => w. move: (H w).
     rewrite -dfa_disj_correct -2!dfa_conj_correct -2!dfa_compl_correct [pred0 w]/=.
     move => ->.
     by rewrite andbN.
