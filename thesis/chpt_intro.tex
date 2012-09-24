@@ -1,6 +1,5 @@
 \chapter{Introduction}
 
-\paragraph{} 
 Regular languages are a well-studied class of formal languages. 
 \todo{History}
 \todo{Theoretical importance}
@@ -9,6 +8,25 @@ We will prove the equivalence of three well-known characterizations of regular l
 
 \section{Recent work}
 
-\paragraph{} 
 There have been many publications on regular languages in recent years. Many of them investigate decidability of equivalence of regular languages, though there have also been new equivalence proofs regarding different characterizations of regular languages.
 
+\section{Contributions}
+Our goal is to give a concise formalization of the equivalence between regular expressions, finite automata and the Myhill-Nerode characterization. 
+We give procedures to convert between these characterizations and prove their correctness.
+
+\section{Outline}
+In Chapter \ref{chap:coq} we introduce the \coq\ framework and the \ssreflect\ extension. 
+We give a brief introduction of the \ssreflect-specific syntax and concepts that are relevant to our formalization.
+
+In Chapter \ref{chap:lang} we give basic definitions (words, languages, etc.). 
+We also introduce decidable languages, regular languages and regular expressions. 
+Furthermore, we prove the decidability of regular languages.
+
+In Chapter \ref{chap:FA} we introduce finite automata. 
+We prove the equivalence of deterministic and non-deterministic finite automata.
+We also give a procedure to remove unreachable states from deterministic finite automata.
+Furthermore, we prove decidability of emptiness and equivalence of finite automata.
+Finally, we prove the equivalence of regular expressions and finite automata.
+
+In Chapter \ref{chap:MN} we introduce the Myhill-Nerode theorem.
+We give three different characterizations based on the Myhill-Nerode theorem and prove them equivalent to finite automata.
