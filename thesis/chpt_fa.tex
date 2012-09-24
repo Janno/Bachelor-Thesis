@@ -37,13 +37,11 @@ The acceptance criterion given here avoids the matter of runs.
 In many cases, this will help us with proofs by in induction on the accepted word.
 However, we will need runs in some of the proofs.
 Due to the fact that runs are not unique on NFAs, 
-we will speak of \textbf{labeled paths} in this context.
-Labeled paths are paths through the graph implied by the automaton's step function.
-We give a predicate that decides if a path is a labeled path for $w$ on $A$.
-We then show that the acceptance criterion given above corresponds to the mathematical definition.
+we give a predicate that decides if a run on $A$ is valid for a word $w$.
+We then show that the acceptance criterion given above corresponds to the mathematical definition in terms of runs.
 
-\code{nfa_lpath}{}{automata_nfa_lpath}
-\codeblock{nfa_lpath_accept}{}{automata_nfa_lpath_accept_head}
+\code{nfa_run}{}{automata_nfa_run}
+\codeblock{nfa_run_accept}{}{automata_nfa_run_accept_head}
 
 \subsection{Deterministic Finite Automata}
 For functional $\delta$, we speak of \textbf{deterministic} finite automata (DFA). 
@@ -66,7 +64,7 @@ We also prove that both criteria are equivalent.
 
 %\paragraph{}
 %We can give simpler formalizations of the acceptance on deterministic and non-deterministic automata.
-%These will allow us to hide runs and labeled paths as much as possible and instead work with a simple, inductive, boolean predicate.
+%These will allow us to hide runs and runs as much as possible and instead work with a simple, inductive, boolean predicate.
 
 %\code{automata_dfa_accept}{}{automata_dfa_accept}
 
@@ -87,11 +85,11 @@ Given NFA $A$, we construct an equivalent DFA $A_{det}$ in the following way:
 %The transition function on powerset states is defined as follows:
 
 \begin{eqnarray*}
-    Q_{det} & = & 2^Q \\ %\{P \; | \; P \subseteq Q\} \\
-    {s}_{det} & = & \{ s \} \\
-    F_{det} & = & \{ P \; | \; P \in Q_{det} \wedge P \cap F \neq \emptyset \} \\
-    \delta_{det} & = & \{ (P,a,\bigcup \limits _{p \in P} \{ q \; | \; q \in Q, (p,a,q) \in \delta \}) \; | \; P \in Q_{det}, a \in \Sigma \}.     \\
-    A_{det} &=&  (Q_{det}, s_{det}, F_{det}, \delta_{det}).
+    Q_{det} & := & 2^Q \\ %\{P \; | \; P \subseteq Q\} \\
+    {s}_{det} & := & \{ s \} \\
+    F_{det} & := & \{ P \; | \; P \in Q_{det} \wedge P \cap F \neq \emptyset \} \\
+    \delta_{det} & := & \{ (P,a,\bigcup \limits _{p \in P} \{ q \; | \; q \in Q, (p,a,q) \in \delta \}) \; | \; P \in Q_{det}, a \in \Sigma \}.     \\
+    A_{det} &:=&  (Q_{det}, s_{det}, F_{det}, \delta_{det}).
 \end{eqnarray*}
 
 \paragraph{}
@@ -186,11 +184,11 @@ Therefore, we define a procedure to extract the connected component containing t
     where $\mathrm{reachable1}^*$ denotes the transitive closure of $\mathrm{reachable1}$.
     With this, we can define the connected automaton $A_c$:
     \begin{eqnarray*}
-        Q_c & = & Q \cap reachable \\
-        s_c & = & s \\
-        F_c & = & F \cap reachable \\
-        \delta_c & = & \{(x, a, y) \; | \; (x, a, y) \in \delta \wedge x,y \in Q_c \} \\
-        A_c &=& (Q_c, s_c, F_c, \delta_c).
+        Q_c & := & Q \cap reachable \\
+        s_c & := & s \\
+        F_c & := & F \cap reachable \\
+        \delta_c & := & \{(x, a, y) \; | \; (x, a, y) \in \delta \wedge x,y \in Q_c \} \\
+        A_c &:=& (Q_c, s_c, F_c, \delta_c).
     \end{eqnarray*}
 \end{definition}
 
@@ -483,7 +481,7 @@ Depending on the constructor of the regular expression, we will construct an equ
 \codeblock{}{}{automata_dfa_dot_correct_head}
 \todo{reflect?}
 
-\subsubsection{Complement}
+\subsubsection{Not}
 \begin{definition}
     Given DFA $A=(Q,s,F,\delta)$, the complement automaton $A_\neg$ is constructed by switching accepting and non-accepting states, i.e.
     \begin{equation*}
@@ -501,17 +499,66 @@ Depending on the constructor of the regular expression, we will construct an equ
     $x \in F \iff x \notin Q\backslash F$.
     For $w = aw'$ we get $(y,a,x) \in \delta$. 
     By induction hypothesis, $w' \in \acc{x}{A_\neg} \iff w' \notin \acc{x}{A}$
-    Thus, $aw' \in \acc{x}{A_\neg} \iff aw' \notin \acc{x}{A}$.
+    Thus, $aw' \in \acc{y}{A_\neg} \iff aw' \notin \acc{y}{A}$.
 \end{proof}
 \begin{lemma}
     $A_\neg$ accepts the complement language of $A$, i.e. $\lang{A_\neg} = \Sigma^* \backslash \lang{A}$.
     \label{dfa_compl_correct}
 \end{lemma}
 \begin{proof}
-    Follows directly from lemma \ref{dfa_compl_correct'} with $x = s$.
+    This follows directly from lemma \ref{dfa_compl_correct'} with $x = s$.
 \end{proof}
 
-\todo{Include all proofs?}
+\subsubsection{Plus}
+\begin{definition}
+    Given DFAs $A_1=(Q_1, s_1, F_1, \delta_1)$ and $A_2=(Q_2, s_2, F_2, \delta_2)$ we costruct the disjunction automaton  in the following way:
+    \begin{eqnarray*}
+        Q_\vee &:=& Q_1 \times Q_2 \\
+        s_\vee &:=& (s_1, s_2) \\
+        F_\vee &:=& \{(x_1,x_2) \; | \; x_1 \in F_1 \vee x_2 \in F_2\} \\
+        \delta_\vee &:=& \{( (x_1, x_2),a,(y_1, y_2)) \; | \; a \in \Sigma, (x_1, a, y_1) \in \delta_1, (x_2, a, y_2) \in \delta_2 \} \\
+        A_\vee &:=& (Q_\vee, s_\vee, F_\vee, \delta_\vee).
+    \end{eqnarray*}
+\end{definition}
+
+\begin{lemma}
+    \label{dfa_disj_correct'}
+    For every state $(x_1, x_2) \in Q_\vee$, we have that
+    \begin{equation*}
+        \acc{(x_1, x_2)}{A_\vee} = \acc{x_1}{A_1} \cup \acc{x_2}{A_2}.
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    We do a proof by induction on $w \in \Sigma^*$.
+    For $w = \varepsilon$ we have, by definition of $F_\vee$, 
+    $%\begin{equation*}
+    \varepsilon \in \acc{(x_1, x_2)}{A_\vee} 
+    \iff \varepsilon \in \acc{x_1}{A_1} \vee \varepsilon \in \acc{x_2}{A_2}.
+    $%\end{equation*} 
+    \\
+    For $w = aw'$ we get $(x_1, a, y_1) \in \delta_1$ and $(x_2, a, y_2) \in \delta_2$.
+    By induction hypothesis, we also have $w' \in \acc{x_1}{A_1} \vee w' \in \acc{x_2}{A_2}$.
+    Thus, we get $aw' \in \acc{y_1}{A_1} \vee aw' \in \acc{x_2}{A_2}$.
+\end{proof}
+
+\begin{lemma}
+    $\lang{A_\vee} = \lang{A_1} \cup \lang{A_2}$.
+    \label{dfa_disj_correct}
+\end{lemma}
+\begin{proof}
+    This follows directly from lemma \ref{dfa_disj_correct'} with $x = (s_1, s_2)$.
+\end{proof}
+
+
+\code{}{}{automata_dfa_disj}
+\codeblock{}{}{automata_dfa_disj_correct'_head}
+\codeblock{}{}{automata_dfa_disj_correct_head}
+
+
+\subsubsection{And}
+
+
+\todo{Include all proofs}
 
 \subsection{Deciding Equivalence of Regular Expressions}
 
