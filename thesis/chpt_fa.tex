@@ -1,7 +1,8 @@
 
 \chapter{Finite Automata}
-\paragraph{} 
-Another way of characterizing regular languages are finite automata (FA). 
+\label{chap:FA}
+
+Another way of characterizing regular languages are finite automata (FA)\cite{DBLP:books/daglib/0011126}. 
 We will show that the languages of finite automata are exactly the regular languages. 
 Furthermore, we will also derive a decision procedure for equivalence of regular expressions.
 
@@ -15,7 +16,7 @@ A finite automaton consists of
     \item 
         a set of final states $F \subseteq Q$ 
     \item 
-        and a state-transition relation $\delta$. \cite{DBLP:books/daglib/0011126}
+        and a state-transition relation $\delta$. 
 \end{enumerate}
 
 We define a \textbf{run} of a word $w \in \Sigma^*$ on an automaton $A = (Q, s, F, \delta)$ as any sequence of states $\sigma$ such that 
@@ -340,7 +341,7 @@ Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the langua
     \begin{equation*}                  
         \lang{A_1} \ominus \lang{A_2} = \emptyset \Leftrightarrow \lang{A_1} = \lang{A_2}.                  
     \end{equation*}
-    The decidability of this procedure follows directly from theorem \ref{dfa_lang_empty}.
+    Thus, equivalence is decidable.    
 \end{proof}
 
 \code{}{Formalization of theorem \ref{dfa_sym_diff_correct}}{automata_dfa_sym_diff}
@@ -511,7 +512,7 @@ Depending on the constructor of the regular expression, we will construct an equ
 
 \subsubsection{Plus}
 \begin{definition}
-    Given DFAs $A_1=(Q_1, s_1, F_1, \delta_1)$ and $A_2=(Q_2, s_2, F_2, \delta_2)$ we costruct the disjunction automaton  in the following way:
+    Given DFAs $A_1=(Q_1, s_1, F_1, \delta_1)$ and $A_2=(Q_2, s_2, F_2, \delta_2)$ we construct the disjunction automaton  in the following way:
     \begin{eqnarray*}
         Q_\vee &:=& Q_1 \times Q_2 \\
         s_\vee &:=& (s_1, s_2) \\
