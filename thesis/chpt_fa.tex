@@ -1,7 +1,8 @@
 
 \chapter{Finite Automata}
-\paragraph{} 
-Another way of characterizing regular languages are finite automata (FA). 
+\label{chap:FA}
+
+Another way of characterizing regular languages are finite automata (FA)\cite{DBLP:books/daglib/0011126}. 
 We will show that the languages of finite automata are exactly the regular languages. 
 Furthermore, we will also derive a decision procedure for equivalence of regular expressions.
 
@@ -15,7 +16,7 @@ A finite automaton consists of
     \item 
         a set of final states $F \subseteq Q$ 
     \item 
-        and a state-transition relation $\delta$. \cite{DBLP:books/daglib/0011126}
+        and a state-transition relation $\delta$. 
 \end{enumerate}
 
 We define a \textbf{run} of a word $w \in \Sigma^*$ on an automaton $A = (Q, s, F, \delta)$ as any sequence of states $\sigma$ such that 
@@ -340,7 +341,7 @@ Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the langua
     \begin{equation*}                  
         \lang{A_1} \ominus \lang{A_2} = \emptyset \Leftrightarrow \lang{A_1} = \lang{A_2}.                  
     \end{equation*}
-    The decidability of this procedure follows directly from theorem \ref{dfa_lang_empty}.
+    Thus, equivalence is decidable.    
 \end{proof}
 
 \code{}{Formalization of theorem \ref{dfa_sym_diff_correct}}{automata_dfa_sym_diff}
@@ -511,7 +512,7 @@ Depending on the constructor of the regular expression, we will construct an equ
 
 \subsubsection{Plus}
 \begin{definition}
-    Given DFAs $A_1=(Q_1, s_1, F_1, \delta_1)$ and $A_2=(Q_2, s_2, F_2, \delta_2)$ we costruct the disjunction automaton  in the following way:
+    Given DFAs $A_1=(Q_1, s_1, F_1, \delta_1)$ and $A_2=(Q_2, s_2, F_2, \delta_2)$ we construct the disjunction automaton  in the following way:
     \begin{eqnarray*}
         Q_\vee &:=& Q_1 \times Q_2 \\
         s_\vee &:=& (s_1, s_2) \\
@@ -556,7 +557,85 @@ Depending on the constructor of the regular expression, we will construct an equ
 
 
 \subsubsection{And}
+\begin{definition}
+    Given DFAs 
+    $A_1=(Q_1, s_1, F_1, \delta_1)$ and $A_2=(Q_2, s_2, F_2, \delta_2)$ 
+    we construct the conjunction automaton  in the following way:
+    \begin{eqnarray*}
+        Q_\wedge &:=& Q_1 \times Q_2 \\
+        s_\wedge &:=& (s_1, s_2) \\
+        F_\wedge &:=& \{(x_1,x_2) \; | \; x_1 \in F_1 \wedge x_2 \in F_2\} \\
+        \delta_\wedge &:=& \{( (x_1, x_2),a,(y_1, y_2)) \; | \; a \in \Sigma, (x_1, a, y_1) \in \delta_1, (x_2, a, y_2) \in \delta_2 \} \\
+        A_\wedge &:=& (Q_\wedge, s_\wedge, F_\wedge, \delta_\wedge).
+    \end{eqnarray*}
+\end{definition}
 
+\begin{lemma}
+    \label{dfa_conj_correct'}
+    For every state $(x_1, x_2) \in Q_\wedge$, we have that
+    \begin{equation*}
+        \acc{(x_1, x_2)}{A_\wedge} = \acc{x_1}{A_1} \cup \acc{x_2}{A_2}.
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    This proof is very similar to lemma \ref{dfa_disj_correct'}.
+    We do a proof by induction on $w \in \Sigma^*$.
+    For $w = \varepsilon$ we have, by definition of $F_\wedge$, 
+    $%\begin{equation*}
+    \varepsilon \in \acc{(x_1, x_2)}{A_\wedge} 
+    \iff \varepsilon \in \acc{x_1}{A_1} \wedge \varepsilon \in \acc{x_2}{A_2}.
+    $%\end{equation*} 
+    \\
+    For $w = aw'$ we get $(x_1, a, y_1) \in \delta_1$ and $(x_2, a, y_2) \in \delta_2$.
+    By induction hypothesis, we also have $w' \in \acc{x_1}{A_1} \wedge w' \in \acc{x_2}{A_2}$.
+    Thus, we get $aw' \in \acc{y_1}{A_1} \wedge aw' \in \acc{x_2}{A_2}$.
+\end{proof}
+
+\begin{lemma}
+    $\lang{A_\wedge} = \lang{A_1} \cap \lang{A_2}$.
+    \label{dfa_conj_correct}
+\end{lemma}
+\begin{proof}
+    This follows directly from lemma \ref{dfa_conj_correct'} with $x = (s_1, s_2)$.
+\end{proof}
+
+
+\code{}{}{automata_dfa_conj}
+\codeblock{}{}{automata_dfa_conj_correct'_head}
+\codeblock{}{}{automata_dfa_conj_correct_head}
+
+
+\subsubsection{Conc}
+\begin{definition}
+   Given two NFAs
+    $A_1=(Q_1, s_1, F_1, \delta_1)$ and $A_2=(Q_2, s_2, F_2, \delta_2)$ 
+    we construct the concatenation automaton in the following way:
+    \begin{eqnarray*}
+        Q_{Conc} &:=& Q_1 \; \dotcup \; Q_2 \\
+        s_{Conc} &:=& s_1 \\
+        F_{Conc} &:=&  \mathbf{TODO}\\
+        \delta_{Conc} &:=& \delta_1 \; \cup \; \delta_2 \; \cup \; 
+                         \{(x, a, y) \; | \; x \in Q_1, y \in Q_2, (s_2, a, y) \in \delta_2 \} \\
+        %\{( (x_1, x_2),a,(y_1, y_2)) \; | \; a \in \Sigma, (x_1, a, y_1) \in \delta_1, (x_2, a, y_2) \in \delta_2 \} \\
+        A_{Conc} &:=& (Q_{Conc}, s_{Conc}, F_{Conc}, \delta_{Conc}).
+    \end{eqnarray*}\todo{Case dist. on $s_2 \in F_2$}
+\end{definition}
+
+\begin{lemma}
+    \label{dfa_conc_cont}
+    Every run of $A_2$ can be mapped to a run in $A_3$.
+\end{lemma}
+\begin{proof}
+    Let $\sigma$ be a run starting in $x$ for $w \in \Sigma^*$ on $A_2$.
+    We do an induction on $\sigma$.
+    For $|\sigma| = 0$\todo{symbol for empty run}%
+    we have $w = \varepsilon$.
+    Therefore, we have that $\sigma$ is also a run starting in $x$ for $\varepsilon$ on $A_{Conc}$
+    For $\sigma = y\sigma'$ we have $w = aw'$, $(x, a, y) \in \delta_2$.
+    By definition of $\delta_{Conc}$ we also have $(x, a, y) \in \delta_{Conc}$.
+    By induction hypothesis, we have that $\sigma'$ is a run for $w'$ starting in $y$ on $A_{Conc}$.
+    Thus, $y\sigma'$ is a run for $aw'$ starting in $x$ on $A_{Conc}$.
+\end{proof}
 
 \todo{Include all proofs}
 

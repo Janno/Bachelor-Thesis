@@ -1,18 +1,38 @@
 \chapter{Introduction}
+\label{chap:intro}
 
 Regular languages are a well-studied class of formal languages. 
-\todo{History}
-\todo{Theoretical importance}
-\todo{Practical importance?}
-We will prove the equivalence of three well-known characterizations of regular languages: regular expressions, finite automata and the characterization given by Myhill-Nerode theorem.
+In their current form, they were first studied by Kleene \cite{KleeneNets}, who introduced regular expressions. 
+A precursor \cite{Gruber} was suggested by earlier by McCulloch and Pitts (\cite{McCulloch}).
+Regular languages were used to describe neural activity in nerve nets.
+The concept of deterministic finite automata was introduced before Kleene's invention of regular expressions by Huffman and Moore (\cite{Huffman1}, \cite{Huffman2}, \cite{Moore}). 
+Rabin and Scott later introduced the concept non-deterministic finite automata \cite{RabinScott}, for which they were given the Turing award \cite{Ashenhurst:1987:ATA:27609}.
+\todo{History: Myhill-Nerode, Brzozowski?}
+\todo{Theoretical importance: Second-Order logic, Monoids}
+\todo{Practical importance? Posix}
+
+\paragraph{}
+We will prove and formalize the equivalence of differnt characterizations of regular languages: regular expressions, finite automata and the characterizations given by Myhill-Nerode theorem.
+
+
 
 \section{Recent work}
 
-There have been many publications on regular languages in recent years. Many of them investigate decidability of equivalence of regular languages, though there have also been new equivalence proofs regarding different characterizations of regular languages.
+There have been many publications on regular languages in recent years.
+Many of them investigate decidability of equivalence of regular expressions with a focus on automatically deciding Kleene algebras (\cite{DBLP:conf/cpp/CoquandS11}, \cite{DBLP:conf/itp/Asperti12}, \cite{DBLP:journals/jar/KraussN12}, \cite{DBLP:journals/corr/abs-1105-4537}, \cite{DBLP:conf/RelMiCS/MoreiraPS12}). 
+There has also been a paper on formalizing the Myhill-Nerode theorem using only regular expressions and not, as is commonly done, finite automata (\cite{DBLP:conf/itp/2011}).
+The authors state that this unusual choice stems, at least partly, from the restrictions of Isabelle/HOL (and similar HOL-based theorem provers) which effectively prevents straight-forward formalizations of finite automata. 
+This restriction does not apply to \coq. 
+In fact, our formalization of finite automata turns out to be very close to the mathematical definitio turns out to be very close to the mathematical definition.
 
 \section{Contributions}
-Our goal is to give a concise formalization of the equivalence between regular expressions, finite automata and the Myhill-Nerode characterization. 
+Our goal is to give a concise formalization of the equivalence between regular expressions, finite automata and the Myhill-Nerode characterization.
 We give procedures to convert between these characterizations and prove their correctness.
+The contribution of this thesis is in the way in which we formalize these well-known results.
+We focused not on executability but rather on staying close to the mathematical definitions without sacrificing convenience.
+Our development shows that \coq\ (with \ssreflect) is well suited for this kind of formalization.
+We have also developed a new characterization derived from the Myhill-Nerode theorem, which we prove equivalent to the other characterizations.
+
 
 \section{Outline}
 In Chapter \ref{chap:coq} we introduce the \coq\ framework and the \ssreflect\ extension. 
@@ -22,11 +42,12 @@ In Chapter \ref{chap:lang} we give basic definitions (words, languages, etc.).
 We also introduce decidable languages, regular languages and regular expressions. 
 Furthermore, we prove the decidability of regular languages.
 
-In Chapter \ref{chap:FA} we introduce finite automata. 
+In Chapter \ref{chap:FA} we introduce finite automata.
 We prove the equivalence of deterministic and non-deterministic finite automata.
 We also give a procedure to remove unreachable states from deterministic finite automata.
 Furthermore, we prove decidability of emptiness and equivalence of finite automata.
-Finally, we prove the equivalence of regular expressions and finite automata.
+Finally, we prove the equivalence of regular expressions and finite automata. 
 
 In Chapter \ref{chap:MN} we introduce the Myhill-Nerode theorem.
-We give three different characterizations based on the Myhill-Nerode theorem and prove them equivalent to finite automata.
+We give three different characterizations of regular languages based on the Myhill-Nerode theorem and prove them equivalent to finite automata.
+The formalization of these characterizations is interesting in itself due to the fact that we had to find a suitable representation of quotient types in \coq, which has no notion of quotient types.
