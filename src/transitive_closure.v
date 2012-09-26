@@ -26,15 +26,13 @@ Qed.
 
 Lemma set1UrP (T: finType) (X: {set T}) x: reflect (x |: X = X) (x \in X). 
 Proof.
-  case H: (x \in X); constructor.
-    apply/setP => y. 
-    apply/setU1P.
-    case H0: (y \in X); firstorder.
-    move => [] // H1.
-    subst. by rewrite H in H0.
-  move => H1. move: H.
-  by rewrite -H1 setU11.
-Qed.
+  apply/iffP. by apply idP.
+    move => H. apply/setP => y.
+    rewrite in_setU1.
+    apply/orP/idP; try auto.
+    move => [/eqP ->|] //.
+  move => <-. by rewrite setU11.
+Qed.      
 
 Section AllButLastDef.
   
@@ -258,51 +256,82 @@ Section TransitiveClosure.
       Qed.
     End RE_Misc.
 
-  (* Some machinery for k:nat -> 'I_#|A| *)
-  Lemma minn_to_ord m n: minn m n <= n.
-  Proof. elim: n m => [|n IHn] m /=.
-    by rewrite /minn.
-    rewrite /minn.
-    case_eq (m < n.+1).
-    by apply: ltnW.
-    move => _. by apply: ltnSn.
-  Qed.
-
-  Lemma leq_ltn_gt0 n m: m > 0 -> n <= m.-1 -> n < m.
-  Proof.  elim: m n => [|m IHm] n //=. Qed.
-
-  Lemma A_has_states: #|A| > 0.
-  apply/card_gt0P.
-  by exists (dfa_s A).
-  Qed.
-  
-  (* this represents k in 'I_#|A| *)
-  Definition k_ord k := 
-    Ordinal (leq_ltn_gt0 A_has_states (minn_to_ord k #|A|.-1)).
-
-  Lemma k_ord_lt k: k_ord k < k.+1.
-  Proof.
-    rewrite /k_ord /=.
-    case H0: (k <= #|A|.-1).
-      rewrite minnl => //.
-    move: (leq_total k #|A|.-1).
-    rewrite H0 /= => H1.
-    by rewrite minnr.
-  Qed.
-
-  Lemma k_ord_eq k: k <= #|A|.-1 -> k = k_ord k.
-  Proof. move => H. by rewrite /= minnl. Qed.
-
   Definition nPlus : seq (regular_expression char) -> regular_expression char := [fun rs => foldr (@Plus _) (Void _) rs].
 
+  Lemma mem_nPlus (rs: seq _) w:
+    reflect (exists2 r: regular_expression char, r \in rs & w \in r)
+            (w \in nPlus rs).
+  Proof.
+    elim: rs => [|s rs IHrs].
+      apply introP => //= _.
+      by move => [r] .
+    apply introP.
+      rewrite /nPlus /= -topredE /= /plus /= => /orP [].
+        move => Hs.
+        exists s => //=.
+        by rewrite in_cons eq_refl.
+    move/IHrs => [r Hr Hw].
+      exists r => //=.
+      by rewrite in_cons Hr orbT.
+    move => H0 [r Hr Hw].
+    apply/negP.
+      eexact H0.
+    move: Hr. rewrite in_cons => /orP [].
+      move/eqP => H1. subst.
+      by rewrite /nPlus /= -topredE /= /plus /= Hw.
+    move => H1.
+    rewrite /nPlus /= -topredE /= /plus /=.
+    apply/orP. right.
+    apply/IHrs.
+    by eauto.
+  Qed.
+          
   Definition dfa_step_any :=
     [ fun x y => enum ( [pred a | dfa_step A x a == y] ) ].
 
+  
   Definition R0 :=
     [ fun x y => 
       let r := nPlus (map (@Atom _) (dfa_step_any x y)) in
         if x == y then Plus r (Eps _) else r ].
                                              
+  Lemma mem_R0 w x y:
+    reflect (w = [::] /\ x=y \/ exists2 a, w = [::a] & dfa_step A x a = y)
+            (w \in R0 x y). 
+  Proof.
+    apply/introP.
+      rewrite /=. case H: (x == y).
+        rewrite -topredE /= /plus /= => /orP [].
+          move/mem_nPlus => [r] /mapP [a].
+          rewrite /dfa_step_any /= mem_enum in_simpl /= => /eqP <- ->.
+          rewrite in_simpl /= => /eqP ->.
+          by eauto.
+        rewrite in_simpl /= => /eqP.
+        move/eqP: H.
+        by eauto.
+      move/mem_nPlus => [r] /mapP [a].
+      rewrite /dfa_step_any /= mem_enum in_simpl /= => /eqP <- ->.
+      rewrite in_simpl /= => /eqP ->.
+      by eauto.
+    move => H [[Hw Hxy]|[a Hw Hxay]].
+      subst.
+      move: H => /=. rewrite eq_refl -topredE /= /plus /=.
+      apply: negP. apply/negPn.
+      by rewrite in_simpl orbT.
+    apply/negP.
+      eexact H.
+    rewrite /R0 /=.
+    case: (x==y).
+      rewrite -topredE /= /plus /=. apply/orP. left.
+      apply/mem_nPlus.
+      exists (Atom a). apply/mapP. exists a => //.
+        by rewrite /dfa_step_any /= mem_enum in_simpl /= Hxay eq_refl.
+      by rewrite in_simpl Hw /= eq_refl.
+    apply/mem_nPlus.
+      exists (Atom a). apply/mapP. exists a => //.
+        by rewrite /dfa_step_any /= mem_enum in_simpl /= Hxay eq_refl.
+      by rewrite in_simpl Hw /= eq_refl.
+  Qed.
 
   Lemma set_pick_size (X: {set A}) z: [pick z \in X] = Some z -> #|X :\ z| < #|X|.
   Proof.
@@ -355,24 +384,6 @@ Section TransitiveClosure.
         by rewrite in_simpl /= => /andP [] /eqP. 
       rewrite in_simpl /= allbutlast_nil andbT.
       by move/eqP.
-    Qed.
-
-    (* Another prerequisite for L_split.
-       We can safely concatenate words and not
-       leave L^X if the split point is in X. *)
-    Lemma L_cat (X: {set A}) x y z w1 w2:
-      z \in X ->
-      w1 \in L^X x z ->
-      w2 \in L^X z y ->
-      w1++w2 \in L^X x y.
-    Proof.
-      move => H0 /= /andP [] /eqP H1 H2 /andP [] /eqP H3 H4.
-      rewrite in_simpl /= dfa_run'_cat.
-      subst.
-      apply/andP. split.
-        by rewrite last_cat eq_refl.       
-      apply: all_allbutlast_cat => //.
-      exact: (allbutlast_last _ H0).
     Qed.
 
     Lemma setU1_predI (X: {set A}) z: (z \notin X) -> (mem X) =1 predI (mem (z |: X)) (predC (pred1 z)).
@@ -558,263 +569,191 @@ Section TransitiveClosure.
       by rewrite H4 H3.
     Qed.
 
-    (* w1 \in R^k i k -> w2 \in R^k.+1 k j -> w1++w2 \in R^k.+1 i j *) 
-    Lemma R_catL (X: {set A}) z x y w1 w2:
-      [pick z \in X] = Some z ->
-        w1 \in R^(X :\ z) x z ->
-        w2 \in R^X z y ->
-        w1++w2 \in R^X x y.
-    Proof.
-      rewrite /= => Hp.
-      rewrite (R_equation X z y) Hp.
-      move => H0.
-      (* see which case of R^k.+1 we are in *)
-      rewrite Plus_dist => /orP [].
-        (* triple concatenation case *)
-        rewrite Conc_assoc -topredE /=.
-        move/concP => [] v1.
-        move/Conc_Star_idem => H1 [] v2 H2 H3.
-        rewrite R_equation Hp.
-        rewrite Plus_dist.
-        apply/orP. left.
-        rewrite -topredE /=.
-        apply/concP.
-        exists w1 => //.
-        exists w2 => //.
-        apply/concP.
-        exists (v1) => //.
-        exists (v2) => //.
-                         
-      (* basic recursion case *)
-      rewrite (R_equation X) Hp.
-      rewrite Plus_dist.
-      move => H1.
-      apply/orP. left.
-      rewrite -topredE /=.
-      apply/concP.
-      exists w1 => //.
-      exists w2 => //.
-      apply/concP.
-      exists [::] => //.
-      exists w2 => //.
-    Qed.
 
-    (* Empty word in all R^k i i *)
-    Lemma R_nil X x: [::] \in R^X x x.
-    Proof.
-      apply R_ind => r [] n H _.
-      have Hn: (forall n, n < n.+1)%coq_nat by (move => k; apply/ltP).
-      elim: n H => [|n IHn] H.
-        move: (H 1 (Hn 0) (fun X => R0)) => /=.
-        rewrite /R_F.
-
-
-
-    Qed.
         
   End R.
 
-  (* R_L_star encapsulates the induction over
-     the list of words matched by star (R^k k k).
-     The first argument is the inductive hypothesis
-     obtained from the induction over k in R_L.
-   *)
-  Lemma R_L_star k vv:
-    (forall (i j : 'I_#|A|) (w : word char),
-        w \in R^k i j -> w \in L^k (enum_val i) (enum_val j)) ->
-     all [predD mem_reg (R^k (k_ord k) (k_ord k)) & 
-          eps (symbol:=char)] vv ->
-     flatten vv \in L^k.+1 (enum_val (k_ord k)) (enum_val (k_ord k)).
+
+  Lemma L_rec (X: {set A}) x y z:
+    z \in X ->
+    L^X x y =i plus (conc (L^(X :\ z) x z) (conc (star (L^(X :\ z) z z)) (L^(X :\ z) z y))) (L^(X :\ z) x y).
   Proof.
-    move => IHk.
-    elim: vv => [|v vv IHvv].
-      move => H0. by apply: L_nil.
-    (* v in L^k k k
-       flatten vv in L^k.+1 k k *)
-    rewrite /= => /andP [] /andP [].
-    rewrite -topredE /= /eps /= => H0.
-    move => H1.
-    move/IHvv.
-    apply: L_catL.
-    apply: IHk.
-    by [].
+    move => H w.
+    apply/idP/idP.
+      move: w X z H x y .
+      apply: (size_induction (f:=size)) => w IHw X z H x y .
+      destruct w.
+        move => Hw.
+        rewrite -topredE /plus /=. apply/orP.
+        by right. 
+      rewrite -{1}(setD1K H).
+      move/L_split.
+      move Heqn: (s::w) => w'.
+      move => [|[w1 [w2 [Hw' [/eqP H1 [Hw1 Hw2]]]]]].
+        rewrite -topredE /plus /= => Hw. apply/orP.
+        by right.
+      have Hsize: (size w2 < size w').
+        rewrite Hw' size_cat -{1}(add0n (size w2)) ltn_add2r lt0n => //.
+        by apply/nilP.
+      rewrite -{1}Heqn in Hsize.
+      rewrite setD1K in Hw2 => //.
+      move: (IHw w2 Hsize X z H z y Hw2) => H4.
+      rewrite -topredE /plus. apply/orP. left.
+      apply/concP. exists w1 => //. exists w2 => //.
+      apply/concP.
+        move: H4.
+        rewrite -topredE /plus => /orP [].
+        move/concP => [w3 Hw3] [w4].
+        move/concP => [w5 Hw5] [w6 Hw6].
+        move => Hw4 Hw2'.
+        case Hw3nil: (w3==[::]).
+          exists w5 => //.
+          exists w6 => //. subst.
+          by rewrite (eqP Hw3nil).
+        exists (w3++w5).
+          apply/starP.
+          move/starP: Hw5 => [] vv Hvv Hvvf.
+          exists (w3::vv).
+            by rewrite /= in_simpl /= Hw3nil /= Hw3 Hvv.
+          by rewrite Hvvf.
+        exists w6 => //.
+        by rewrite Hw2' Hw4 catA.
+      move => Hw2'.
+      exists [::] => //.
+      by exists w2 => //.
+                        
+    rewrite /plus => /orP [].
+      move/concP => [w1 Hw1] [w2].
+      move/concP => [w3 /starP [vv Hvv Hvvf]] [w4 Hw4] Hw2' Hw.
+      subst.
+      rewrite catA -(setD1K H).
+      have H0: (flatten vv \in L^(X) z z).
+        elim: vv Hvv => [|v vv IHvv] Hvv.
+          by apply/L_nil.
+        rewrite -(setD1K H).
+        apply: L_catL.
+          by move: Hvv => /= /andP [] /andP [].
+        rewrite setD1K => //.
+        apply: IHvv => //.
+        by move: Hvv => /= /andP [] /andP [].
+
+      apply L_catR => //.
+      apply L_catL => //.
+      rewrite setD1K => //.
+
+    rewrite -{2}(setD1K H).
+    rewrite simpl_predE.
+    apply: L_monotone.
+  Qed.              
+
+  Lemma conc_eq (l1: language char) l2 l3 l4: l1 =i l2 -> l3 =i l4 -> conc l1 l3 =i conc l2 l4.
+  Proof.
+    move => H1 H2 w.
+    apply/concP/concP; move => [w1 Hw1] [w2 Hw2] Hw.
+      exists w1. by rewrite -H1.
+      exists w2 => //. by rewrite -H2.
+    exists w1. by rewrite H1.
+    exists w2 => //. by rewrite H2.
+  Qed.
+
+  Lemma star_eq (l1: language char) l2: l1 =i l2 -> star l1 =i star l2.
+  Proof.
+    move => H1 w.
+    apply/starP/starP; move => [] vv H3 H4; exists vv => //.
+      erewrite eq_all.
+        eexact H3.
+      move => x /=.
+      by rewrite H1.
+    erewrite eq_all.
+      eexact H3.
+    move => x /=.
+    by rewrite H1.
+  Qed.
+
+  Lemma orbr2 a b c: a = b -> a || c = b || c.
+  Proof.
+    by move => ->.
   Qed.
   
-  Lemma R_L k i j w: w \in R^k i j -> w \in L^k (enum_val i) (enum_val j).
+  Lemma L_R n (X: {set A}) x y: #|X| = n -> L^X x y =i R^X x y.
   Proof.
-    (* induction over k *)
-    elim: k i j w => [|k IHk] i j w.
-      (* k = 0 *)
-
-      (* we only ask if i==j due to the if condition.
-         the actual cases are very similar. *)
-      case H0: (i==j) => /=.
-        rewrite H0 /=.
-        rewrite Plus_dist => /orP [].
-          rewrite foldr_Plus => /orP [] //.
-          move/hasP => [] r /mapP [] a.
-          rewrite mem_filter /= => /andP [] H1 _ ->.
-          rewrite -topredE /= /atom /= => /eqP ->.
-          by rewrite -topredE /= /L /= H1.
-        rewrite -topredE /= /eps /= => /eqP ->.
-        move/eqP: H0 => ->.
-        by apply: L_nil.
-      rewrite H0.
-      rewrite foldr_Plus => /orP [] //.
-      move/hasP => [] r /mapP [] a.
-      rewrite mem_filter /= => /andP [] H1 _ ->.
-      rewrite -topredE /= /atom /= => /eqP ->.
-      by rewrite -topredE /= /L /= H1.
-
-    (* k > 0 *)  
-
-    (* see which case of R^k.+1 we are in *)
-    rewrite /= Plus_dist => /orP [].
-      (* triple concatenation case.
-         we apply IHk where we can and translate
-         star (R^k k k) with R_L_star. *)
-      rewrite -topredE /= => /concP [] w1 /IHk H1 [] w23.
-      move => /concP [] w2 H2 [] w3 /IHk H3.
-      move => Eq1 Eq2.
-      move/starP: H2 => [] vv Hvv Eqvv.
-      pose k' := enum_val (k_ord k).
-      assert (w2 \in L^k.+1 k' k').
-        rewrite Eqvv.
-        by apply: R_L_star.
-      rewrite Eq2.
-      apply: L_catL => //. 
-      rewrite Eq1.
-      by apply: L_catR.
-    (* basic recursion case. solved by IHK. *)
-    move/IHk.
-    by apply: L_monotone.
-  Qed.
- 
-  (* w \in L^k.+1 i j -> w \in R^k.+1 i j.
-     The first argument is the inductive hypothesis
-     obtained from induction over k in L_R *)
-  Lemma L_R_1 k i j w:
-       (forall (i j : 'I_#|A|) (w : automata.word char),
-        w \in L^k (enum_val i) (enum_val j) -> w \in R^k i j) ->
-        w \in L^k.+1 (enum_val i) (enum_val j) -> w \in R^k.+1 i j. 
-  Proof.
-    move => IHk.
-    move: w i j.
-    (* we use size induction because we want to use the
-       inductive hypothesis for an abitrary suffix later. *)
-    apply: (size_induction (size)) => w IHw i j.
-    (* destruct w so that we can use L_split, which requires
-       at a form of a::w. *)
-    case: w IHw => [|a w] IHw.
-      move/L_nil'/(f_equal enum_rank). 
-      rewrite 2!enum_valK => ->.
-      exact: R_nil.
-    (* a::w *)
-    move/L_split => [].
-      (* no k => 2nd case of R^k.+1 i j = R^k i j by IHk *)
-      move/IHk.
-      rewrite /= Plus_dist => ->.
-      by rewrite orbT.
-    (* Splitting exists *)
-    move => [] w1 [] w2 [] H0 [] H1 [] H2 H3.
-    (* We need this later for size induction *)
-    assert (size w1 > 0).
-      case: w1 H0 H1 H2 => [|b w1] H0 H1 H2 => //.
-    rewrite H0.
-    (* IHk takes care of the prefix *)
-    apply: R_catL.
-      by apply: IHk.
-    (* IHw takes care of the suffix *)
-    apply: IHw => //.
-    rewrite H0 size_cat.
-    rewrite -{1}(addn0 (size w2)).
-    rewrite addnC.    
-    by rewrite ltn_add2r.
-  Qed.
-    
-  (* w \in L^k i j -> w \in R^k i j *)
-  Lemma L_R k i j w: w \in L^k (enum_val i) (enum_val j) -> w \in R^k i j. 
-  Proof.
-    (* induction over k.
-       we only look at k=0 here,
-       L_R_1 takes care of k > 0 *)
-    elim: k i j w => [|k IHk] i j w.
-      (* < 0 =1 pred0 *)
-      assert ((fun x:A => enum_rank x < 0) =1 pred0) => //.
-      (* allbutlast pred0 w -> |w| <= 1 *)
-      rewrite in_simpl => /andP [] H0 /(allbutlast_pred0 _ H).  
-      (* |w| <= 1 -> w = [::] \/ w = [::a] *)
-      move: H0. case: w => [|a [|b w]] H0 _ //.
-        (* w = [::] -> i = j *)
-        move/eqP/(f_equal enum_rank) in H0.
-        rewrite 2!enum_valK in H0.
-        rewrite H0.
-        exact: R_nil.
-      (* w = [::a].
-         this would be much simpler if we could ignore
-         the if expression. *)
-      case_eq (i==j) => [/eqP H1| H1].
-        (* i = j *)
-        rewrite /= H1 eq_refl /=.
-        rewrite Plus_dist foldr_Plus 2!in_simpl orbF /=. 
-        apply/hasP. exists (Atom a).
-          apply/mapP. exists a => //.
-          rewrite mem_filter.
-          rewrite H1 in H0.
-          by rewrite mem_enum andbT /= H0.
-        by rewrite in_simpl /= eq_refl.
-      (* i != j *)
-      rewrite /= H1.
-      rewrite foldr_Plus orFb.
-      apply/hasP. exists (Atom a).
-        apply/mapP. exists a => //.
-        rewrite mem_filter.
-        by rewrite mem_enum andbT /= H0.
+    elim: n X x y => [|n IHn] X x y.
+      move/cards0_eq => ->.
+      rewrite R_equation.
+      case: pickP => [z|Hset0].
+        by rewrite in_set0.
+      move => w.
+      apply/idP/mem_R0.
+        move/andP => [] H.
+        move/(allbutlast_pred0 Hset0).
+        destruct w; try destruct w => //;
+        move/eqP: H => /=;
+        by eauto.
+      move => [[-> ->]|[a [-> <-]]].
+        by apply/L_nil.
       by rewrite in_simpl /= eq_refl.
-    by apply: L_R_1.
-  Qed.
-
-  Lemma dfa_L x y: L^#|A| x y =1 [pred w | last x (dfa_run' A x w) == y ].
+    move => HX w.
+    rewrite R_equation.
+    case: pickP => [z Hz|Hset0].
+      have HsizeX: (#|X :\ z| = n).
+        move: HX. rewrite (cardsD1 z) Hz add1n.
+        by move => [].
+      rewrite (L_rec _ _ Hz) -2!topredE /= /plus /=.
+      rewrite IHn => //.
+      apply: orbr2.
+      apply: conc_eq.
+        move => v.
+        exact: IHn.
+      apply: conc_eq.
+        apply: star_eq.
+        exact: IHn.
+      exact: IHn.
+    have: (X = set0).
+      apply/setP.
+      move => v.
+      by rewrite Hset0 in_set0.
+    move/eqP.
+    by rewrite -cards_eq0 HX.
+  Qed.        
+        
+  Lemma dfa_L x y: L^([set x \in A]) x y =1 [pred w | last x (dfa_run' A x w) == y ].
   Proof.
     move => w /=.
     apply/andP/idP.
       by move => [] H0 H1.
     move => -> /=.
-    assert (<_#|A| =1 predT).
-      move => n /=.
-      by rewrite ltn_ord.
-    rewrite (eq_allbutlast _ H).
     firstorder.
-    by apply: allbutlast_predT.
+    erewrite eq_allbutlast.
+    apply allbutlast_predT.
+    move => z.
+    by rewrite /= in_set.
   Qed.
                  
   
   Lemma dfa_to_regex: exists r: regular_expression char, dfa_lang A =1 [pred w | w \in r ].
   Proof.
     exists (
-        foldr
-          (@Plus char)
-          (@Void char)
-          (map  (fun f => R^(#|A|) (enum_rank (dfa_s A)) (enum_rank f)) (enum (dfa_fin A)))
+        nPlus
+          (map  (fun f => R^([set x \in A]) (dfa_s A) (f)) (enum (dfa_fin A)))
        ).
     move => w.
     apply/idP/idP.
       rewrite /= -dfa_run_accept => H.
-      rewrite foldr_Plus orFb.
-      apply/hasP.
-      exists (R^#|A| (enum_rank (dfa_s A)) (enum_rank (last (dfa_s A) (dfa_run' A (dfa_s A) w)))).
+      apply/mem_nPlus.
+      exists (R^[set x \in A] (dfa_s A) (last (dfa_s A) (dfa_run' A (dfa_s A) w))).
         apply/mapP.
         exists (last (dfa_s A) (dfa_run' A (dfa_s A) w)) => //.
         by rewrite mem_enum.
-      apply/L_R.
-      by rewrite in_simpl 2!enum_rankK dfa_L /=.
-    rewrite /= foldr_Plus orFb.
-    move/hasP => [] r.
+      erewrite <- (@L_R #|A|).
+        by rewrite in_simpl dfa_L /=.
+      by rewrite cardsE.
+    move/mem_nPlus => [r].
     move/mapP => [] f.
     rewrite mem_enum.
-    move => H0 -> /R_L.
-    rewrite in_simpl dfa_L 2!enum_rankK /=.
-    by rewrite -dfa_run_accept => /eqP ->.
+    move => H0 => ->. erewrite <- (@L_R #|A|).
+      rewrite in_simpl dfa_L /=.
+      by rewrite -dfa_run_accept => /eqP ->.
+    by rewrite cardsE.
   Qed.                                    
     
 End TransitiveClosure.
