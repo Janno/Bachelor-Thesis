@@ -4,7 +4,7 @@
 Regular languages are a well-studied class of formal languages. 
 In their current form, they were first studied by Kleene \cite{KleeneNets}, who introduced regular expressions. 
 The concept of deterministic finite automata was introduced before Kleene's invention of regular expressions by Huffman \cite{Huffman1954161} and Moore \cite{Moore56}. 
-Rabin and Scott later introduced the concept non-deterministic finite automata \cite{RabinScott}, for which they were given the Turing award \cite{Ashenhurst:1987:ATA:27609}.
+Rabin and Scott later introduced the concept non-deterministic finite automata \cite{Rabin:1959:FAD:1661907.1661909}, for which they were given the Turing award \cite{Ashenhurst:1987:ATA:27609}.
 \todo{Theoretical importance: Second-Order logic, Monoids}
 
 \paragraph{}
@@ -19,7 +19,7 @@ We make use of the \ssreflect\ plugin which provides support for finite types an
 \section{Related work}
 
 There have been many publications on regular languages in recent years.
-Many of them investigate decidability of equivalence of regular expressions with a focus on automatically deciding Kleene algebras.
+Most of them investigate decidability of equivalence of regular expressions, often with a focus on automatically deciding Kleene algebras.
 
 \paragraph{}
 Coquand and Siles developed a decision procedure for equivalence of regular expressions \cite{DBLP:conf/cpp/CoquandS11} on the basis of Brzozowski derivatives \cite{DBLP:journals/jacm/Brzozowski64} in \coq\ (with \ssreflect). Their development weighs in at 7,500 lines of code, 700 of which serve as the basis of our formalization.
