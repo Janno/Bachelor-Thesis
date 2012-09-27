@@ -355,14 +355,11 @@ Section TransitiveClosure.
 
   Notation "'R^' X" := (R X) (at level 8).
   
-  Definition L :=
-    [fun X: {set A} => [fun x y: A =>
-          [pred w |
-           (last x (dfa_run' A x w) == y)
-             && allbutlast (mem X) (dfa_run' A x w) 
-          ]
-       ]
-    ].
+  Definition L (X: {set A}) (x y: A) :=
+      [pred w |
+       (last x (dfa_run' A x w) == y)
+         && allbutlast (mem X) (dfa_run' A x w) 
+      ].
 
   Notation "'L^' X" := (L X) (at level 8).
        
@@ -716,12 +713,12 @@ Section TransitiveClosure.
     by rewrite -cards_eq0 HX.
   Qed.        
         
-  Lemma dfa_L x y: L^setT x y =1 [pred w | last x (dfa_run' A x w) == y ].
+  Lemma dfa_L x y: L^setT x y =i [pred w | last x (dfa_run' A x w) == y ].
   Proof.
     move => w /=.
     apply/andP/idP.
       by move => [] H0 H1.
-    move => -> /=.
+    rewrite in_simpl => -> /=.
     firstorder.
     erewrite eq_allbutlast.
     apply allbutlast_predT.
@@ -744,20 +741,15 @@ Section TransitiveClosure.
         apply/mapP.
         exists (last (dfa_s A) (dfa_run' A (dfa_s A) w)) => //.
         by rewrite mem_enum.
-      erewrite <- (@L_R #|A|).
-        admit.
+      rewrite <- (@L_R #|A|).
+        by rewrite dfa_L in_simpl.
       by rewrite cardsE.
     move/mem_nPlus => [r].
     move/mapP => [] f.
     rewrite mem_enum.
-    move => H0 => ->. erewrite <- (@L_R #|A|).
-      admit.
-    admit.
-    (*
-      rewrite in_simpl dfa_L /=.
-      by rewrite -dfa_run_accept => /eqP ->.
+    move => H0 => ->. rewrite <- (@L_R #|A|).
+      by rewrite dfa_L in_simpl -dfa_run_accept => /eqP ->.
     by rewrite cardsE.
-   *)
   Qed.                                    
     
 End TransitiveClosure.
