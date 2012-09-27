@@ -6,7 +6,10 @@ CHPTS = $(subst .tex,.pdf,${CHPTS_TEX})
 
 all: src thesis 
 
-src:
+src/Makefile:
+	cd src; coq_makefile -I . automata.v base.v glue.v misc.v myhill_nerode.v re_fa.v     regexp.v re_standard.v tactics.v transitive_closure.v  > Makefile
+
+src: src/Makefile
 	cd src; make
 
 thesis/chapters/%.pdf: thesis/%.tex
