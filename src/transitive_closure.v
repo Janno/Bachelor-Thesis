@@ -1,4 +1,4 @@
-Require Import ssreflect ssrbool ssrnat fintype eqtype seq ssrfun ssrbool.
+Require Import ssreflect ssrbool ssrfun ssrnat eqtype seq fintype .
 Require Import automata misc regexp.
 
 Set Implicit Arguments.
@@ -249,14 +249,14 @@ Section TransitiveClosure.
   Proof.
     rewrite /k_ord /=.
     case H0: (k <= #|A|.-1).
-      rewrite minnl => //.
+      by rewrite gtn_min ltnS leqnn.
     move: (leq_total k #|A|.-1).
     rewrite H0 /= => H1.
-    by rewrite minnr.
+    by rewrite gtn_min ltnS leqnn.
   Qed.
 
   Lemma k_ord_eq k: k <= #|A|.-1 -> k = k_ord k.
-  Proof. move => H. by rewrite /= minnl. Qed.
+  Proof. move => H. apply: Logic.eq_sym. by apply/minn_idPl. Qed.
 
   Fixpoint R (k: nat) (i j: 'I_#|A|) : regular_expression char :=
     match k with
@@ -788,11 +788,12 @@ Section TransitiveClosure.
     by apply: L_R_1.
   Qed.
 
-  Lemma dfa_L x y: L^#|A| x y =1 [pred w | last x (dfa_run' A x w) == y ].
+  Lemma dfa_L x y: L^#|A| x y =i [pred w | last x (dfa_run' A x w) == y ].
   Proof.
     move => w /=.
     apply/andP/idP.
       by move => [] H0 H1.
+    rewrite in_simpl.
     move => -> /=.
     assert (<_#|A| =1 predT).
       move => n /=.
@@ -803,7 +804,7 @@ Section TransitiveClosure.
   Qed.
                  
   
-  Lemma dfa_to_regex: exists r: regular_expression char, dfa_lang A =1 [pred w | w \in r ].
+  Lemma dfa_to_regex: exists r: regular_expression char, dfa_lang A =i [pred w | w \in r ].
   Proof.
     exists (
         foldr
@@ -821,13 +822,13 @@ Section TransitiveClosure.
         exists (last (dfa_s A) (dfa_run' A (dfa_s A) w)) => //.
         by rewrite mem_enum.
       apply/L_R.
-      by rewrite in_simpl 2!enum_rankK dfa_L /=.
+      by rewrite 2!enum_rankK dfa_L in_simpl /=.
     rewrite /= foldr_Plus orFb.
     move/hasP => [] r.
     move/mapP => [] f.
     rewrite mem_enum.
     move => H0 -> /R_L.
-    rewrite in_simpl dfa_L 2!enum_rankK /=.
+    rewrite dfa_L 2!enum_rankK in_simpl /=.
     by rewrite -dfa_run_accept => /eqP ->.
   Qed.                                    
     

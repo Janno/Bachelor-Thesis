@@ -56,7 +56,7 @@ Definition plus L1 L2 : language := [predU L1 & L2].
 (** the language of words which are the concatenation of a word of L1 and
    a word of L2 *)
 Definition conc L1 L2 : language := 
-  fun v => existsb i : 'I_(size v).+1, L1 (take i v) && L2 (drop i v). 
+  fun v => [ exists i : 'I_(size v).+1, L1 (take i v) && L2 (drop i v) ]. 
 
 
 (** the language of words which are in L1 _and_ in L2 *)

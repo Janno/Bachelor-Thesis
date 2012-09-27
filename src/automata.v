@@ -1,4 +1,4 @@
-Require Import ssreflect fintype ssrbool eqtype fintype choice finfun seq fingraph ssrfun ssrnat finset.
+Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq choice fintype fingraph  finfun  finset.
 
 Require Import misc.
 Require Import regexp.
@@ -54,6 +54,10 @@ match w with
   | [::] => dfa_fin A x
   | a::w => dfa_accept (dfa_step A x a) w
 end.
+
+Lemma dfa_accept_cons x a w:
+  a::w \in dfa_accept x = (w \in dfa_accept (dfa_step A x a)).
+Proof. by rewrite -simpl_predE /=. Qed.
 
 (** We define the language of the deterministic
    automaton, i.e. acceptance in the starting state. **)
@@ -116,7 +120,7 @@ Qed.
 
 
 (* slightly altered acceptance statement. *)
-Lemma dfa_run_accept x w: last x (dfa_run' x w) \in dfa_fin A = dfa_accept x w.
+Lemma dfa_run_accept x w: last x (dfa_run' x w) \in dfa_fin A = (w \in dfa_accept x).
 Proof. elim: w x => [|a w IHw] x //. by rewrite /= IHw. Qed.
 
 End Acceptance.
@@ -149,7 +153,7 @@ Variable A: nfa.
 Fixpoint nfa_accept (x: A) w :=
 match w with
   | [::] => nfa_fin A x
-  | a::w => existsb y, (nfa_step A x a y) && nfa_accept y w
+  | a::w => [ exists y, (nfa_step A x a y) && nfa_accept y w ]
 end.
 
 (** We define the language of the non-deterministic
@@ -219,7 +223,7 @@ Variable A: nfa.
 
 Definition nfa_to_dfa :=
   {| dfa_s := set1 (nfa_s A);
-    dfa_fin := [ pred X: {set A} | existsb x: A, (x \in X) && nfa_fin A x ];
+    dfa_fin := [ pred X: {set A} | [ exists x: A, (x \in X) && nfa_fin A x] ];
     dfa_step := [ fun X a => \bigcup_(x | x \in X) finset (nfa_step A x a) ]
    |}
 .
@@ -247,7 +251,7 @@ Qed.
    representative state of that set in which the given automaton
    accepts w. **)
 Lemma nfa_to_dfa_sound (X: nfa_to_dfa) w:
-  dfa_accept nfa_to_dfa X w -> existsb x, (x \in X) && nfa_accept A x w.
+  dfa_accept nfa_to_dfa X w -> [ exists x, (x \in X) && nfa_accept A x w ].
 Proof. elim: w X => [|a w IHw] X => //.
   move/IHw => /existsP [] y /andP [].
   rewrite /dfa_step /nfa_to_dfa. 
@@ -260,8 +264,8 @@ Qed.
 (** Finally, we prove that the language of the powerset
    automaton is exactly the language of the given
    automaton. **)
-Lemma nfa_to_dfa_correct w : nfa_lang A w = dfa_lang nfa_to_dfa w.
-Proof. apply/idP/idP => /=.
+Lemma nfa_to_dfa_correct : nfa_lang A =i dfa_lang nfa_to_dfa.
+Proof. move => w. apply/idP/idP => /=.
   apply: nfa_to_dfa_complete. by apply/set1P.
 by move/nfa_to_dfa_sound => /existsP [] x /andP [] /set1P ->.
 Qed.
@@ -296,7 +300,7 @@ Qed.
 (** We prove that dfa_to_nfa accepts the same language
    as the given automaton in the starting state, i.e. their
    languages are equal. **)
-Lemma dfa_to_nfa_correct : dfa_lang A =1 nfa_lang dfa_to_nfa.
+Lemma dfa_to_nfa_correct : dfa_lang A =i nfa_lang dfa_to_nfa.
 Proof.
   exact: dfa_to_nfa_correct'.
 Qed.
@@ -322,10 +326,11 @@ Section Primitive.
       dfa_step := [fun x a => false]
      |}.
 
-  Lemma dfa_eps_correct w: dfa_lang dfa_eps w = (w == [::]).
+  Lemma dfa_eps_correct: dfa_lang dfa_eps =i pred1 [::].
   Proof.
     have H: (forall w, ~~ dfa_accept dfa_eps false w).
       by elim => [|a v IHv] //=.
+    move => w.
     elim: w => [|a w IHw] //.
     apply/idP/idP.
     exact: H. 
@@ -402,16 +407,17 @@ Definition dfa_compl :=
 
 (** We prove that the complement automaton accepts exactly
    the words not accepted by the original automaton. **)
-Lemma dfa_compl_correct' w x:
-  ~~ dfa_accept A1 x w = dfa_accept dfa_compl x w.
-Proof. elim: w x => [|a w IHw] x.  
+Lemma dfa_compl_correct' x:
+  [ predC dfa_accept A1 x ] =i dfa_accept dfa_compl x.
+Proof. move => w. elim: w x => [|a w IHw] x.  
     by apply/idP/idP.
-  simpl. by rewrite IHw.
+  simpl. rewrite -topredE dfa_accept_cons /= -IHw.
+  apply/negP/idP; rewrite dfa_accept_cons; by move/negP.
 Qed.
 
 (** Language correctness for dfa_compl **)
-Lemma dfa_compl_correct w:
-  ~~ dfa_lang A1 w = dfa_lang dfa_compl w.
+Lemma dfa_compl_correct:
+  [ predC dfa_lang A1 ] =i dfa_lang dfa_compl.
 Proof. exact: dfa_compl_correct'. Qed.
 
   
@@ -430,19 +436,19 @@ Definition dfa_disj :=
    |}.
 
 (** Correctness w.r.t. any state. **)
-Lemma dfa_disj_correct' w x:
-  dfa_accept A1 x.1 w || dfa_accept A2 x.2 w
-    = dfa_accept dfa_disj x w.
-Proof. elim: w x => [|a w IHw].
+Lemma dfa_disj_correct' x:
+  [ predU dfa_accept A1 x.1 & dfa_accept A2 x.2 ]
+    =i dfa_accept dfa_disj x.
+Proof. move => w. elim: w x => [|a w IHw].
   by move => [].
-move => x /=. by rewrite -IHw.
+move => x /=. by rewrite dfa_accept_cons -IHw.
 Qed.
 
 (** Language correctness. **)
-Lemma dfa_disj_correct w:
-  dfa_lang A1 w || dfa_lang A2 w
-    = dfa_lang dfa_disj w.
-Proof. move => /=. by rewrite -dfa_disj_correct'. Qed.
+Lemma dfa_disj_correct:
+  [ predU  dfa_lang A1 & dfa_lang A2 ]
+    =i dfa_lang dfa_disj.
+Proof. move => w /=. by rewrite -dfa_disj_correct'. Qed.
 
 (** Conjunction **) 
   
@@ -454,26 +460,26 @@ Definition dfa_conj :=
   |}.
 
 (** Correctness w.r.t. any state. **)
-Lemma dfa_conj_correct' w x1 x2 :
-  dfa_accept A1 x1 w && dfa_accept A2 x2 w
-  = dfa_accept dfa_conj (x1, x2) w.
-Proof. elim: w x1 x2 => [|a w IHw].
+Lemma dfa_conj_correct' x1 x2 :
+  [ predI  dfa_accept A1 x1 & dfa_accept A2 x2 ]
+  =i dfa_accept dfa_conj (x1, x2).
+Proof. move => w. elim: w x1 x2 => [|a w IHw].
   by [].
 move => x1 x2.
 exact: IHw.
 Qed.
 
 (** Language correctness. **)
-Lemma dfa_conj_correct w:
-  dfa_lang A1 w && dfa_lang A2 w
-  = dfa_lang dfa_conj w.
-Proof. exact: dfa_conj_correct'. Qed.
+Lemma dfa_conj_correct:
+  [ predI dfa_lang A1 & dfa_lang A2 ]
+  =i dfa_lang dfa_conj.
+Proof. move => w. by rewrite -dfa_conj_correct'  /=. Qed.
 
 End BinaryOps.
 
 (* Remove unreachable states *)
 Section Reachability.
-  Definition reachable1 := [ fun x y => existsb a, dfa_step A1 x a == y ].
+  Definition reachable1 := [ fun x y => [ exists a, dfa_step A1 x a == y ] ].
 
   Definition reachable := enum (connect reachable1 (dfa_s A1)).
 
@@ -501,15 +507,17 @@ Section Reachability.
       
 
   Lemma dfa_connected_correct' x (Hx: x \in reachable) :
-    dfa_accept dfa_connected {|ssvalP := Hx|} =1 dfa_accept A1 x.
-  Proof. move => w. elim: w x Hx => [|a w IHw] x Hx //=. Qed. 
+    dfa_accept dfa_connected (SeqSub Hx) =i dfa_accept A1 x.
+  Proof. move => w. elim: w x Hx => [|a w IHw] x Hx //=.
+    by rewrite 2!dfa_accept_cons IHw.
+  Qed. 
 
-  Lemma dfa_connected_correct: dfa_lang dfa_connected =1 dfa_lang A1.
+  Lemma dfa_connected_correct: dfa_lang dfa_connected =i dfa_lang A1.
   Proof.
     move => w. by rewrite /dfa_lang /= dfa_connected_correct'.
   Qed.
 
-  Definition reachable1_connected := [ fun x y => existsb a, dfa_step dfa_connected x a == y ].
+  Definition reachable1_connected := [ fun x y => [ exists a, dfa_step dfa_connected x a == y ] ].
   Lemma reachable1_connected_complete x y (Hx: x \in reachable) (Hy: y \in reachable) : connect reachable1 x y -> connect reachable1_connected (SeqSub Hx) (SeqSub Hy).
   Proof.
     move/connectP => [p].
@@ -564,7 +572,7 @@ Section Emptiness.
 
   Definition dfa_lang_empty := #|dfa_fin dfa_connected| == 0.
 
-  Lemma dfa_lang_empty_complete: dfa_lang dfa_connected =1 pred0 -> dfa_lang_empty.
+  Lemma dfa_lang_empty_complete: dfa_lang dfa_connected =i pred0 -> dfa_lang_empty.
   Proof.
     rewrite /dfa_lang_empty.
     move => H.
@@ -579,7 +587,7 @@ Section Emptiness.
     by move/negP.
   Qed. 
   
-  Lemma dfa_lang_empty_sound: dfa_lang_empty -> dfa_lang dfa_connected =1 pred0.
+  Lemma dfa_lang_empty_sound: dfa_lang_empty -> dfa_lang dfa_connected =i pred0.
   Proof.
     rewrite /dfa_lang_empty.
     move => H w.
@@ -590,7 +598,7 @@ Section Emptiness.
   Qed.
                               
   Lemma dfa_lang_empty_correct:
-    reflect (dfa_lang A1 =1 pred0)
+    reflect (dfa_lang A1 =i pred0)
             dfa_lang_empty.
   Proof.
     apply/iffP.
@@ -613,19 +621,19 @@ Section Equivalence.
     dfa_disj (dfa_conj A1 (dfa_compl A2)) (dfa_conj A2 (dfa_compl A1)).
 
   Lemma dfa_sym_diff_correct:
-    dfa_lang_empty dfa_sym_diff <-> dfa_lang A1 =1 dfa_lang A2.
+    dfa_lang_empty dfa_sym_diff <-> dfa_lang A1 =i dfa_lang A2.
   Proof.
     split; rewrite /dfa_sym_diff.
       move/dfa_lang_empty_correct => H w.
       move: (H w).
-      rewrite -dfa_disj_correct -2!dfa_conj_correct -2!dfa_compl_correct [pred0 w]/=.
+      rewrite -dfa_disj_correct -topredE /= -2!dfa_conj_correct -2!topredE /= -2!dfa_compl_correct.
       move/norP => [] /nandP [] /negP H1 /nandP [] /negP H2;
       apply/idP/idP; try by [];
       move/negP: H1; move/negP: H2;
-      auto using negbNE.
+      by auto using negbNE.
     move => H. apply/dfa_lang_empty_correct => w. move: (H w).
-    rewrite -dfa_disj_correct -2!dfa_conj_correct -2!dfa_compl_correct [pred0 w]/=.
-    move => ->.
+    rewrite -dfa_disj_correct -3!topredE /= -2!dfa_conj_correct -2!topredE /= -2!dfa_compl_correct.
+    rewrite -H -4!topredE /= -2!topredE /= andbN => ->.
     by rewrite andbN.
 Qed.    
 
@@ -675,7 +683,7 @@ Lemma nfa_conc_fin1 x1 w:
 Proof.
 move => H0 /nfa_run_accept [] ys.
 elim: ys w x1 H0 => [|y ys IHys] [|a w] x1 H0 //=.
-  rewrite -topredE /=. by move: H0 => -> _ ->.
+  by rewrite -topredE /= H0 => _ ->. 
 move => /andP [] H1 H2 H3.
 apply/existsP. exists (inr _ y).
 rewrite H0 H1 /=.
@@ -749,7 +757,7 @@ apply/existsP. exists y.
 by rewrite H0 H1.
 Qed.
 
-Lemma nfa_conc_correct: nfa_lang nfa_conc =1 conc (nfa_lang A1) (nfa_lang A2).
+Lemma nfa_conc_correct: nfa_lang nfa_conc =i conc (nfa_lang A1) (nfa_lang A2).
 Proof.
   move => w.
   apply/idP/concP.
@@ -771,7 +779,7 @@ Proof.
 Definition step_plus x a y : bool :=
 nfa_step A1 x a y || (
                       (y == nfa_s A1)
-                      && existsb z, (nfa_fin A1 z) && (nfa_step A1 x a z)
+                      && [ exists z, (nfa_fin A1 z) && (nfa_step A1 x a z) ]
                     ).
 
 (** **)
@@ -782,7 +790,7 @@ Definition nfa_plus : nfa :=
     nfa_step := fun x a y =>
         nfa_step A1 x a y || (
                       (y == nfa_s A1)
-                      && existsb  z, (nfa_fin A1 z) && (nfa_step A1 x a z)
+                      && [ exists  z, (nfa_fin A1 z) && (nfa_step A1 x a z) ]
                     )
    |}.
 
@@ -918,11 +926,10 @@ Definition nfa_star :=
 
 Lemma nfa_star_sound w: w \in dfa_lang nfa_star -> w \in star (nfa_lang A1).
 Proof.
-  rewrite in_simpl -dfa_disj_correct.
+  rewrite /nfa_star -dfa_disj_correct -topredE /=.
     rewrite dfa_eps_correct => /orP [].
       move => /eqP ->.
       apply/starP. by exists [::].
-
     rewrite -nfa_to_dfa_correct.
     move: w.
     apply: (size_induction size).
@@ -948,7 +955,7 @@ Proof.
 Qed.  
       
 Lemma nfa_star_complete w: w \in star (nfa_lang A1) -> w \in dfa_lang nfa_star.
-    rewrite /nfa_star in_simpl -dfa_disj_correct -nfa_to_dfa_correct.
+    rewrite /nfa_star -dfa_disj_correct -2!topredE /= -nfa_to_dfa_correct.
     move/starP => [] vv. elim: vv w => [|v vv IHvv] w.
       rewrite /= => _ ->. move: (dfa_eps_correct [::]).
       by rewrite /dfa_lang /=.
@@ -966,7 +973,7 @@ Lemma nfa_star_complete w: w \in star (nfa_lang A1) -> w \in dfa_lang nfa_star.
     by apply: nfa_plus_complete.
 Qed.
 
-Lemma nfa_star_correct: dfa_lang nfa_star =1 star (nfa_lang A1).
+Lemma nfa_star_correct: dfa_lang nfa_star =i star (nfa_lang A1).
 Proof.
   move => w.
   apply/idP/idP.

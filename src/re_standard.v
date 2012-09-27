@@ -1,4 +1,4 @@
-Require Import ssreflect ssrbool eqtype fintype finfun seq fingraph ssrfun ssrnat finset.
+Require Import ssreflect ssrbool fintype.
 
 Require Import regexp.
 
