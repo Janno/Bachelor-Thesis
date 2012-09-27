@@ -141,7 +141,7 @@ Section AllButLast.
   Proof.
     elim: xs x => [|y xs IHxs] x //.
     case: xs IHxs => [|z xs] IHxs.
-      by rewrite /allbutlast /= => -> ->.
+      by rewrite /allbutlast /= => _ ->.
     move/allbutlast_cons'/andP => [] H0 H1 H2.
     move: (IHxs x H1 H2).
     by rewrite /= H0 => /andP [] ->.
@@ -353,8 +353,6 @@ Section TransitiveClosure.
   Defined.
   Functional Scheme R_ind := Induction for R Sort Prop.
 
-  Check R_ind.
-  
   Notation "'R^' X" := (R X) (at level 8).
   
   Definition L :=
@@ -716,7 +714,7 @@ Section TransitiveClosure.
     by rewrite -cards_eq0 HX.
   Qed.        
         
-  Lemma dfa_L x y: L^([set x \in A]) x y =1 [pred w | last x (dfa_run' A x w) == y ].
+  Lemma dfa_L x y: L^setT x y =1 [pred w | last x (dfa_run' A x w) == y ].
   Proof.
     move => w /=.
     apply/andP/idP.
@@ -734,7 +732,7 @@ Section TransitiveClosure.
   Proof.
     exists (
         nPlus
-          (map  (fun f => R^([set x \in A]) (dfa_s A) (f)) (enum (dfa_fin A)))
+          (map  (fun f => R^setT (dfa_s A) (f)) (enum (dfa_fin A)))
        ).
     move => w.
     apply/idP/idP.

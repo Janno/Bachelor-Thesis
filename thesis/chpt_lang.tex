@@ -1,4 +1,5 @@
 \chapter{Decidable Languages}
+\label{chap:lang}
 
 \paragraph{}
 We give basic definitions for languages, operators on languages and, finally, regular languages.
@@ -10,7 +11,7 @@ We closely follow the definitions from \cite{DBLP:books/daglib/0011126}.
 An \textbf{alphabet} $\Sigma$ is a finite set of symbols. 
 A \textbf{word} $w$ is a finite sequence of symbols chosen from some alphabet. 
 We use $|w|$ to denote the \textbf{length} of a word $w$. $\varepsilon$ denotes the empty word.
-Given two words $w_1 = a_1 \cdots a_n$ and $w_2 = b_1 \cdots b_m$, the \textbf{concatenation} of $w_1$ and $w_2$ is defined as $a_1 \cdots a_n \cdot b_1 \cdots b_m$ and denoted $w_1 \cdot w_2$ or just $w_1 w_2$.
+Given two words $w_1 = a_1 \cdots a_n$ and $w_2 = b_1 \cdots b_m$, the \textbf{concatenation} of $w_1$ and $w_2$ is defined as $a_1 \cdots a_n b_1 \cdots b_m$ and denoted $w_1 \cdot w_2$ or just $w_1 w_2$.
 A \textbf{language} is a set of words.
 The \textbf{residual language} of a language $L$ with respect to symbol $a$ is the set of words $u$ such that $a v$ is in $L$. The residual is denoted $res_a(L)$.
 We define $\Sigma^k$ to be the \textbf{set of words of length k}.
@@ -21,7 +22,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
 
     \paragraph{} 
     We employ finite types to formalize alphabets. 
-    In the most definitions, alphabets will not be made explicit.
+    In most definitions, alphabets will not be made explicit.
     However, the same name and type will be used throughout the entire development.
     Words are formalized as sequences over the alphabet.
     Decidable languages are represented by functions from $word$ to $bool$.
@@ -30,12 +31,16 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     \codeblock{language_language}{}{misc_language}
     \codeblock{language_residual}{}{regexp_residual}
 
-    \subsection{Operations on languages}
+    \subsection{Operations on Languages}
+
+    \paragraph{}
+    We will later introduce a subset of the decidable language that is based on the following operations. For every operator, we will prove the decidabality of the resulting language.
 
     \paragraph{}
 
     The \textbf{concatenation} of two languages $L_1$ and $L_2$ is denoted $L_1 \cdot L_2$ and is defined as the set of words $w = w_1 w_2$ such that $w_1$ is in $L_1$ and $w_2$ is in $L_2$.
-    The \textbf{Kleene closure} of a language $L$ (also called Kleene star) is denoted $L^*$ and is defined as the set of words $w = w_1 \cdots w_k$ such that $w_1 \ldots w_k$ are in $L$. $\varepsilon$ is contained in $L^*$ ($k=0$).
+    The \textbf{Kleene closure} of a language $L$ is denoted $L^*$ and is defined as the set of words $w = w_1 \cdots w_k$ such that $w_1 \ldots w_k$ are in $L$. 
+    Note that $\varepsilon \in L^*$ ($k=0$).
     We define the \textbf{complement} of a language $L$ as $L \backslash \Sigma^*$, which we write as $\neg L$.
     Furthermore, we make use of the standard set operations \textbf{union} and \textbf{intersection}.
 
@@ -82,8 +87,9 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     \code{regexp_concP}{Formalization of lemma \ref{concP}}{regexp_concP_head}
 
     \paragraph{}
-    The implementation of \lstinline{star} makes use of a characteristic property of the Kleene closure, 
+    The implementation of \lstinline{star} makes use of a property of the Kleene closure, 
     which is that any nonempty word in $L^*$ can be seen as the concatenation of a nonempty word in $L$ and a (possibly empty) word in $L^*$.
+    This property allows us to implement star as a structurally recursive predicate.
     The following lemma proves the correctness of this property.
 
     \begin{lemma}
@@ -133,13 +139,14 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     \end{proof}
 
     \paragraph{}
-    The formalization of lemma \ref{starP} connects the characteristic property used to define \lstinline{star} to the mathematical definition. The propositional formula given here appears slightly more restrictive than our mathemitcal definition as it requires all words from $L$ to be nonempty. 
+    The formalization of lemma \ref{starP} connects the formalization of \lstinline{star} to the mathematical definition. The propositional formula given here appears slightly more restrictive than our mathemitcal definition as it requires all words from $L$ to be nonempty. 
     Mathematically, however, this is no restriction. 
-    The advantage of this formalization is can be seen in later proofs, where induction over the length of a word $w \in L^*$ is necessary. 
-    In such places, we will use lemma \ref{starP} to get $w_1 \ldots w_k \in L$ such that $w = w_1 \cdots w_k$ 
-    and proceed by induction over the list of words $w_1 \ldots w_k$. 
-    Since every word $w_i$ has a length of at least one, we shorten $w$ by at least one character. 
-    Thus, we can use the inductive hypothesis of the induction over $|w|$ to prove the claim.
+    
+    %The advantage of this formalization is can be seen in later proofs, where induction over the length of a word $w \in L^*$ is necessary. 
+    %In such places, we will use lemma \ref{starP} to get $w_1 \ldots w_k \in L$ such that $w = w_1 \cdots w_k$ 
+    %and proceed by induction over the list of words $w_1 \ldots w_k$. 
+    %Since every word $w_i$ has a length of at least one, we shorten $w$ by at least one character. 
+    %Thus, we can use the inductive hypothesis of the induction over $|w|$ to prove the claim.
 
     \code{regexp_starP}{Formalization of lemma \ref{starP}}{regexp_starP_head}
 
@@ -148,7 +155,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
         The decidable languages are closed under concatenation, Kleene star, union, intersection and complement. 
     \end{theorem}
     \begin{proof}
-        We have already given algorithms for every operator. 
+        We have already give algorithms for all operators. 
         It remains to show that they are correct.
         For concatenation and the Kleene star, we have shown in lemma \ref{concP} and lemma \ref{starP} that the formalizations are equivalent to the mathematical definitions. 
         The remaining operators (union, intersection, complement) can be applied directly to the result of the languages' boolean decision functions.
@@ -179,24 +186,32 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
 
     \paragraph{} 
     Regular expressions mirror the definition of regular languages very closely. 
+    \begin{definition}
+        \label{extregex}
     We will consider \textbf{extended regular expressions} that include negation (\lstinline{Not}), intersection (\lstinline{And}) and a single-symbol wildcard (\lstinline{Dot}). 
     Therefore, we have the following syntax for regular expressions:
     \begin{equation*}
         r,s := \emptyset \; | \; \varepsilon \; | \; . \; | \; a \; | \; r^* \; | \; r + s \; | \; r \& s \; | \; r s \; | \; \neg r
     \end{equation*}
+        
 
     \paragraph{} 
     The semantics of these constructors are as follows:
-    \begin{enumerate}
-        \item $\lang{\emptyset} = \emptyset$
-        \item $\lang{\varepsilon} = \{\varepsilon\}$
-        \item $\lang{.} = \Sigma$
-        \item $\lang{a} = \{a\}$
-        \item $\lang{r^*} = \lang{r}^*$
-        \item $\lang{r + s} = \lang{r} \cup \lang{s}$
-        \item $\lang{r \& s} = \lang{r} \cap \lang{s}$
-        \item $\lang{r s} = \lang{r} \cdot \lang{s}$
-    \end{enumerate}
+    \begin{align*}
+        \lang{\emptyset} & = \emptyset
+        & 
+        \lang{r^*} & = \lang{r}^* \\
+        \lang{\varepsilon} & = \{\varepsilon\}
+        & 
+        \lang{r + s} & = \lang{r} \cup \lang{s} \\
+        \lang{.} & = \Sigma
+        & 
+        \lang{r \& s} & = \lang{r} \cap \lang{s} \\
+        \lang{a} & = \{a\}
+        &
+        \lang{r s} & = \lang{r} \cdot \lang{s}
+    \end{align*}
+    \end{definition}
 
     \begin{definition}
         We say that two regular expressions $r$ and $s$ are equivalent if and only if
@@ -211,7 +226,8 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
 
     \paragraph{}
     We take the implementation of regular expressions from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
-    They also give a decision function the language associated with a regular expression.
+    The semantics defined in definition \ref{extregex} can be given as a boolean function.
+    %They also give a decision function the language associated with a regular expression.
     
 
     \code{regexp}{Regular Expressions}{regexp_regular_expression}

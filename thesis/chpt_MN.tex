@@ -1,35 +1,45 @@
 
 \chapter{Myhill-Nerode}
+\label{chap:MN}
 
 \paragraph{}
 
-The last characterization we consider is given by the Myhill-Nerode theorem.
+The last characterization of regular languages that we consider is given by the Myhill-Nerode theorem.
 
 \section{Definition}
 
 \paragraph{}
 
 The following definitions (taken from \cite{DBLP:books/daglib/0088160}) will lead us to the statement of the Myhill-Nerode theorem.
-We assume $\equiv$ to be an equivalence relation on $\Sigma^*$, and $L$ to be a language over $\Sigma$.
+
+    Let $\equiv$ be an equivalence relation on $\Sigma^*$. Let $L$ be a language over $\Sigma$.
+
+\begin{definition}
+    The \textbf{equivalence class} of $u \in \Sigma^*$ w.r.t. $\equiv$ is the set of all $v$ such that $u \equiv v$.
+    It is denoted by $[u]_\equiv$.
+
+\end{definition}
+    
+\begin{definition} $ $ 
 
 \begin{enumerate}[label=(\roman*)]
 
     \item\label{rightcongruent}
                 %\begin{definition}
-        $\equiv$ is \textbf{right congruent} if and only if for all $x, y \in \Sigma^*$ and $a \in \Sigma$,
+        $\equiv$ is \textbf{right congruent} if and only if for all $u, v \in \Sigma^*$ and $a \in \Sigma$,
         \begin{equation*}
-            x \equiv y \Rightarrow
-            x \cdot a \equiv y \cdot a.
+            u \equiv v \Rightarrow
+            u \cdot a \equiv v \cdot a.
         \end{equation*}
                 %\end{definition}
 
 
     \item\label{refinement}
                 %\begin{definition}
-        $\equiv$ \textbf{refines} $L$ if and only if forall $x,y \in \Sigma^*$,
+        $\equiv$ \textbf{refines} $L$ if and only if forall $u,v \in \Sigma^*$,
         \begin{equation*}
-            x \equiv y \Rightarrow
-            (x \in L \Leftrightarrow y \in L).
+            u \equiv v \Rightarrow
+            (u \in L \iff v \in L).
         \end{equation*}
                 %\end{definition}
 
@@ -37,38 +47,44 @@ We assume $\equiv$ to be an equivalence relation on $\Sigma^*$, and $L$ to be a 
                 %\begin{definition}
         $\equiv$ is of \textbf{finite index} if and only if it has finitely many equivalence classes, i.e.
         \begin{equation*}
-            \{[x] | x \in \Sigma^*\} \mbox{ is finite }
+            \{[u]_\equiv \; | \; u \in \Sigma^*\} \mbox{ is finite }
         \end{equation*}
                 %\end{definition}
 
 \end{enumerate}
+\end{definition}
 
 \begin{definition}
     \label{MN_relation}
-    A relation is Myhill-Nerode if and only it satisfies properties \ref{rightcongruent}, \ref{refinement} and \ref{finiteindex}.
+    A relation is Myhill-Nerode if and only if it satisfies properties \ref{rightcongruent}, \ref{refinement} and \ref{finiteindex}.
 \end{definition}
 
 \todo{Fix everything below this line}
 
-\paragraph{} Given a language $L$, the Myhill-Nerode relation $\approx_L$ is defined such that 
+\begin{definition}
+Given a language $L$, the coarsest Myhill-Nerode relation $\equiv_L$ is the Myhill-Nerode relation that subsumes every other Myhill-Nerode relation, i.e.
 \begin{equation*}
-    \forall u, v \in \Sigma^*. \,
-    u \approx_L v \, \Longleftrightarrow \, 
-    \forall w \in \Sigma^*.\, u \cdot w \in L \Leftrightarrow v \cdot w \in L.
+    \forall \equiv. \, \equiv \mathrm{Myhill-Nerode} -> \forall u,v. \, u \equiv v \Rightarrow u \equiv_L v.
 \end{equation*}
+%\begin{equation*}
+%    \forall u, v \in \Sigma^*. \,
+%    u \equiv_L v \, \Longleftrightarrow \, 
+%    \forall w \in \Sigma^*.\, u \cdot w \in L \Leftrightarrow v \cdot w \in L.
+%\end{equation*}
+\end{definition}
 
 \code{mn}{Myhill-Nerode relation}{myhill_nerode_MN}
 
 \begin{theorem}{Myhill-Nerode Theorem.}
     \label{MN}
-    A language $L$ is regular if and only if $\,\approx_L$ is of finite index.
+    A language $L$ is regular if and only if $\,\equiv_L$ is of finite index.
 \end{theorem}
 
 \section{Finite Partitionings and Equivalence Classes}
 
 \paragraph{}
 \coq\ does not have quotient types. 
-We pair up functions and proofs for certain properties of those functions to emulate quotient types.
+We pair up functions and proofs of certain properties to emulate quotient types.
 
 \paragraph{} 
 A finite partitioning is a function from $\Sigma^*$ to some finite type $F$. 
@@ -76,26 +92,26 @@ We use this concept to model equivalent classes in \coq.
 A finite partitioning of the Myhill-Nerode relation is a finite partitioning $f$ that also respects the Myhill-Nerode relation, i.e.,
 \begin{equation*}
     \forall u, v \in \Sigma^*. \,
-    f(u) = f(v) \Leftrightarrow u \approx_L v.
+    f(u) = f(v) \Leftrightarrow u \equiv_L v.
 \end{equation*}
 
 
 \code{mn_rel}{Finite partitioning of the Myhill-Nerode relation}{myhill_nerode_MN_rel}
 
 \begin{theorem}
-    $\approx_L$ is of finite index if and only if there exists a finite partitioning of the Myhill-Nerode relation.
+    $\equiv_L$ is of finite index if and only if there exists a finite partitioning of the Myhill-Nerode relation.
 \end{theorem}
 
 \begin{proof}
-    If $\approx_L$ is of finite index, we use the set equivalence classes as a finite type and construct $f$ such that
+    If $\equiv_L$ is of finite index, we use the set equivalence classes as a finite type and construct $f$ such that
     \begin{equation*}
-        \forall w.\, f(w) = [w]_\approx.
+        \forall w.\, f(w) = [w]_\equiv.
     \end{equation*}
     \paragraph{}
     $f$ is a finite partitioning of the Myhill-Nerode relation by definition.
 
     \paragraph{}
-    Conversely, if we have a finite partitioning of the Myhill-Nerode relation, we can easily see that $\approx_L$ must be of finite index since $f$'s values directly correspond to equivalence classes. The image of $f$ is finite. Therefore, $\approx_L$ is of finite index.
+    Conversely, if we have a finite partitioning of the Myhill-Nerode relation, we can easily see that $\equiv_L$ must be of finite index since $f$'s values directly correspond to equivalence classes. The image of $f$ is finite. Therefore, $\equiv_L$ is of finite index.
 \end{proof}
 
 \paragraph{}
@@ -103,7 +119,7 @@ A finite partitioning of the Myhill-Nerode relation is a finite partitioning $f$
 A more general concept is that of a refining finite partitioning of the Myhill-Nerode relation:
 \begin{equation*}
     \forall u, v \in \Sigma^*. \,
-    f(u) = f(v) \Rightarrow u \approx_L v.
+    f(u) = f(v) \Rightarrow u \equiv_L v.
 \end{equation*}
 
 \code{mn_ref}{Refining finite partitioning of the Myhill-Nerode relation}{myhill_nerode_MN_ref}

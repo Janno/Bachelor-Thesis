@@ -154,52 +154,44 @@ end.
 
 (** We define the language of the non-deterministic
    automaton, i.e. acceptance in the starting state. **)
-Definition nfa_lang := [ pred w | nfa_accept (nfa_s A) w].
+Definition nfa_lang := [pred w | nfa_accept (nfa_s A) w].
 
 (** We define labeled paths over the non-deterministic step relation **)
-Fixpoint nfa_lpath x (xs : seq A) (w: word) {struct xs} :=
+Fixpoint nfa_run x (xs : seq A) (w: word) {struct xs} :=
 match xs,w with
-  | y :: xs', a::w' => nfa_step A x a y && nfa_lpath y xs' w'
+  | y :: xs', a::w' => nfa_step A x a y && nfa_run y xs' w'
   | [::]    , [::]  => true
   | _       , _     => false
 end.
 
-(** We prove that there is a path labeled with w induced
-   by nfa_accept starting at x and ending in an accepting
-   state. **)
-Lemma nfa_accept_lpath x w:
-  nfa_accept x w -> exists xs, nfa_lpath x xs w /\ nfa_fin A (last x xs).
-Proof. elim: w x => [|a w IHw] x.
-  by exists [::].
-move => /existsP [] y /andP [] H0 /IHw [xs [H1 H2]].
-exists (y::xs) => /=.
-by rewrite H0 H1 H2.
+Lemma nfa_run_accept x w:
+  reflect (exists2 xs, nfa_run x xs w & last x xs \in nfa_fin A)
+          (nfa_accept x w).
+Proof.
+  elim: w x => [|a w IHw] x.
+    case H: (nfa_accept x [::]); constructor.
+      by exists [::].
+    move => [[|y xs]] //.
+    move: H => /= H _.
+    by rewrite -topredE /= H.
+  case H: nfa_accept => /=; constructor.
+    move/existsP: H => [] y /andP [] H1 /IHw [] xs H2 H3.
+    exists (y::xs) => //=.
+    by rewrite H1 H2 /=.
+  move => [[|y xs]] //= /andP [] H1 H2 H3.
+  move/existsP: H => H.
+  apply: H. exists y.
+  rewrite H1 /=.
+  apply/IHw.
+  by exists xs.
 Qed.
-
-(** We prove that the existence of a path labeled with w
-   implies the acceptance of w. **)
-Lemma nfa_lpath_accept x xs w:
-  nfa_lpath x xs w -> nfa_fin A (last x xs) -> nfa_accept x w.
-Proof. elim: w x xs => [|a w IHw] x xs.
-  (* We destruct the path to ensure that it is empty. *)
-  case: xs => [|y xs].
-    by [].
-  (* Non-empty paths can not be not be produced by empty words. *)
-  by [].
-case: xs => [|y xs].
-  (* Empty paths can not accept non-empty words. *)
-  by [].
-simpl. move => [] /andP [] H0 H1 H2.
-apply/existsP. exists y.
-rewrite H0 andTb.
-apply: IHw; by eassumption.
-Qed.
+ 
 
 (** Helpful facts **)
 Lemma nfa_accept_cat x w1 w2:
   nfa_accept x (w1 ++ w2) <->
   exists xs,
-    nfa_lpath x xs w1
+    nfa_run x xs w1
     && nfa_accept (last x xs) w2.
 Proof. split.
   elim: w1 w2 x => [|a w1 IHw1] w2 x.
@@ -305,6 +297,7 @@ Qed.
    as the given automaton in the starting state, i.e. their
    languages are equal. **)
 Lemma dfa_to_nfa_correct : dfa_lang A =1 nfa_lang dfa_to_nfa.
+Proof.
   exact: dfa_to_nfa_correct'.
 Qed.
     
@@ -314,9 +307,9 @@ End Embed.
 Section Primitive.
   Definition dfa_void :=
    {| 
-      dfa_s := false;
+      dfa_s := tt;
       dfa_fin := pred0;
-      dfa_step := [fun x a => false]
+      dfa_step := [fun x a => tt]
    |}.
   
   Lemma dfa_void_correct x w: ~~ dfa_accept dfa_void x w.
@@ -437,26 +430,26 @@ Definition dfa_disj :=
    |}.
 
 (** Correctness w.r.t. any state. **)
-Lemma dfa_disj_correct' w x1 x2 :
-  dfa_accept A1 x1 w || dfa_accept A2 x2 w
-    = dfa_accept dfa_disj (x1, x2) w.
-Proof. elim: w x1 x2 => [|a w IHw].
-  by [].
-move => x1 x2. by exact: IHw.
+Lemma dfa_disj_correct' w x:
+  dfa_accept A1 x.1 w || dfa_accept A2 x.2 w
+    = dfa_accept dfa_disj x w.
+Proof. elim: w x => [|a w IHw].
+  by move => [].
+move => x /=. by rewrite -IHw.
 Qed.
 
 (** Language correctness. **)
 Lemma dfa_disj_correct w:
   dfa_lang A1 w || dfa_lang A2 w
     = dfa_lang dfa_disj w.
-Proof. exact: dfa_disj_correct'. Qed.
+Proof. move => /=. by rewrite -dfa_disj_correct'. Qed.
 
 (** Conjunction **) 
   
 Definition dfa_conj :=
  {| 
     dfa_s := (dfa_s A1, dfa_s A2);
-    dfa_fin := (fun q => let (x1,x2) := q in dfa_fin A1 x1 && dfa_fin A2 x2);
+    dfa_fin := (fun x => dfa_fin A1 x.1 && dfa_fin A2 x.2);
     dfa_step := [fun x a => (dfa_step A1 x.1 a, dfa_step A2 x.2 a)]
   |}.
 
@@ -499,10 +492,10 @@ Section Reachability.
 
   Definition dfa_connected :=
    {| 
-      dfa_s := {|ssvalP := reachable0|};
-      dfa_fin := [fun x => match x with {|ssval := x |} => dfa_fin A1 x end];
+      dfa_s := SeqSub reachable0;
+      dfa_fin := [fun x => match x with SeqSub x _ => dfa_fin A1 x end];
       dfa_step := [fun x a => match x with
-        | {|ssvalP := Hx|} => {| ssvalP := (reachable_step _ a Hx) |}
+        | SeqSub _ Hx => SeqSub (reachable_step _ a Hx)
         end]
     |}.
       
@@ -596,11 +589,15 @@ Section Emptiness.
     by move/eqP/card0_eq: H => ->.
   Qed.
                               
-  Lemma dfa_lang_empty_correct: dfa_lang_empty <-> dfa_lang A1 =1 pred0.
+  Lemma dfa_lang_empty_correct:
+    reflect (dfa_lang A1 =1 pred0)
+            dfa_lang_empty.
   Proof.
-    split; move => H.
-      move => w. rewrite -dfa_connected_correct.
+    apply/iffP.
+    eexact (@idP dfa_lang_empty ).
+      move => H w. rewrite -dfa_connected_correct.
       exact: dfa_lang_empty_sound.
+    move => H.
     apply: dfa_lang_empty_complete.
     move => w.
     by rewrite dfa_connected_correct.
@@ -616,15 +613,17 @@ Section Equivalence.
     dfa_disj (dfa_conj A1 (dfa_compl A2)) (dfa_conj A2 (dfa_compl A1)).
 
   Lemma dfa_sym_diff_correct:
-    dfa_lang dfa_sym_diff =1 pred0 <-> dfa_lang A1 =1 dfa_lang A2.
+    dfa_lang_empty dfa_sym_diff <-> dfa_lang A1 =1 dfa_lang A2.
   Proof.
-    split => H w; move: (H w); rewrite /dfa_sym_diff.
+    split; rewrite /dfa_sym_diff.
+      move/dfa_lang_empty_correct => H w.
+      move: (H w).
       rewrite -dfa_disj_correct -2!dfa_conj_correct -2!dfa_compl_correct [pred0 w]/=.
       move/norP => [] /nandP [] /negP H1 /nandP [] /negP H2;
       apply/idP/idP; try by [];
       move/negP: H1; move/negP: H2;
       auto using negbNE.
-
+    move => H. apply/dfa_lang_empty_correct => w. move: (H w).
     rewrite -dfa_disj_correct -2!dfa_conj_correct -2!dfa_compl_correct [pred0 w]/=.
     move => ->.
     by rewrite andbN.
@@ -660,8 +659,8 @@ Definition nfa_conc : nfa :=
 (** We prove that every path of A2 can be mapped to a path
    of nfa_conc. **)
 Lemma nfa_conc_cont x xs w:
-  nfa_lpath A2 x xs w
-  -> nfa_lpath nfa_conc (inr _ x) (map (@inr A1 A2) xs) w.
+  nfa_run A2 x xs w
+  -> nfa_run nfa_conc (inr _ x) (map (@inr A1 A2) xs) w.
 Proof. elim: xs x w => [|y xs IHxs] x w; case: w => [|a w] => //.
 simpl. by move/andP => [] -> /IHxs ->.
 Qed.
@@ -674,13 +673,15 @@ Lemma nfa_conc_fin1 x1 w:
   nfa_lang A2 w ->
   nfa_accept nfa_conc (inl _ x1) w.
 Proof.
-move => H0 /nfa_accept_lpath [] ys.
-elim: ys w x1 H0 => [|y ys IHys] [|a w] x1 H0 /andP //=.
-  by move: H0 => -> ->.
-move/andP => [] /andP [] H1 H2 H3.
+move => H0 /nfa_run_accept [] ys.
+elim: ys w x1 H0 => [|y ys IHys] [|a w] x1 H0 //=.
+  rewrite -topredE /=.
+  by move: H0 => -> _ ->.
+move => /andP [] H1 H2 H3.
 apply/existsP. exists (inr _ y).
 rewrite H0 H1 /=.
-apply: nfa_lpath_accept.
+apply/nfa_run_accept.
+  eexists _.
   apply nfa_conc_cont.
   by eassumption.
 by rewrite last_map /nfa_fin.
@@ -695,15 +696,14 @@ Lemma nfa_conc_complete x w1 w2:
   nfa_lang A2 w2 ->
   nfa_accept nfa_conc (inl _ x) (w1 ++ w2).
 Proof. elim: w1 w2 x => [|a w1 IHw1] w2 x.
-    move => H0 /nfa_accept_lpath [] xs [] H1 H2.
+    move => H0 /nfa_run_accept [] xs [] H1 H2.
     move: (nfa_conc_cont _ _ _ H1) => H3.
     apply/nfa_accept_cat.
     exists [::] => /=.
     apply: nfa_conc_fin1.
       exact: H0.
-    apply: nfa_lpath_accept.
-      by eassumption.
-      exact: H2.
+    apply/nfa_run_accept.
+      eexists _; by eassumption.
   move => /existsP [] y /andP [] H1 H2 H3 /=.
   apply/existsP. exists (inl _ y).
   rewrite H1 /=.
@@ -791,8 +791,8 @@ Definition nfa_plus : nfa :=
 (** We prove that every path of A1 can be mapped to a path
    of nfa_plus. **)
 Lemma nfa_plus_cont x xs w:
-  nfa_lpath A1 x xs w
-  -> nfa_lpath nfa_plus x xs w.
+  nfa_run A1 x xs w
+  -> nfa_run nfa_plus x xs w.
 Proof. elim: xs x w => [|y xs IHxs] x w; case: w => [|a w] => //.
 move/andP => [] H0 /= /IHxs ->.
 by rewrite /step_plus H0 orTb.
@@ -803,8 +803,8 @@ Qed.
    A1's starting state. This new path need not be accepting. **)
 Lemma nfa_plus_lpath x y xs a w:
   nfa_fin nfa_plus (last x (y::xs)) ->
-  nfa_lpath nfa_plus x (y::xs) (a::w) ->
-  nfa_lpath nfa_plus x (rcons (belast y xs) (nfa_s A1)) (a::w).
+  nfa_run nfa_plus x (y::xs) (a::w) ->
+  nfa_run nfa_plus x (rcons (belast y xs) (nfa_s A1)) (a::w).
 Proof. elim: xs x y a w => [|z xs IHxs] x y a [|b w] //=.
       rewrite 2!andbT.
       move => H0 /orP [|/andP [] /eqP].
@@ -829,9 +829,10 @@ Lemma nfa_plus_correct0' x w1 :
   nfa_accept A1 x w1 ->
   nfa_accept nfa_plus x w1.
 Proof.
-move/nfa_accept_lpath => [] xs [].
-move/nfa_plus_cont => H0 H1.
-apply: nfa_lpath_accept; by eassumption.
+  move/nfa_run_accept => [] xs [].
+  move/nfa_plus_cont => H0 H1.
+  apply/nfa_run_accept.
+  by exists xs. 
 Qed.
 
 (** We prove that every word accepted by A1 is also
@@ -850,7 +851,7 @@ Lemma nfa_plus_complete w1 w2:
   nfa_lang nfa_plus w2 ->
   nfa_lang nfa_plus (w1 ++ w2).
 Proof.
-move => /nfa_accept_lpath [] [|x xs] []; case: w1 => [|a w1] => //.
+move => /nfa_run_accept [] [|x xs] []; case: w1 => [|a w1] => //.
 move => H0 H1 H2.
 apply/(nfa_accept_cat).
 exists (rcons (belast x xs) (nfa_s A1)).
