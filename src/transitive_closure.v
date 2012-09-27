@@ -120,7 +120,7 @@ Section AllButLast.
   Proof.
     elim: xs x => [|y xs IHxs] x //.
     case: xs IHxs => [|z xs] IHxs.
-      by rewrite /allbutlast /= => -> ->.
+      by rewrite /allbutlast /= => _ ->.
     move/allbutlast_cons'/andP => [] H0 H1 H2.
     move: (IHxs x H1 H2).
     by rewrite /= H0 => /andP [] ->.
