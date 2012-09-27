@@ -1,3 +1,4 @@
+(* Author: Christian Doczkal *)
 Require Import ssreflect ssrbool eqtype ssrnat seq.
 Require Import ssrfun choice fintype finset path fingraph bigop.
 Require Import Relations.
@@ -274,9 +275,9 @@ Inductive norm (X : Type) (R : X -> X -> Prop) : X -> Prop :=
 
 Definition sn X (R : X -> X -> Prop) := forall x, norm R x.
 
-Lemma normEn (X:finType) (e : rel X) x : ~ norm e x -> existsb y , e x y.
+Lemma normEn (X:finType) (e : rel X) x : ~ norm e x -> [ exists y , e x y ].
 Proof.
-  move => H. rewrite -[existsb y, _]negb_involutive negb_exists.
+  move => H. rewrite -[[exists y, _]]negb_involutive negb_exists.
   apply/negP. move/forallP => H'. apply H, normI => y. 
   by rewrite -[e _ _]negb_involutive H'.
 Qed.
