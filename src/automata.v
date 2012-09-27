@@ -675,7 +675,7 @@ Lemma nfa_conc_fin1 x1 w:
 Proof.
 move => H0 /nfa_run_accept [] ys.
 elim: ys w x1 H0 => [|y ys IHys] [|a w] x1 H0 //=.
-  by move: H0 => -> ->.
+  rewrite -topredE /=. by move: H0 => -> _ ->.
 move => /andP [] H1 H2 H3.
 apply/existsP. exists (inr _ y).
 rewrite H0 H1 /=.
