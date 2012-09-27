@@ -1,4 +1,4 @@
-Require Import ssreflect fintype. (* ssrbool eqtype fintype choice finfun seq fingraph ssrfun ssrnat finset. *)
+Require Import ssreflect fintype ssrbool eqtype fintype choice finfun seq fingraph ssrfun ssrnat finset.
 
 Require Import misc.
 Require Import regexp.
@@ -149,7 +149,7 @@ Variable A: nfa.
 Fixpoint nfa_accept (x: A) w :=
 match w with
   | [::] => nfa_fin A x
-  | a::w => [ exists y, (nfa_step A x a y) && nfa_accept y w ]
+  | a::w => existsb y, (nfa_step A x a y) && nfa_accept y w
 end.
 
 (** We define the language of the non-deterministic
@@ -219,7 +219,7 @@ Variable A: nfa.
 
 Definition nfa_to_dfa :=
   {| dfa_s := set1 (nfa_s A);
-    dfa_fin := [ pred X: {set A} | [ exists x: A, (x \in X) && nfa_fin A x] ];
+    dfa_fin := [ pred X: {set A} | existsb x: A, (x \in X) && nfa_fin A x ];
     dfa_step := [ fun X a => \bigcup_(x | x \in X) finset (nfa_step A x a) ]
    |}
 .
@@ -247,7 +247,7 @@ Qed.
    representative state of that set in which the given automaton
    accepts w. **)
 Lemma nfa_to_dfa_sound (X: nfa_to_dfa) w:
-  dfa_accept nfa_to_dfa X w -> [ exists x, (x \in X) && nfa_accept A x w ].
+  dfa_accept nfa_to_dfa X w -> existsb x, (x \in X) && nfa_accept A x w.
 Proof. elim: w X => [|a w IHw] X => //.
   move/IHw => /existsP [] y /andP [].
   rewrite /dfa_step /nfa_to_dfa. 
@@ -473,7 +473,7 @@ End BinaryOps.
 
 (* Remove unreachable states *)
 Section Reachability.
-  Definition reachable1 := [ fun x y => [ exists a, dfa_step A1 x a == y ] ].
+  Definition reachable1 := [ fun x y => existsb a, dfa_step A1 x a == y ].
 
   Definition reachable := enum (connect reachable1 (dfa_s A1)).
 
@@ -509,7 +509,7 @@ Section Reachability.
     move => w. by rewrite /dfa_lang /= dfa_connected_correct'.
   Qed.
 
-  Definition reachable1_connected := [ fun x y => [ exists a, dfa_step dfa_connected x a == y ] ].
+  Definition reachable1_connected := [ fun x y => existsb a, dfa_step dfa_connected x a == y ].
   Lemma reachable1_connected_complete x y (Hx: x \in reachable) (Hy: y \in reachable) : connect reachable1 x y -> connect reachable1_connected (SeqSub Hx) (SeqSub Hy).
   Proof.
     move/connectP => [p].
@@ -675,7 +675,7 @@ Lemma nfa_conc_fin1 x1 w:
 Proof.
 move => H0 /nfa_run_accept [] ys.
 elim: ys w x1 H0 => [|y ys IHys] [|a w] x1 H0 //=.
-  by move: H0 => -> ->.
+  rewrite -topredE /=. by move: H0 => -> _ ->.
 move => /andP [] H1 H2 H3.
 apply/existsP. exists (inr _ y).
 rewrite H0 H1 /=.
@@ -771,7 +771,7 @@ Proof.
 Definition step_plus x a y : bool :=
 nfa_step A1 x a y || (
                       (y == nfa_s A1)
-                      && [ exists z, (nfa_fin A1 z) && (nfa_step A1 x a z) ]
+                      && existsb z, (nfa_fin A1 z) && (nfa_step A1 x a z)
                     ).
 
 (** **)
@@ -782,7 +782,7 @@ Definition nfa_plus : nfa :=
     nfa_step := fun x a y =>
         nfa_step A1 x a y || (
                       (y == nfa_s A1)
-                      && [ exists  z, (nfa_fin A1 z) && (nfa_step A1 x a z) ]
+                      && existsb  z, (nfa_fin A1 z) && (nfa_step A1 x a z)
                     )
    |}.
 
