@@ -1,3 +1,4 @@
+(* Author: Christian Doczkal *)
 Require Import ssreflect ssrbool eqtype ssrnat seq.
 Require Import ssrfun choice fintype finset path fingraph bigop.
 Require Import Relations.
@@ -31,7 +32,7 @@ Proof.
 Defined.
 
 Lemma predC_involutive (X:Type) (p : pred X)  x : predC (predC p) x = p x.
-Proof. exact: negb_involutive. Qed.
+Proof. exact: negbK. Qed.
 
 Lemma ex2E X (p q : pred X) : (exists2 x , p x & q x) <-> exists x, p x && q x.
 Proof. split => [[x]|[x] /andP [? ?]] *; exists x => //. exact/andP. Qed.
@@ -58,7 +59,7 @@ Proof.
     move => /= x s IHs a. case/andP => Hr Hp e. apply : rt1n_trans. 
     apply : Relation_Operators.rt1n_trans. done. apply : trans_rt1n. by apply IHs.
   - move/negP : e; apply contra'. elim. apply connect1. apply : connect0. 
-    move => x y z _ H1 _ H2. by apply : connect_trans.
+    move => x y z _ H1 _ H2. apply: connect_trans; by eauto.
 Qed.
 
 Lemma leq1 n : n <= 1 = (n == 0) || (n == 1).
@@ -249,7 +250,7 @@ Section FixPoint.
  
   Lemma muE : mu = F mu.
   Proof.
-    have: ~~ forallb m : 'I_#|T|.+1 , iter m F set0 \proper iter m.+1 F set0.
+    have: ~~ [ forall m : 'I_#|T|.+1 , iter m F set0 \proper iter m.+1 F set0 ].
       apply/negP => /forallP H.
       have P : forall n : 'I_#|T|.+1 , exists x : T , x \in iter n.+1 F set0 :\: iter n F set0.
         move => n ; move : (H n). case/properP => _ [x x1 x2]. exists x. by rewrite in_setD x1 x2.
@@ -261,7 +262,7 @@ Section FixPoint.
         case (ltngtP n m); last by move/eqP => e'; apply/eqP.
         - move => /iterFsubn /subsetP /(_ x Hn2). by rewrite (negbTE Hm1).
         - move => /iterFsubn /subsetP /(_ x Hm2). by rewrite (negbTE Hn1).
-      move : (max_card (codom i)). by rewrite (card_codom inj_i) /= !card_ord ltnn. 
+      move : (max_card (fun x => x \in codom i)). by rewrite (card_codom inj_i) /= !card_ord ltnn. 
     rewrite negb_forall. case/existsP => x H.
     have A : iter x F set0 = iter x.+1 F set0. 
       apply/eqP. by rewrite eqEproper iterFsub /= H.
@@ -274,11 +275,11 @@ Inductive norm (X : Type) (R : X -> X -> Prop) : X -> Prop :=
 
 Definition sn X (R : X -> X -> Prop) := forall x, norm R x.
 
-Lemma normEn (X:finType) (e : rel X) x : ~ norm e x -> existsb y , e x y.
+Lemma normEn (X:finType) (e : rel X) x : ~ norm e x -> [ exists y , e x y ].
 Proof.
-  move => H. rewrite -[existsb y, _]negb_involutive negb_exists.
+  move => H. rewrite -[[exists y, _]]negbK negb_exists.
   apply/negP. move/forallP => H'. apply H, normI => y. 
-  by rewrite -[e _ _]negb_involutive H'.
+  by rewrite -[e _ _]negbK H'.
 Qed.
 
 (** * Decidability *)
@@ -331,7 +332,7 @@ Proof.
   move => H1 H2. 
   apply : (classicb (exists x, ~~ p x)) => //.
   move/deMorganE => H4. exfalso. 
-  apply: H2 => x. move : (H4 x). move/negP. by rewrite negb_involutive.
+  apply: H2 => x. move : (H4 x). move/negP. by rewrite negbK.
 Qed. 
 
 Lemma deMorganE2 (Y: Type) (P Q : Y -> Prop) : 

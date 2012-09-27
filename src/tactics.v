@@ -1,3 +1,4 @@
+(* Author: Christian Doczkal *)
 Require Import ssreflect ssrbool eqtype.
 
 (** A slightly extended version of [done] using eassumption and rewriting

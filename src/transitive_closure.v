@@ -1,5 +1,5 @@
-Require Import ssreflect ssrbool ssrnat fintype eqtype seq ssrfun ssrbool finset.
 Require Import Recdef.
+Require Import ssreflect ssrbool ssrfun ssrnat eqtype seq fintype finset.
 Require Import automata misc regexp.
 
 Set Implicit Arguments.
@@ -333,14 +333,14 @@ Section TransitiveClosure.
       by rewrite in_simpl Hw /= eq_refl.
   Qed.
 
-  Lemma set_pick_size (X: {set A}) z: [pick z \in X] = Some z -> #|X :\ z| < #|X|.
+  Lemma set_pick_size (X: {set A}) z: [pick z in X] = Some z -> #|X :\ z| < #|X|.
   Proof.
     case: (pickP _) => // x [] H [] <-.
     by rewrite (cardsD1 x X) H addnC addn1.
   Qed.
     
   Function R (X: {set A}) (x y: A) {measure [fun X => #|X|] X} : regular_expression char :=
-    match [pick z \in X] with
+    match [pick z in X] with
     | None =>  R0 x y        
     | Some z =>  let X' := X :\ z in
         Plus (Conc (R X' x z) (Conc (Star (R X' z z)) (R X' z y))) (R X' x y) 
@@ -431,16 +431,17 @@ Section TransitiveClosure.
         exists (take i.+1 w'). exists (drop i.+1 w').
         have Hw: (take i.+1 w' ++ drop i.+1 w' = w') by rewrite cat_take_drop.
         have Hw1: (take i.+1 w' \in L^X x z).
-          rewrite  in_simpl simpl_predE -dfa_run'_take -/xs.
+          rewrite  in_simpl -dfa_run'_take -/xs.
           rewrite -nth_last nth_take size_takel //.
           rewrite  nth_index // eq_refl andTb.
+          move/eqP/negbT: HX => HX.
           rewrite (eq_allbutlast _ (setU1_predI HX)).
           rewrite allbutlast_predI.
           apply/andP. split.
             exact: allbutlast_take.
           exact: allbutlast_index.
         firstorder.
-        rewrite in_simpl simpl_predE.
+        rewrite -topredE /=. 
         move/andP: (Hw1) => [/eqP Hw1l _].
         rewrite -Hw1l -dfa_run'_drop -last_cat dfa_run'_drop.
         rewrite -dfa_run'_cat Hw -/xs H0 andTb.
@@ -448,14 +449,15 @@ Section TransitiveClosure.
         exact: allbutlast_drop.
 
       left.
-      rewrite /= in_simpl simpl_predE H0 andTb.
+      rewrite /= in_simpl H0 andTb.
       have H2: allbutlast (predI (mem (z |: X)) (predC (pred1 z))) xs.
         rewrite allbutlast_predI H1 andTb.
         move/negbT: Hz.
         by rewrite -has_pred1 -all_predC.
       erewrite eq_allbutlast.
       eexact H2.
-      exact: setU1_predI.
+      apply setU1_predI.
+      by move/eqP/negbT: HX.
     Qed.
 
 
@@ -728,7 +730,7 @@ Section TransitiveClosure.
   Qed.
                  
   
-  Lemma dfa_to_regex: exists r: regular_expression char, dfa_lang A =1 [pred w | w \in r ].
+  Lemma dfa_to_regex: exists r: regular_expression char, dfa_lang A =i [pred w | w \in r ].
   Proof.
     exists (
         nPlus
@@ -738,20 +740,24 @@ Section TransitiveClosure.
     apply/idP/idP.
       rewrite /= -dfa_run_accept => H.
       apply/mem_nPlus.
-      exists (R^[set x \in A] (dfa_s A) (last (dfa_s A) (dfa_run' A (dfa_s A) w))).
+      exists (R^setT (dfa_s A) (last (dfa_s A) (dfa_run' A (dfa_s A) w))).
         apply/mapP.
         exists (last (dfa_s A) (dfa_run' A (dfa_s A) w)) => //.
         by rewrite mem_enum.
       erewrite <- (@L_R #|A|).
-        by rewrite in_simpl dfa_L /=.
+        admit.
       by rewrite cardsE.
     move/mem_nPlus => [r].
     move/mapP => [] f.
     rewrite mem_enum.
     move => H0 => ->. erewrite <- (@L_R #|A|).
+      admit.
+    admit.
+    (*
       rewrite in_simpl dfa_L /=.
       by rewrite -dfa_run_accept => /eqP ->.
     by rewrite cardsE.
+   *)
   Qed.                                    
     
 End TransitiveClosure.

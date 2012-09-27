@@ -98,7 +98,7 @@ Section MyhillNerode.
       apply/eqP. exact: f_inv_rcons.
     Qed.
       
-    Lemma MN_dfa_correct: L =1 dfa_lang MN_dfa.
+    Lemma MN_dfa_correct: L =i dfa_lang MN_dfa.
     Proof.
       move => w.
       rewrite /dfa_lang /= -dfa_run_accept MN_dfa_run_f in_simpl /=.
@@ -156,19 +156,22 @@ Section MyhillNerode.
     Definition distinct0 :=
         [set x | dist (fst x) (snd x) ].
 
+    Definition distinctS :=
+      [ fun distinct => [set  (x,y) | x in X, y in [ pred y | [ exists a, pext x y a \in (distinct: {set X*X}) ] ] ] ].            
 
     Definition unnamed distinct :=
-        distinct0 :|: distinct :|: [set (x,y) | x <- X, y <- X, existsb a, pext x y a \in distinct ].            
+        distinct0 :|: distinct :|: (distinctS distinct).
 
     Definition distinct := mu unnamed.
     
     Notation "x ~= y" := ((x,y) \notin distinct) (at level 70, no associativity).
 
 
-    Lemma distinct_pext x y (distinct: {set _}): (x,y) \in [set (x,y) | x <- X, y <- X, existsb a, pext x y a \in distinct ] -> exists a, pext x y a \in distinct.
+    Lemma distinct_pext x y (distinct: {set _}): (x,y) \in distinctS distinct -> exists a, pext x y a \in distinct.
     Proof.
       move/imset2P => [] x' y' _.
-      rewrite in_set. move/andP => [] _ /existsP [] a H [] H1 H2; do 2!subst.
+      move/pred0Pn => [a] /=.
+      move => H [] H1 H2; do 2!subst.
       by exists a.
     Qed.
     
@@ -185,8 +188,8 @@ Section MyhillNerode.
         apply: H.
         exists x. rewrite 2!topredE. by rewrite H1 H3.
       destruct x. move/distinct_pext: H3 => [] a H3.
-      move: H2. 
-      rewrite mem_imset2 //= in_set.
+      move: H2.
+      rewrite mem_imset2 //= -topredE /=.
       apply/existsP. exists (a).
       case H4: (pext s1 s2 a \in t) => //.
       exfalso. apply H. exists (pext s1 s2 a).
@@ -216,7 +219,7 @@ Section MyhillNerode.
       rewrite (IHdist x) equiv0_refl /=.
       apply/imset2P => H. destruct H as [y z _ H1 H2].
       move: H2 H1 => [H3 H4]. do 2!subst.
-      rewrite in_set => /existsP [] a.
+      rewrite -topredE /= => /existsP [] a.
       apply/negP. rewrite /pext.
       exact: IHdist.
     Qed.
@@ -243,11 +246,11 @@ Section MyhillNerode.
       move/andP => [] /andP [] H1 H2 H3.
       rewrite not_dist_sym //= IHs //=.
       apply/negP. move/imset2P => [] x' y' _.
-      rewrite in_set => /existsP [] a.
+      rewrite -topredE /= => /existsP [] a.
       move => H [] H4 H5; do 2!subst;
         move/negP: H3 => H3; apply: H3;
         rewrite mem_imset2 //=;
-        rewrite in_set; apply/existsP; exists a.
+        rewrite -topredE /=; apply/existsP; exists a.
       apply/negPn.
       move: H. apply: contraL.
       exact: IHs.
@@ -273,10 +276,10 @@ Section MyhillNerode.
         exact: IHs.
       move/distinct_pext => [] a H.
       move/imset2P: H3 => []. apply/imset2P.
-      rewrite mem_imset2 //= in_set.
+      rewrite mem_imset2 //= -topredE /=.
       apply/existsP. exists a. apply: contraT => H7.
       move/imset2P: H6 => []. apply/imset2P.
-      rewrite mem_imset2 //= in_set.
+      rewrite mem_imset2 //= -topredE /=.
       apply/existsP. exists a. apply: contraT => H8.
       move: (IHs _ _ _ H7 H8).
       by rewrite H.
@@ -294,7 +297,7 @@ Section MyhillNerode.
       move => H.
       rewrite /distinct muE -/distinct /unnamed.
       rewrite 3!in_set. apply/orP. right.
-      rewrite mem_imset2 //= in_set.
+      rewrite mem_imset2 //= -topredE /=.
       apply/existsP. exists a.
       apply: IHw.
       move: H. apply: contraR => /negPn.
@@ -318,8 +321,7 @@ Section MyhillNerode.
           exists [::]. by rewrite 2!cats0.
         exact: IHdist.
       move/imset2P => [] x1 y1 _.
-      rewrite in_set => /andP [] _.
-      move/existsP => [] a H3 [] H4 H5. move: H3.
+      rewrite -topredE /= => /existsP []a H3 [] H4 H5. move: H3.
       move => H3. subst.
       move: (IHdist (pext x1 y1 a).1 (pext x1 y1 a).2 H3) => [w].
       rewrite /pext /= => H4.
@@ -421,7 +423,7 @@ Section MyhillNerode.
       move => w1 w2.
       rewrite /f /=.
       move => /eqP H0 w3.
-      rewrite /dfa_lang /= 2!in_simpl /= -2!dfa_run_accept 2!dfa_run'_cat 2!last_cat.
+      rewrite /dfa_lang /= /= -2!dfa_run_accept 2!dfa_run'_cat 2!last_cat.
       by rewrite H0.
     Qed.
       
@@ -446,11 +448,11 @@ Section MyhillNerode.
         move: H0.
         rewrite Hf => H0.
         move: (H0 is_true_true w).
-        by rewrite 4!in_simpl 2!dfa_connected_correct.
+        by rewrite 2!dfa_connected_correct.
       move => H2.
       apply: H1 => w.
       move: (H2 w).
-      by rewrite 4!in_simpl 2!dfa_connected_correct.
+      by rewrite 2!dfa_connected_correct.
     Qed.
     
   End DFA_To_MN.

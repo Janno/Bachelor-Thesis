@@ -186,8 +186,8 @@ Lemma merge_sort_sym : forall (hR1:transitive R) (hR2: antisymmetric R) (hR3: to
  (l1 l2:seq T), sorted R l1 -> sorted R l2 -> merge R l1 l2 = merge R l2 l1.
 Proof.
 move => hR1 hR2 hR3 l1 l2 h1 h2. apply (eq_sorted hR1 hR2).
-by apply sorted_merge.
-by apply sorted_merge.
+by apply merge_sorted.
+by apply merge_sorted.
 by rewrite perm_merge perm_eq_sym perm_merge perm_catC.
 Qed.
 
