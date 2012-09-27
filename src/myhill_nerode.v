@@ -158,14 +158,14 @@ Section MyhillNerode.
 
 
     Definition unnamed distinct :=
-        distinct0 :|: distinct :|: [set (x,y) | x <- X, y <- X, existsb a, pext x y a \in distinct ].            
+        distinct0 :|: distinct :|: [set (x,y) | x <- X, y <- X, [ exists a, pext x y a \in distinct ] ].            
 
     Definition distinct := mu unnamed.
     
     Notation "x ~= y" := ((x,y) \notin distinct) (at level 70, no associativity).
 
 
-    Lemma distinct_pext x y (distinct: {set _}): (x,y) \in [set (x,y) | x <- X, y <- X, existsb a, pext x y a \in distinct ] -> exists a, pext x y a \in distinct.
+    Lemma distinct_pext x y (distinct: {set _}): (x,y) \in [set (x,y) | x <- X, y <- X, [ exists a, pext x y a \in distinct ] ] -> exists a, pext x y a \in distinct.
     Proof.
       move/imset2P => [] x' y' _.
       rewrite in_set. move/andP => [] _ /existsP [] a H [] H1 H2; do 2!subst.
