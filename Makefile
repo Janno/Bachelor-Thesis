@@ -33,7 +33,7 @@ html_doc_beautiful: html_doc
 docs/definitions: src docs/extract_definitions.py
 	mkdir -p docs/definitions
 	rm -f docs/definitions/*
-	find src -type f -name '*.v' -exec sh -c 'cat "{}" | sed -e "N;s/{|\s*\n\s*/{| /;P;D" | sed -e "N;s/\n\s*|}\s*/ |}/;P;D" |  python docs/extract_definitions.py `basename "{}" .v` docs/definitions' \; 
+	find src -type f -name '*.v' -exec sh -c 'cat "{}" | sed -e "N;s/{\(|\?\)\s*\n\s*/{\1 /;P;D" | sed -e "N;s/\n\s*\(|\?\)}\s*/ \1}/;P;D" |  python docs/extract_definitions.py `basename "{}" .v` docs/definitions' \; 
 
 definitions: docs/definitions
 
