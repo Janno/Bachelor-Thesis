@@ -47,7 +47,7 @@ Section MyhillNerode.
 
     Section Myhill.
 
-      Definition right_invariant {X} (f: word -> X) :=
+      Definition right_congruent {X} (f: word -> X) :=
         forall u v a, f u = f v -> f (rcons u a) = f (rcons v a).
 
       Definition refining {X} (f: word -> X) :=
@@ -56,7 +56,7 @@ Section MyhillNerode.
       Record Myhill_Rel :=
         {
           myhill_func :> Fin_Eq_Cls; 
-          myhill_invariant: right_invariant myhill_func;
+          myhill_congruent: right_congruent myhill_func;
           myhill_refining: refining myhill_func
         }.
         
@@ -134,9 +134,10 @@ Section MyhillNerode.
   
   Section Myhill_Weak_Nerode.
 
-    Variable f: Myhill_Rel.
+    Variable L: language char.
+    Variable f: Myhill_Rel L.
 
-    Lemma myhill_closure: imply_suffix f.
+    Lemma myhill_closure: imply_suffix L f.
     Proof.
       move => u v Huv w.
       elim: w u v Huv => [|a w IHw] u v Huv.
@@ -144,16 +145,16 @@ Section MyhillNerode.
         exact: f.(myhill_refining).
       rewrite -cat1s 2!catA 2!cats1.
       apply: IHw.
-      exact: f.(myhill_invariant).
+      exact: f.(myhill_congruent).
     Qed.
 
-    Definition myhill_to_weak_nerode: Weak_Nerode_Rel :=
+    Definition myhill_to_weak_nerode: Weak_Nerode_Rel L :=
       {| weak_nerode_imply := myhill_closure |}.
     
   End Myhill_Weak_Nerode.
   
 
-  Section Nerode_to_DFA.
+  Section Nerode_To_DFA.
     Variable L: language char.
     Variable f: Nerode_Rel L.
 
@@ -185,7 +186,7 @@ Section MyhillNerode.
       by rewrite (inv_mem_L f w).
     Qed.
       
-  End MN_to_DFA.
+  End Nerode_To_DFA.
 
   Section Minimalization.
     Variable L: language char.
