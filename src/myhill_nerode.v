@@ -466,31 +466,40 @@ Section MyhillNerode.
   Section DFA_To_Nerode.
     Variable A: dfa char.
     Definition A' := dfa_connected A.
-    Definition f_func := fun w => last (dfa_s A') (dfa_run A' w).
+    Definition f := fun w => last (dfa_s A') (dfa_run A' w).
     
-    Definition f_func_surjective: surjective f_func.
+    Definition f_surjective: surjective f.
     Proof.
       move => x.
       move/dfa_connected_repr: (x).
       move => [] w H.
       exists w.
-      by rewrite /f_func /= H. 
+      by rewrite /f /= H. 
     Qed.
 
-    Lemma f_func_sound: imply_suffix (dfa_lang A') f_func.
+    Lemma f_right_congruent: right_congruent f.
     Proof.
-      move => w1 w2.
-      rewrite /f_func /=.
-      move => H0 w3.
-      rewrite /dfa_lang /= /= -2!dfa_run_accept 2!dfa_run'_cat 2!last_cat.
-      by rewrite H0.
+      move => u v a H.
+      rewrite -2!cats1 /f /= 2!dfa_run'_cat.
+      by rewrite 2!last_cat -/(f u) -/(f v) H.
     Qed.
+
+    Lemma f_refining: refining (dfa_lang A') f.
+    Proof.
+      move => u v H.
+      rewrite -!dfa_run_accept.
+      by rewrite -/(f v) -/(f u) -H.
+    Qed.
+
+    Definition dfa_to_myhill : Myhill_Rel (dfa_lang A') :=
+      {|
+        myhill_func := {| fin_surjective := f_surjective |};
+        myhill_congruent := f_right_congruent;
+        myhill_refining := f_refining
+      |}.
 
     Definition dfa_to_weak_nerode : Weak_Nerode_Rel (dfa_lang A') :=
-      {|
-        weak_nerode_func := {| fin_surjective := f_func_surjective |};
-        weak_nerode_imply := f_func_sound
-      |}.
+      myhill_to_weak_nerode dfa_to_myhill.
 
     Definition dfa_to_nerode' : Nerode_Rel (dfa_lang A') :=
       {|
