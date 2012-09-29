@@ -208,7 +208,8 @@ Section MyhillNerode.
         distinct0 :|: distinct :|: (distinctS distinct).
 
     Definition distinct := mu unnamed.
-    
+
+    Notation "x ~!= y" := ((x,y) \in distinct) (at level 70, no associativity).
     Notation "x ~= y" := ((x,y) \notin distinct) (at level 70, no associativity).
 
 
@@ -356,7 +357,7 @@ Section MyhillNerode.
      Qed.
 
     Lemma distinct_final x y:
-      (x,y) \in distinct ->
+      (x ~!= y) ->
       exists w, (inv f x) ++ w \in L != ((inv f y) ++ w \in L). 
     Proof.
       rewrite /distinct.
@@ -382,12 +383,7 @@ Section MyhillNerode.
       by rewrite (weak_nerode_imply f _ (inv f (f (rcons (inv f y1) a)))); last by rewrite invK.
     Qed.
       
-    Lemma equiv_final u v w:
-      f u ~= f v ->
-      u ++ w \in L = (v ++ w \in L).
-    Proof. move => H. apply/eqP. move: H. apply: contraR. exact: L_distinct. Qed.
-
-    Lemma distinct_final' x y: (x, y) \in distinct -> ~ equal_suffix L (inv f x)  (inv f y).
+    Lemma distinct_final' x y: x ~!= y -> ~ equal_suffix L (inv f x)  (inv f y).
     Proof.
       move => /distinct_final [w H] H0.
       move: (H0 w).
@@ -396,7 +392,7 @@ Section MyhillNerode.
     Qed.
       
     
-    Definition dist_repr := fun x => [set y | (x,y) \notin distinct].
+    Definition dist_repr := fun x => [set y | x ~= y].
 
     Lemma dist_repr_refl x : x \in dist_repr x.
     Proof. by rewrite in_set equiv_refl. Qed.
@@ -408,13 +404,13 @@ Section MyhillNerode.
 
     Definition f_min := fun w => SeqSub _ (dist_repr_in_X_min (f w)).
       
-    Lemma f_min_eq_distinct x y: f_min x = f_min y -> (f x, f y) \notin distinct.
+    Lemma f_min_eq_distinct x y: f_min x = f_min y -> f x ~= f y.
     Proof.
       move => [] /= /setP H1. move: (H1 (f y)).
       by rewrite dist_repr_refl in_set => ->.
     Qed.                                            
 
-    Lemma f_min_distinct_eq x y: (f x, f y) \notin distinct -> f_min x = f_min y.
+    Lemma f_min_distinct_eq x y: f x ~= f y -> f_min x = f_min y.
     Proof.
       move => H.
       rewrite /f_min /=.
