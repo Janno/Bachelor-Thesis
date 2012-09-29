@@ -389,8 +389,9 @@ Section TransitiveClosure.
       (a::w) \in L^(z |: X) x y ->
       (a::w) \in L^X x y \/
       exists w1, exists w2,
-        w = w1 ++ w2 /\
-        a::w1 \in L^X x z /\
+        a::w = w1 ++ w2 /\
+        w1 != [::] /\
+        w1 \in L^X x z /\
         w2 \in L^(z |: X) z y.
     Proof.
       move => H0.
@@ -411,29 +412,22 @@ Section TransitiveClosure.
         rewrite -index_mem => Hi. rewrite -index_mem -/i => Hi2.
         have: (i = index z (belast xs)) by (rewrite belast_index; by []).
         (* we split after the first appearance of z, i.e. i+1. *)
-        exists (take i.+1 w). exists (drop i.+1 w).
-        have Hw: (take i.+1 w ++ drop i.+1 w = w); first by rewrite cat_take_drop.
-        have Hw1: (a::take i.+1 w \in L^X x z).
-          rewrite inE /=.
-          apply/andP. split.
-          rewrite -dfa_run'_take -nth_last nth_take.
-          by rewrite size_takel // /i /= /xs nth_index.
-          by rewrite size_takel.
+        exists (take i.+1 w'). exists (drop i.+1 w').
+        have Hw: (take i.+1 w' ++ drop i.+1 w' = w') by rewrite cat_take_drop.
+        have Hw1: (take i.+1 w' \in L^X x z).
+          rewrite  in_simpl -dfa_run'_take -/xs.
+          rewrite -nth_last nth_take size_takel //.
+          rewrite  nth_index // eq_refl andTb.
           move/eqP/negbT: HX => HX.
           rewrite (eq_allbutlast _ (setU1_predI HX)).
           rewrite allbutlast_predI.
-          rewrite -/(dfa_run' A x (a::take i.+1 w)).
-          move: (take_cons i.+2) => <-.
-          rewrite -dfa_run'_take.
           apply/andP. split.
             exact: allbutlast_take.
-          apply: allbutlast_cons.
-          exact allbutlast_index.
+          exact: allbutlast_index.
         firstorder.
-        
         rewrite -topredE /=. 
         move/andP: (Hw1) => [/eqP Hw1l _].
-        rewrite -Hw1l -dfa_run'_drop. -last_cat dfa_run'_drop.
+        rewrite -Hw1l -dfa_run'_drop -last_cat dfa_run'_drop.
         rewrite -dfa_run'_cat Hw -/xs H0 andTb.
         rewrite {1}Hw1l -dfa_run'_drop.
         exact: allbutlast_drop.
@@ -490,8 +484,6 @@ Section TransitiveClosure.
       apply: L_cat.
       exact: setU11.
     Qed.
-
-    Lemma L_
             
     Lemma L_rec (X: {set A}) x y z:
       z \in X ->
