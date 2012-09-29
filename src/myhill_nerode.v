@@ -195,11 +195,11 @@ Section MyhillNerode.
 
     Definition ext := [ fun x a => f (rcons (inv f x) a) ].
     
-    Definition pext := [ fun x y => [ fun a => (f (rcons (inv f x) a), f (rcons (inv f y) a)) ] ].
+    Definition pext := [ fun x y => [ fun a => (ext x a, ext y a) ] ].
 
-    Definition dist := [ fun x y => (inv f x) \in L != ((inv f y) \in L) ].
+    Definition distinguishable := [ fun x y => (inv f x) \in L != ((inv f y) \in L) ].
 
-    Definition distinct0 := [set x | dist (fst x) (snd x) ].
+    Definition distinct0 := [set x | distinguishable x.1 x.2 ].
 
     Definition distinctS (distinct: {set X*X}) :=
       [set  (x,y) | x in X, y in X & [ exists a, pext x y a \in distinct ] ].
@@ -270,10 +270,10 @@ Section MyhillNerode.
       exact: IHdist.
     Qed.
 
-    Lemma dist_sym x y: dist x y -> dist y x.
+    Lemma dist_sym x y: distinguishable x y -> distinguishable y x.
     Proof. by rewrite /= eq_sym. Qed.
 
-    Lemma not_dist_sym x y: ~~ dist x y -> ~~ dist y x.
+    Lemma not_dist_sym x y: ~~ distinguishable x y -> ~~ distinguishable y x.
     Proof. apply: contraL. move/dist_sym => H. by apply/negPn. Qed.
     
     Lemma equiv0_sym x y: (x,y) \notin distinct0 -> (y,x) \notin distinct0.
@@ -315,7 +315,7 @@ Section MyhillNerode.
       rewrite in_set. apply/negPn.
       rewrite in_set => /orP [/orP [H|H]|H]; move: H.
           move: H1 H4.
-          rewrite /distinct0 in_set /= /dist.
+          rewrite /distinct0 in_set /=.
           move => /negPn /eqP -> /negPn /eqP ->.
           by rewrite eq_refl.
         apply/negPn. move: H2 H5.
@@ -336,7 +336,7 @@ Section MyhillNerode.
       elim: w u v => [|a w IHw] u v.
         rewrite 2!cats0.
         rewrite /distinct muE -/distinct /unnamed => H.
-        by rewrite /distinct0 /dist /= 3!in_set 2!inv_mem_L H.
+        by rewrite /distinct0  /= 3!in_set 2!inv_mem_L H.
       by exact: unnamed_mono.
       move => H.
       rewrite /distinct muE -/distinct /unnamed.
@@ -361,7 +361,7 @@ Section MyhillNerode.
         by rewrite in_set.
       rewrite /unnamed 2!in_setU => /orP [].
         move/orP => [].
-          rewrite /distinct0 /Minimalization.dist in_set /= => H.
+          rewrite /distinct0 in_set /= => H.
           exists [::]. by rewrite 2!cats0.
         exact: IHdist.
       move/imset2P => [] x1 y1 _.
