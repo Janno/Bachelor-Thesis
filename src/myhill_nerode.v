@@ -302,7 +302,7 @@ Section MyhillNerode.
       exact: IHs.
     Qed.
 
-    Lemma equiv_trans x y z: (x,y) \notin distinct -> (y,z) \notin distinct -> (x,z) \notin distinct.
+    Lemma equiv_trans x y z: x ~= y -> y ~= z -> x ~= z.
     Proof.
       move: x y z.  
       rewrite /distinct.
@@ -331,8 +331,12 @@ Section MyhillNerode.
       by rewrite H.
     Qed.
       
-    Lemma L_distinct u v w: u ++ w \in L != (v ++ w \in L) -> (f u, f v) \in distinct.
+    Lemma equiv_final u v w: 
+      f u ~= f v ->
+      u ++ w \in L = (v ++ w \in L).
     Proof.
+      move => H. apply/eqP. move: H.
+      apply: contraR.
       elim: w u v => [|a w IHw] u v.
         rewrite 2!cats0.
         rewrite /distinct muE -/distinct /unnamed => H.
