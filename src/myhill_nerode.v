@@ -12,18 +12,18 @@ Section MyhillNerode.
   Definition word:= word char.
 
   Section Relations.
-    Variable X: finType.
     Variable L: language char.
 
 
     (* We model finiteness of equivalence classes
      by functions to some finType. *)
 
-    Definition surjective {Y} (f: Y -> X) := forall x, exists w, f w == x.
+    Definition surjective {X: finType} {Y} (f: Y -> X) := forall x, exists w, f w == x.
     
     Record Fin_Eq_Cls :=
       {
-        fin_f :> word -> X;
+        fin_type : finType;
+        fin_f :> word -> fin_type;
         fin_surjective : surjective fin_f
       }.
 
@@ -47,10 +47,10 @@ Section MyhillNerode.
 
     Section Myhill.
 
-      Definition right_invariant (f: word -> X) :=
+      Definition right_invariant {X} (f: word -> X) :=
         forall u v a, f u = f v -> f (rcons u a) = f (rcons v a).
 
-      Definition refining (f: word -> X) :=
+      Definition refining {X} (f: word -> X) :=
         forall u v, f u = f v -> u \in L = (v \in L).
         
       Record Myhill_Rel :=
@@ -68,7 +68,7 @@ Section MyhillNerode.
       Definition equal_suffix u v :=
         forall w, u++w \in L = (v++w \in L).
 
-      Definition equiv_suffix (f: word -> X) :=
+      Definition equiv_suffix {X} (f: word -> X) :=
         forall u v, f u = f v <-> equal_suffix u v.
       
       Record Nerode_Rel :=
@@ -76,7 +76,7 @@ Section MyhillNerode.
           nerode_func :> Fin_Eq_Cls;
           nerode_equiv: equiv_suffix nerode_func
         }.
-                   
+
     End Nerode.
 
     
@@ -97,7 +97,7 @@ Section MyhillNerode.
 
     Section Weak_Nerode.
       
-      Definition imply_suffix (f: word -> X) :=
+      Definition imply_suffix {X} (f: word -> X) :=
         forall u v, f u = f v -> equal_suffix u v.
       
       Record Weak_Nerode_Rel :=
@@ -128,47 +128,48 @@ Section MyhillNerode.
     
     Coercion nerode_weak_nerode : Nerode_Rel >-> Weak_Nerode_Rel.
 
-    Section Myhill_Weak_Nerode.
-
-      Variable f: Myhill_Rel.
-
-      Lemma myhill_closure: imply_suffix f.
-      Proof.
-        move => u v Huv w.
-        elim: w u v Huv => [|a w IHw] u v Huv.
-          rewrite 2!cats0.
-          exact: f.(myhill_refining).
-        rewrite -cat1s 2!catA 2!cats1.
-        apply: IHw.
-        exact: f.(myhill_invariant).
-      Qed.
-
-      Definition myhill_weak_nerode: Weak_Nerode_Rel :=
-        {| weak_nerode_imply := myhill_closure |}.
-      
-    End Myhill_Weak_Nerode.
     
       
   End Relations.
+  
+  Section Myhill_Weak_Nerode.
 
-  Section MN_to_DFA.
-    Variable X: finType.
+    Variable f: Myhill_Rel.
+
+    Lemma myhill_closure: imply_suffix f.
+    Proof.
+      move => u v Huv w.
+      elim: w u v Huv => [|a w IHw] u v Huv.
+        rewrite 2!cats0.
+        exact: f.(myhill_refining).
+      rewrite -cat1s 2!catA 2!cats1.
+      apply: IHw.
+      exact: f.(myhill_invariant).
+    Qed.
+
+    Definition myhill_to_weak_nerode: Weak_Nerode_Rel :=
+      {| weak_nerode_imply := myhill_closure |}.
+    
+  End Myhill_Weak_Nerode.
+  
+
+  Section Nerode_to_DFA.
     Variable L: language char.
-    Variable f: Nerode_Rel X L.
+    Variable f: Nerode_Rel L.
 
-    Definition state : finType := X.
+    Definition state : finType := f.(fin_type).
 
     Definition s0 : state := f [::].
 
     Definition fin: pred state :=
       [pred x | inv f x \in L ].
     
-    Definition step x (a: char): X :=
+    Definition step x (a: char) :=
       f (rcons (inv f x) a).
 
-    Definition MN_dfa := {|dfa_s := s0; dfa_fin := fin; dfa_step := step |}.
+    Definition nerode_to_dfa := {|dfa_s := s0; dfa_fin := fin; dfa_step := step |}.
     
-    Lemma MN_dfa_run_f w: last s0 (dfa_run' MN_dfa s0 w) = f w.
+    Lemma nerode_to_dfa_run_f w: last s0 (dfa_run' nerode_to_dfa s0 w) = f w.
     Proof.
       move: w.
       apply: last_ind => [|w a IHw] //.
@@ -177,21 +178,18 @@ Section MyhillNerode.
       exact: inv_rcons.
     Qed.
       
-    Lemma MN_dfa_correct: L =i dfa_lang MN_dfa.
+    Lemma nerode_to_dfa_correct: L =i dfa_lang nerode_to_dfa.
     Proof.
       move => w.
-      rewrite /dfa_lang /= -dfa_run_accept MN_dfa_run_f in_simpl /=.
-      apply/eqP.
-      move/eqP: (inv_mem_L f w).
-      by rewrite eq_sym.
+      rewrite /dfa_lang /= -dfa_run_accept nerode_to_dfa_run_f in_simpl /=.
+      by rewrite (inv_mem_L f w).
     Qed.
       
   End MN_to_DFA.
 
   Section Minimalization.
-    Variable X: finType.
     Variable L: language char.
-    Variable f: Weak_Nerode_Rel X L.
+    Variable f: Weak_Nerode_Rel L.
 
     Definition ext := [ fun x a => f (rcons (inv f x) a) ].
     
@@ -202,8 +200,8 @@ Section MyhillNerode.
     Definition distinct0 :=
         [set x | dist (fst x) (snd x) ].
 
-    Definition distinctS :=
-      [ fun distinct => [set  (x,y) | x in X, y in [ pred y | [ exists a, pext x y a \in (distinct: {set X*X}) ] ] ] ].            
+    Definition distinctS (distinct: {set f.(fin_type)*f.(fin_type)}) :=
+      [set  (x,y) | x in f.(fin_type), y in [ pred y | [ exists a, pext x y a \in distinct ] ] ].
 
     Definition unnamed distinct :=
         distinct0 :|: distinct :|: (distinctS distinct).
@@ -397,7 +395,7 @@ Section MyhillNerode.
     Lemma dist_repr_refl x : x \in dist_repr x.
     Proof. by rewrite in_set equiv_refl. Qed.
     
-    Definition X_min := map dist_repr (enum X).
+    Definition X_min := map dist_repr (enum f.(fin_type)).
 
     Lemma dist_repr_in_X_min x: dist_repr x \in X_min.
     Proof. apply/mapP. exists x => //. by rewrite mem_enum. Qed.
@@ -434,7 +432,7 @@ Section MyhillNerode.
     Qed.
       
       
-    Lemma f_min_correct: equiv_suffix _ L f_min.
+    Lemma f_min_correct: equiv_suffix L f_min.
     Proof.
       move => x y.
       split.
@@ -450,7 +448,7 @@ Section MyhillNerode.
      by rewrite (weak_nerode_imply f y (inv f (f y))); last by rewrite invK.
    Qed.                                                  
 
-    Lemma f_min_surjective: surjective _ f_min.
+    Lemma f_min_surjective: surjective f_min.
     Proof.
       move => [x Hx].
       move/mapP: (Hx) => [y Hy Hxy].
@@ -464,12 +462,12 @@ Section MyhillNerode.
   End Minimalization.
   
 
-  Section DFA_To_MN.
+  Section DFA_To_Nerode.
     Variable A: dfa char.
     Definition A' := dfa_connected A.
     Definition f_func := fun w => last (dfa_s A') (dfa_run A' w).
     
-    Definition f_func_surjective: surjective _ f_func.
+    Definition f_func_surjective: surjective f_func.
     Proof.
       move => x.
       move/dfa_connected_repr: (x).
@@ -478,7 +476,7 @@ Section MyhillNerode.
       by rewrite /f_func /= H. 
     Qed.
 
-    Lemma f_func_sound: imply_suffix _ (dfa_lang A') f_func.
+    Lemma f_func_sound: imply_suffix (dfa_lang A') f_func.
     Proof.
       move => w1 w2.
       rewrite /f_func /=.
@@ -487,18 +485,40 @@ Section MyhillNerode.
       by rewrite H0.
     Qed.
 
-    Definition f :=
+    Definition dfa_to_weak_nerode : Weak_Nerode_Rel (dfa_lang A') :=
       {|
         weak_nerode_func := {| fin_surjective := f_func_surjective |};
         weak_nerode_imply := f_func_sound
       |}.
 
-    Definition g : Nerode_Rel _ (dfa_lang A') :=
+    Definition dfa_to_nerode' : Nerode_Rel (dfa_lang A') :=
       {|
-        nerode_func := {| fin_surjective := f_min_surjective f |};
-        nerode_equiv := f_min_correct f
+        nerode_func := {| fin_surjective := f_min_surjective dfa_to_weak_nerode |};
+        nerode_equiv := f_min_correct dfa_to_weak_nerode
       |}.
-    
-  End DFA_To_MN.
+
+    Lemma nerode_lang_eq L1 L2: L1 =i L2 -> Nerode_Rel L1 -> Nerode_Rel L2.
+    Proof.
+      move => H.
+      move => [f H1].
+      econstructor.
+      move => u v. split.
+        move => H2 w.
+        rewrite -!H.
+        apply H1.
+        eexact H2.
+      move => H2.
+      apply H1.
+      move => w.
+      rewrite !H.
+      exact: H2.
+    Qed.
+
+    Definition dfa_to_nerode : Nerode_Rel (dfa_lang A) :=
+      nerode_lang_eq (dfa_connected_correct A) dfa_to_nerode'.
+
+  End DFA_To_Nerode.
+
+  Check dfa_to_nerode.
   
 End MyhillNerode.
