@@ -499,10 +499,10 @@ Section Reachability.
   Definition dfa_connected :=
    {| 
       dfa_s := SeqSub reachable0;
-      dfa_fin := [fun x => match x with SeqSub x _ => dfa_fin A1 x end];
-      dfa_step := [fun x a => match x with
+      dfa_fin := fun x => match x with SeqSub x _ => dfa_fin A1 x end;
+      dfa_step := fun x a => match x with
         | SeqSub _ Hx => SeqSub (reachable_step _ a Hx)
-        end]
+        end
     |}.
       
 
