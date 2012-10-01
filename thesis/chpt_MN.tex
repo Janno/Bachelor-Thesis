@@ -5,26 +5,65 @@
 \paragraph{}
 
 The last characterization of regular languages that we consider is given by the Myhill-Nerode theorem.
+\todo{What to write here?}
 
 \section{Definition}
 
-\paragraph{}
-
-The following definitions (taken from \cite{DBLP:books/daglib/0088160}) will lead us to the statement of the Myhill-Nerode theorem.
-
-    Let $\equiv$ be an equivalence relation on $\Sigma^*$. Let $L$ be a language over $\Sigma$.
+The following definitions (roughly following \cite{DBLP:books/daglib/0088160}) will lead us to the statement of the Myhill-Nerode theorem.
+%Let $\equiv$ be an equivalence relation on $\Sigma^*$. Let $L$ be a language over $\Sigma$.
 
 \begin{definition}
     The \textbf{equivalence class} of $u \in \Sigma^*$ w.r.t. $\equiv$ is the set of all $v$ such that $u \equiv v$.
     It is denoted by $[u]_\equiv$.
-
 \end{definition}
-    
-\begin{definition} $ $ 
+
+\begin{definition}
+    $\equiv$ is of \textbf{finite index} if and only if the set of $\{[u]_\equiv \; | \; u \in \Sigma^* \}$ is finite.
+\end{definition}
+
+\paragraph{}
+Due to the lack of native support for quotient types in \coq, 
+we formalize equivalence relations of finite index 
+as functions from $\Sigma^*$ to a finite type $X$.
+
+\begin{definition}
+    \label{equiv_f}
+    Let $f: \Sigma^* \mapsto X$ be such a function.
+    The relation $\equiv_f$ is defined as
+    \begin{equation*}
+        \{ (u, v) \; | \; u,v \in \Sigma^* \wedge f(u) = f(v) \}.
+    \end{equation*}
+    For all $w \in \Sigma^*$, $f(w)$ can be seen as an equivalence class of $\equiv_f$.
+\end{definition}
+
+\paragraph{}
+It is easy to see that $\equiv_f$ is an equivalence relation. 
+Furthermore, from the finiteness of $F$, it follows that $\equiv_f$ is of finite index.
+\todo{Lemmas for this?}%
+
+\begin{definition}
+    Let $f$ be as above. 
+    Let $x \in X$. $w \in \Sigma^*$ is a \textbf{representative} of $x$ if and only if $f(w) = x$.
+    We write $\crep{x}$ to denote any representative of $x$.
+\end{definition}
+
+
+
+\paragraph{}
+Our formalization of equivalence relations of finite support requires the function $f$ to be surjective. 
+Mathematically, this is not a restriction since empty equivalence classes can be disregarded.
+In \coq, however, we require this restriction in order to be able to give representative of every equivalence class.
+
+
+\code{}{}{myhill_nerode_Fin_Eq_Cls}
+
+\subsubsection{Myhill Relations}
+
+\begin{definition} Let $\equiv$ be an equivalence relation. 
 
 \begin{enumerate}[label=(\roman*)]
 
-    \item\label{rightcongruent}
+    \item\label{right_congruent}
                 %\begin{definition}
         $\equiv$ is \textbf{right congruent} if and only if for all $u, v \in \Sigma^*$ and $a \in \Sigma$,
         \begin{equation*}
@@ -36,14 +75,14 @@ The following definitions (taken from \cite{DBLP:books/daglib/0088160}) will lea
 
     \item\label{refinement}
                 %\begin{definition}
-        $\equiv$ \textbf{refines} $L$ if and only if forall $u,v \in \Sigma^*$,
+        $\equiv$ \textbf{refines} $L$ if and only if for all $u,v \in \Sigma^*$,
         \begin{equation*}
             u \equiv v \Rightarrow
             (u \in L \iff v \in L).
         \end{equation*}
                 %\end{definition}
 
-    \item\label{finiteindex}
+    \item\label{finite_index}
                 %\begin{definition}
         $\equiv$ is of \textbf{finite index} if and only if it has finitely many equivalence classes, i.e.
         \begin{equation*}
@@ -55,116 +94,134 @@ The following definitions (taken from \cite{DBLP:books/daglib/0088160}) will lea
 \end{definition}
 
 \begin{definition}
-    \label{MN_relation}
-    A relation is Myhill-Nerode if and only if it satisfies properties \ref{rightcongruent}, \ref{refinement} and \ref{finiteindex}.
+    \label{Myhill_Rel}
+    An equivalence relation is a \textbf{Myhill relation}%
+    \footnote{Myhill relations are commonly referred to as ``Myhill-Nerode relations''. 
+    In this thesis, it makes sense to split the concept of a Myhill relation from that of Nerode relation.}
+    if and only if it satisfies \ref{right_congruent}, \ref{refinement} and \ref{finite_index} \cite{DBLP:books/daglib/0088160}.
 \end{definition}
 
-\todo{Fix everything below this line}
+\paragraph{}
+Building on our formalization of equivalence relations of finite support, 
+we only need to give formalizations of \ref{right_congruent} and \ref{refinement}.
+
+\code{}{}{myhill_nerode_right_congruent}
+\codeblock{}{}{myhill_nerode_refining}
+\codeblock{}{}{myhill_nerode_Myhill_Rel}
+
+\paragraph{}
+Myhill relations correspond to the equivalence relations 
+defined as the pairs of words $(u, v)$ whose runs on a DFA $A$ end in the same state. 
+These relations are right congruent, refine $\lang{A}$ and of finite index as $A$ has finitely many states. 
+We will later give a formal proof of this.
+
+\subsubsection{Nerode Relations}
 
 \begin{definition}
-Given a language $L$, the coarsest Myhill-Nerode relation $\equiv_L$ is the Myhill-Nerode relation that subsumes every other Myhill-Nerode relation, i.e.
-\begin{equation*}
-    \forall \equiv. \, \equiv \mathrm{Myhill-Nerode} -> \forall u,v. \, u \equiv v \Rightarrow u \equiv_L v.
-\end{equation*}
-%\begin{equation*}
-%    \forall u, v \in \Sigma^*. \,
-%    u \equiv_L v \, \Longleftrightarrow \, 
-%    \forall w \in \Sigma^*.\, u \cdot w \in L \Leftrightarrow v \cdot w \in L.
-%\end{equation*}
+    \label{equal_suffix}
+    Let $u, v \in \Sigma^*$. We say that $u$ and $v$ are \textbf{invariant under concatenation} w.r.t. L if and only if
+    \begin{equation*}
+        \forall w \in \Sigma^*. \; uw \in L \Leftrightarrow vw \in L. 
+    \end{equation*}
+    We write $u \doteq_L v$ when $u$ and $v$ are invariant under concatenation w.r.t L.
 \end{definition}
 
-\code{mn}{Myhill-Nerode relation}{myhill_nerode_MN}
-
-\begin{theorem}{Myhill-Nerode Theorem.}
-    \label{MN}
-    A language $L$ is regular if and only if $\,\equiv_L$ is of finite index.
-\end{theorem}
-
-\section{Finite Partitionings and Equivalence Classes}
-
-\paragraph{}
-\coq\ does not have quotient types. 
-We pair up functions and proofs of certain properties to emulate quotient types.
-
-\paragraph{} 
-A finite partitioning is a function from $\Sigma^*$ to some finite type $F$. 
-We use this concept to model equivalent classes in \coq. 
-A finite partitioning of the Myhill-Nerode relation is a finite partitioning $f$ that also respects the Myhill-Nerode relation, i.e.,
-\begin{equation*}
-    \forall u, v \in \Sigma^*. \,
-    f(u) = f(v) \Leftrightarrow u \equiv_L v.
-\end{equation*}
-
-
-\code{mn_rel}{Finite partitioning of the Myhill-Nerode relation}{myhill_nerode_MN_rel}
-
-\begin{theorem}
-    $\equiv_L$ is of finite index if and only if there exists a finite partitioning of the Myhill-Nerode relation.
-\end{theorem}
-
-\begin{proof}
-    If $\equiv_L$ is of finite index, we use the set equivalence classes as a finite type and construct $f$ such that
+\begin{definition}
+    \label{Weak_Nerode_Rel}
+    Let $\equiv$ be a equivalence relation. We say that $\equiv$ is a \textbf{weak Nerode relation} if and only if
     \begin{equation*}
-        \forall w.\, f(w) = [w]_\equiv.
+        \forall u, v \in \Sigma^*. \; u \equiv v \implies u \doteq_L v.
     \end{equation*}
-    \paragraph{}
-    $f$ is a finite partitioning of the Myhill-Nerode relation by definition.
-
-    \paragraph{}
-    Conversely, if we have a finite partitioning of the Myhill-Nerode relation, we can easily see that $\equiv_L$ must be of finite index since $f$'s values directly correspond to equivalence classes. The image of $f$ is finite. Therefore, $\equiv_L$ is of finite index.
-\end{proof}
-
-\paragraph{}
-
-A more general concept is that of a refining finite partitioning of the Myhill-Nerode relation:
-\begin{equation*}
-    \forall u, v \in \Sigma^*. \,
-    f(u) = f(v) \Rightarrow u \equiv_L v.
-\end{equation*}
-
-\code{mn_ref}{Refining finite partitioning of the Myhill-Nerode relation}{myhill_nerode_MN_ref}
+\end{definition}
 
 
+\code{}{}{myhill_nerode_equal_suffix}
+\codeblock{}{}{myhill_nerode_imply_suffix}
+\codeblock{}{}{myhill_nerode_Weak_Nerode_Rel}
 
 \paragraph{}
-We require all partitionings to be surjective.
-Therefore, every equivalence class $x$ has at least one class representative which we denote $\crep{x}$.
-Mathematically, this is not a restriction since there are no empty equivalence classes.
-In our constructive setting we would have to give a procedure that builds a minimal finite type $F'$ from $F$ and a corresponding function $f'$ from $\Sigma^*$ to $F'$ such that $f'$ is surjective and extensionally equal to $f$.
+The notion of a weak Nerode relation is not found in the literature.
+We will later prove them weaker than Myhill relations, in the sense that every Myhill relation is also a weak Nerode relation.
+
+\begin{definition}
+    \label{Nerode_Rel}
+    Let $\equiv$ be a equivalence relation. We say that $\equiv$ is a \textbf{Nerode relation}%
+    \footnote{The Nerode relation is sometimes referred to as the ``coarsest Myhill-Nerode relation''.}
+    if and only if
+    \begin{equation*}
+        \forall u, v \in \Sigma^*. \; u \equiv v \iff u \doteq_L v.
+    \end{equation*}
+\end{definition}
+
+\code{}{}{myhill_nerode_equiv_suffix}
+\codeblock{}{}{myhill_nerode_Nerode_Rel}
+
+
+
+
+
+
+
+
+
+
 
 \section{Minimizing Equivalence Classes}
 
 \paragraph{}
-We will prove that refining finite partitionings can be converted into finite partitionings. 
-For this purpose, we employ the table-filling algorithm to find indistinguishable states under the Myhill-Nerode relation (\cite{DBLP:books/daglib/0011126}).
+We will prove that weak Nerode relations can be converted into Nerode relations.
+For this purpose, we employ the table-filling algorithm to find indistinguishable states under the Myhill-Nerode relation \cite{DBLP:books/daglib/0011126}.
 However, we do not rely on an automaton. 
-In fact, we use the finite type $F$, i.e., the equivalence classes, instead of states.
+In fact, we use the finite type $X$, i.e., the equivalence classes, instead of states.
 
 \paragraph{}
-Given a refining finite partitioning $f$, we construct a fixed-point algorithm.
+Given a weak Nerode relation $f$, we construct a fixed-point algorithm.
 The algorithm initially outputs the set of equivalence classes that are distinguishable by the inclusion of their class representative in $L$. 
-We denote this initial set $dist_0$.
+We call the corresponding predicate $\mathit{dist}$ and define it such that
+We denote this initial set $\mathit{dist_0}$.
 \begin{equation*}
     dist_0 := \{ (x,y)  \in F \times F \, | \, \crep{x} \in L \Leftrightarrow \crep{y} \notin L\}.
 \end{equation*}
 
+\code{}{}{myhill_nerode_distinguishable}
+\codeblock{}{}{myhill_nerode_distinct0}
+
 \paragraph{}
 To find more distinguishable equivalence classes, we have to identify equivalence classes that lead to distinguishable equivalence classes. 
 \begin{definition}
-    We say that a pair of equivalence classes $(x,y)$ \textbf{transitions} to $(x', y')$ with $a$ if and only if
-    \begin{equation*}
-        f (\crep{x}\cdot a) = x' \wedge f (\crep{y} \cdot a) = y'.
-    \end{equation*}
-    We denote $(x', y')$ by $ext_a(x,y)$.
+    We say that an equivalence class $x$ \textbf{transitions} to $y$ with $a \in \Sigma$ if and only if
+    %\begin{equation*}
+        $f (\crep{x}\cdot a) = y$
+    %\end{equation*}
+    We denote $y$ by $\mathit{ext_a}(x)$.
+\end{definition}
+    
+\begin{definition}
+    A pair of equivalence classes $(x,y)$ \textbf{transitions} to $(x', y')$ with $a$ if and only if $x$ transitions to $x'$ with $a$ and $y$ transitions to $y'$ with a.
+    We denote $(x', y')$ by $\mathit{pext_a}(x,y)$.
 \end{definition}
 
-The fixed-point algorithm tries to extend the set of distinguishable equivalence classes by looking for a so-far undistinguishable pair of equivalence classes that transitions to a pair of distinguishable equivalence classes.
+The fixed-point algorithm tries to extend the set of distinguishable equivalence classes by looking for a pair of equivalence classes that transitions to a pair of distinguishable equivalence classes. 
+Given a set of of equivalence classes $\mathit{dist}$, we define the set of distinguishable equivalence classes they transition to as
+\begin{equation*}
+    \mathit{distinct_S}(\mathit{dist}) := \{ (x,y) \; | \; \exists a. \, \mathit{pext_a}(x,y) \in \mathit{dist}\}.
+\end{equation*}
 
 \begin{definition}
+    \label{unnamed}
     \begin{equation*}
-        unnamed(dist) := dist_0 \cup dist \cup \{ (x,y) \, | \, \exists a. \, ext_a(x,y) \in dist\}
+        \mathit{unnamed}(\mathit{dist}) := \mathit{dist_0} \cup \mathit{dist} \cup \mathit{distinct_S}(\mathit{dist}).
     \end{equation*}
 \end{definition}
+
+
+\code{}{}{myhill_nerode_ext}
+
+\codeblock{}{}{myhill_nerode_pext}
+
+\codeblock{}{}{myhill_nerode_distinctS}
+
+\codeblock{}{}{myhill_nerode_unnamed}
 
 \begin{lemma}
     \label{dist_monotone}
@@ -177,17 +234,196 @@ The fixed-point algorithm tries to extend the set of distinguishable equivalence
 
 \end{proof}
 \paragraph{}
-Let \textit{\textbf{distinct}} be the fixed point of $unnamed$.
-Let \textit{\textbf{equiv}} be the complement of $distinct$.
-\todo{Finish construction}
+Let \textit{\textbf{distinct}} be the fixed point of $unnamed$. 
+We write \textit{\textbf{equiv}} for the complement of \textit{distinct} and denote it $\cong$.
+We denote \textit{distinct} $\not\cong$.
+
+\begin{lemma}
+    \label{equiv_refl}
+    $\cong$ is an equivalence relation.
+\end{lemma}
+\begin{proof}
+    It suffices to show that $\mathit{distinct}$ is anti-reflexive, symmetric and ????\todo{a name for this}.
+    We do a fixed-point induction.
+    \begin{enumerate}
+        \item For $\mathit{unnamed}(\mathit{dist}) = \emptyset$ we have anti-reflexivity, symmetry and ???? 
+            by the properties of of $\emptyset$.
+        \item For $\mathit{unnamed}(\mathit{dist}) = \mathit{dist'}$ 
+            we have $\mathit{dist}$ anti-reflexive, symmetric and ????.
+            The set of anti-reflexive, antisymmetric and ???? sets is closed under union.
+            It remains to show that
+            $\mathit{dist_0}$ 
+            and $\mathit{distinct_S}(\mathit{dist})$ 
+            are anti-reflexive, symmetric and ????.
+            
+            \todo{too much ????}
+
+            $\mathit{dist_0}$ is anti-reflexive and symmetric by definition. 
+
+            $\mathit{distinct_S}(\mathit{dist})$ can be seen as an intersection 
+            of a symmetric subset of $X \times X$ defined by $\mathit{pext_a}$ and the anti-reflexive, symmetric $\mathit{dist}$.
+            Thus, $\mathit{distinct_S}(\mathit{dist})$ is anti-reflexive and symmetric.
+            
+            The set of anti-reflexive and antisymmetric sets is closed under union.
+            Therefore, $\mathit{dist'}$ is anti-reflexive and symmetric.
+    \end{enumerate}
+\end{proof}
+
+\code{}{}{myhill_nerode_equiv_refl_head}
+\codeblock{}{}{myhill_nerode_equiv_sym_head}
+\codeblock{}{}{myhill_nerode_equiv_trans_head}
+
+
+\begin{lemma}
+    \label{equiv_final}
+
+    Let $u,v \in \Sigma^*$. 
+    If $f(u) \cong f(v)$, then $u$ and $v$ are invariant under concatenation, i.e. $f(u) \cong f(v) \implies u \doteq_L v$.
+\end{lemma}
+\begin{proof}
+    Let $w \in \Sigma^*$. We then show the contraposition of the claim: 
+    \begin{equation*}
+        uw \in L \not\Leftrightarrow vw \in L \implies f(u) \not\cong f(v).
+    \end{equation*}    
+    We do an induction on $w$ and generalize over $u$ and $v$.
+    \begin{enumerate}
+        \item For $w = \varepsilon$ we have $u \in L \not\Leftrightarrow v \in L$ which gives us $(f(u),f(v)) \in dist_0$.
+            Thus, $f(u) \not\cong f(v)$.
+        \item For $w = aw'$ we have $uaw \in L \not\Leftrightarrow vaw \in L$.
+            We have to show $f(u) \not\cong f(v)$, i.e. $(f(u), f(v)) \in \mathit{distinct}$.
+            By definition of $\mathit{distinct}$, it suffices to show $(f(u), f(v)) \in \mathit{unnamed}(\mathit{distinct})$.
+
+             For this, we prove $(f(u), f(v)) \in \mathit{distinct_S}(\mathit{distinct})$. 
+             By $uaw \in L \not\Leftrightarrow vaw \in L$ we have $(f(\crep{u}a), f(\crep{v}a)) \in dist_0$.
+
+             It remains to show that $f(\crep{u}a) \not\cong f(\crep{v}a)$ which we get by inductive hypothesis.
+             For this, we need to show that $\crep{u}aw \in L \not\Leftrightarrow \crep{v}aw$.
+
+             By the properties of $f$, we get $\crep{u}aw \in L \Leftrightarrow uaw \in L$ and $\crep{v}aw \in L \Leftrightarrow vaw \in L$.
+             Thus, $\crep{u}aw \in L \not\Leftrightarrow \crep{v}aw$.
+             
+    \end{enumerate}
+\end{proof}
+
+
+\begin{lemma}
+    \label{distinct_final}
+    Let $u,v \in \Sigma^*$. 
+    If $f(u) \not\cong f(v)$, then $u$ and $v$ are \textbf{not} invariant under concatenation, i.e. $f(u) \not\cong f(v) \implies u \not\doteq_L v$.
+\end{lemma}
+\begin{proof}
+    We do a fixed-point induction.
+    \begin{enumerate}
+        \item For $\mathit{unnamed}(\mathit{dist}) = \emptyset$ we have $(f(u), f(v)) \in \emptyset$ and thus a contradiction. 
+        \item For $\mathit{unnamed}(\mathit{dist}) = \mathit{dist'}$ we have $(f(u), f(v)) \in \mathit{dist'}$. 
+            We do a case distinction on $\mathit{dist'}$.
+            \begin{enumerate}
+                \item $(f(u), f(v)) \in \mathit{dist_0}$.
+                    We have $u \in L \not\Leftrightarrow v \in L$. 
+                    Thus, $u \not\doteq_L v$ as witnessed by $w=\varepsilon$.
+                \item $(f(u), f(v)) \in \mathit{dist}$. 
+                    By inductive hypothesis, $u \not\doteq_L v$.
+                \item $(f(u), f(v)) \in \mathit{distinct_S}(\mathit{dist})$.
+                    We have $a \in \Sigma$ with $\mathit{pext_a}(f(u), f(v))) \in \mathit{dist}$.
+                    By inductive hypothesis, we get $\crep{u}a \not\doteq_L \crep{v}a$ 
+                    as witnessed by $w \in \Sigma^*$ 
+                    such that $\crep{u}aw \in L \not\Leftrightarrow \crep{v}aw \in L$.
+
+                    By the properties of $f$, we get $\crep{u}aw \in L \Leftrightarrow uaw \in L$ and $\crep{v}aw \in L \Leftrightarrow vaw \in L$.
+                    Thus, we have $u \not\doteq_L v$ as witnessed by $aw$.
+            \end{enumerate}
+    \end{enumerate}
+\end{proof}
+
+
+\begin{corollary}
+    \label{equivP}
+    Let $u, v \in \Sigma^*$. We have that
+    \begin{equation*}
+        f(u) \cong f(v) \iff u \doteq_L v.
+    \end{equation*}
+\end{corollary}
+
+\code{}{}{myhill_nerode_equiv_equal_suffix_head}
+\codeblock{}{}{myhill_nerode_distinct_not_equal_suffix_head}
+\codeblock{}{}{myhill_nerode_equivP_head}
+
+\begin{definition}
+    \label{f_min}
+    Let $w \in \Sigma^*$. We define
+    %Then $\mathit{f_{min}}$ is defined such that 
+    \begin{equation*}
+        \mathit{f_{min}}(w) := \{ x \; | \; x \in X, \; f(w) \cong x \}.
+    \end{equation*}
+    Note that the domain of $\mathit{f_{min}}$ is finite (since $f$ is finite) and contains no empty sets (due to reflexivity of $\cong$).
+\end{definition}
+
+\begin{lemma}
+    \label{f_min_surjective}
+    $\mathit{f_{min}}$ is surjective.
+\end{lemma}
+\begin{proof}
+    Let $s \in dom(\mathit{f_{min}})$. 
+    There exists $x \in X$ such that $x \in s$ since $s \neq \emptyset$. 
+    We have $f(x) = f(\crep{x}$) and therefore $f(x) \cong f(\crep{x})$ by reflexivity of $\cong$.
+    Thus, $\crep{x}$ is a representative of $s$ since $\mathit{f_{min}}(x) = \mathit{f_{min}}(\crep{x}) = s$.
+\end{proof}
+
+\begin{lemma}
+    \label{f_minP}
+    For all $u,v \in \Sigma^*$ we we have 
+    \begin{equation*}
+        \mathit{f_{min}}(u) = \mathit{f_{min}}(v) \iff f(u) \cong f(v).
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+    ``$\Rightarrow$''
+    We have $\mathit{f_{min}}(u) = \mathit{f_{min}}(v)$ and thus $f(u) \cong f(v)$.
+
+    ``$\Leftarrow$''
+    We have $f(u) \cong f(v)$. 
+    Let $x \in X$.
+    It suffices to show that $f(u) \cong x$ if and only if $f(v) \cong x$.
+    This follows from symmetry and transitivity of $\cong$.
+\end{proof}
+
 \begin{theorem}
-    \label{MN_MIN}
-    $f_min$ is a finite partitioning of the Myhill-Nerode relation on $L$.
+    \label{f_min_correct}
+    $\mathit{f_{min}}$ is a Nerode relation, i.e. $\mathit{f_{min}}$ is surjective and for all $u,v \in \Sigma^*$ we have
+    \begin{equation*}
+        \mathit{f_{min}}(u) = \mathit{f_{min}}(v) \iff u \doteq_L v.
+    \end{equation*}
 \end{theorem}
 
-\todo{Add formalization}
+\begin{proof}
+    We have proven surjectivity in lemma \ref{f_min_surjective}. 
+    By lemma \ref{f_minP} we have $\mathit{f_{min}}(u) = \mathit{f_{min}}(v)$ if and only if $f(u) \cong f(v)$.
+    By corollary \ref{equivP} we have $f(u) \cong f(v)$ if and only if $u \doteq_L v$.
+    Thus, $\mathit{f_{min}}(u) = \mathit{f_{min}}(v)$ if and only if $u \doteq_L v$.
+\end{proof}
 
+\paragraph{}
+The formalization of $\mathit{f_{min}}$ is slightly more involved than the mathematical construction. 
+We first need to define the finite type of $\mathit{f_{min}}$'s domain, 
+which we do by enumerating all possible values of $\mathit{f_{min}}$.
 
+\code{}{}{myhill_nerode_equiv_repr}
+\codeblock{}{}{myhill_nerode_X_min}
+\codeblock{}{}{myhill_nerode_f_min}
+
+\paragraph{}
+We can then prove lemmas \ref{f_min_surjective}, \ref{f_minP} and theorem \ref{f_min_correct}.
+
+\code{}{}{myhill_nerode_f_min_surjective_head}
+\codeblock{}{}{myhill_nerode_f_minP_head}
+\codeblock{}{}{myhill_nerode_f_min_correct_head}
+
+\paragraph{}
+Finally, we give a function to explicitly convert from the weak Nerode relation $f$ to a Nerode relation.
+
+\code{}{}{myhill_nerode_f_min_fin}
+\codeblock{}{}{myhill_nerode_weak_nerode_to_nerode}
 
 \section{Finite Automata and Myhill-Nerode}
 
@@ -197,30 +433,6 @@ We prove theorem \ref{MN} by proving it equivalent to the existence of an automa
 
 
 \subsection{Finite Automata to Myhill-Nerode}
-\paragraph{}
-Given DFA $A$, for all words $w$ we define $f(w)$ to be the last state of the run of $w$ on $A$.
-
-\begin{lemma} 
-    \label{DFA_MN_F}
-    $f$ is a refining finite partitioning of the Myhill-Nerode relation on $\lang{A}$. 
-\end{lemma} 
-\begin{proof} 
-    The set of states of $A$ is finite.
-    For all $u, v$ and $w$ we that if $f(u) = f(v) = x$, i.e.,
-    the runs of $u$ and $v$ on $A$ end in the exact same state $x$.
-    From this, we get that for all $w$, runs of $u \cdot w$ and $v \cdot w$ on $A$ also end in the same state.
-    Therefore, $u\cdot w \in \lang{A}$ if and only if $v \cdot w \in \lang{A}$.
-\end{proof}
-
-\begin{theorem}
-    If $L$ is accepted by DFA $A$, then there exists a finite partitioning of the Myhill-Nerode relation on $L$.
-\end{theorem}
-\begin{proof}
-    From lemma \ref{DFA_MN_F} we get a refining finite partitioning $f$ of the Myhill-Nerode relation on $\lang{A}$. 
-    Since $L$ is accepted by $A$, $L = \lang{A}$. 
-    Therefore, $f$ is a refining finite partitioning of the Myhill-Nerode relation on $L$.
-    By theorem \ref{MN_MIN} there also exists a finite partition of the Myhill-Nerode relation on $L$.
-\end{proof}
 
 
 \subsection{Myhill-Nerode to Finite Automata}
