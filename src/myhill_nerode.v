@@ -233,7 +233,7 @@ Section MyhillNerode.
       exists a. exact H.
     Qed.
 
-    Lemma distinctSnegP (distinct: {set X*X}) x y:
+    Lemma distinctSNP (distinct: {set X*X}) x y:
       reflect (forall a, pext x y a \notin distinct)
               ((x,y) \notin distinctS distinct).
     Proof.
@@ -300,7 +300,7 @@ Section MyhillNerode.
         by rewrite  in_set.
       apply/unnamedP/nand3P/and3P; econstructor => //;
         first by exact: equiv0_refl.
-      apply/distinctSnegP => a.
+      apply/distinctSNP => a.
       exact: IHdist.
     Qed.
 
@@ -327,8 +327,8 @@ Section MyhillNerode.
       constructor.
           exact: equiv0_sym.
         exact: IHs.
-      apply/distinctSnegP => a. 
-      move/distinctSnegP in H2. 
+      apply/distinctSNP => a. 
+      move/distinctSNP in H2. 
       apply: IHs. exact: H2.
     Qed.
 
@@ -338,15 +338,15 @@ Section MyhillNerode.
       rewrite /distinct.
       apply mu_ind => [|s IHs] x y z.
         by rewrite 3!in_set.
-      move/unnamedP/nand3P/and3P => [] H1 H2 /distinctSnegP H3.
-      move/unnamedP/nand3P/and3P => [] H4 H5 /distinctSnegP H6.
+      move/unnamedP/nand3P/and3P => [] H1 H2 /distinctSNP H3.
+      move/unnamedP/nand3P/and3P => [] H4 H5 /distinctSNP H6.
       apply/unnamedP. apply/nand3P. apply/and3P.
       constructor.
           move: H1 H4.
           rewrite /distinct0 !inE /= => /negbNE.
           by move => /eqP ->. 
         by apply: IHs; eassumption.
-      apply/distinctSnegP => a.
+      apply/distinctSNP => a.
       apply: IHs.
         by eapply H3.
       exact: H6.
@@ -371,7 +371,7 @@ Section MyhillNerode.
       by rewrite -2!catA cat1s 2!(inv_mem_L_cat f).
     Qed.
    
-    Lemma distinct_not_equal_suffix' u v:
+    Lemma distinct_not_equal_suffix u v:
       f u ~!= f v ->
       exists w, u ++ w \in L != (v ++ w \in L). 
     Proof.
@@ -388,65 +388,60 @@ Section MyhillNerode.
       rewrite -2!catA !cat1s !inv_mem_L_cat.
       by eauto.
     Qed.
-      
-    Lemma distinct_not_equal_suffix u v: f u ~!= f v -> ~ equal_suffix L u v.
+
+    Lemma equivP u v:
+      reflect (equal_suffix L u v)
+              (f u ~= f v).
     Proof.
-      move => /distinct_not_equal_suffix' [w H] H0.
+      apply: introP.
+        exact: equiv_equal_suffix.
+      move/negbNE => /distinct_not_equal_suffix [w H] H0.
       move: (H0 w).
       move => H1. move/eqP: H.
       by rewrite H1.
     Qed.
-      
     
-    Definition dist_repr := fun x => [set y | x ~= y].
+    
+    Definition equiv_repr x := [set y | x ~= y].
 
-    Lemma dist_repr_refl x : x \in dist_repr x.
+    Lemma equiv_repr_refl x : x \in equiv_repr x.
     Proof. by rewrite in_set equiv_refl. Qed.
     
-    Definition X_min := map dist_repr (enum f.(fin_type)).
+    Definition X_min := map equiv_repr (enum (fin_type f)).
 
-    Lemma dist_repr_in_X_min x: dist_repr x \in X_min.
+    Lemma equiv_repr_mem x: equiv_repr x \in X_min.
     Proof. apply/mapP. exists x => //. by rewrite mem_enum. Qed.
 
-    Definition f_min := fun w => SeqSub _ (dist_repr_in_X_min (f w)).
+    Definition f_min w := SeqSub _ (equiv_repr_mem (f w)).
       
-    Lemma f_min_eq_distinct x y: f_min x = f_min y -> f x ~= f y.
+    Lemma f_minP u v:
+      reflect (f_min u = f_min v)
+              (f u ~= f v).
     Proof.
-      move => [] /= /setP H1. move: (H1 (f y)).
-      by rewrite dist_repr_refl in_set => ->.
+      apply: iffP.
+        apply idP.
+        move => H.
+        rewrite /f_min /=.
+        apply/eqP.
+        change ([set x | (f u, x) \notin distinct] == [set x | (f v, x) \notin distinct]).
+        apply/eqP.
+        apply/setP => x.
+        rewrite 2!in_set.
+        apply/idP/idP => H0;
+          eauto using equiv_sym, equiv_trans.
+      move => [] /= /setP H1. move: (H1 (f v)).
+      by rewrite equiv_repr_refl in_set => ->.
     Qed.                                            
 
-    Lemma f_min_distinct_eq x y: f x ~= f y -> f_min x = f_min y.
-    Proof.
-      move => H.
-      rewrite /f_min /=.
-      apply/eqP.
-      change ([set y0 | (f x, y0) \notin distinct] == [set y0 | (f y, y0) \notin distinct]).
-      apply/eqP.
-      apply/setP => z.
-      rewrite 2!in_set.
-      apply/idP/idP => H0.
-        apply: equiv_sym. apply: equiv_trans. eapply equiv_sym.
-          eassumption.
-        by [].
-      apply: equiv_sym.
-      apply: equiv_trans.
-        eapply equiv_sym.
-        eassumption.
-      apply: equiv_sym.
-      by [].
-    Qed.
-      
-      
     Lemma f_min_correct: equiv_suffix L f_min.
     Proof.
       move => u v.
       split.
-        move/f_min_eq_distinct.
+        move/f_minP.
         exact: equiv_equal_suffix.
      move => H. 
-     apply f_min_distinct_eq.
-     by apply/negP => /distinct_not_equal_suffix.
+     apply/f_minP.
+     by apply/equivP.
     Qed.                                                  
 
     Lemma f_min_surjective: surjective f_min.
@@ -455,13 +450,16 @@ Section MyhillNerode.
       move/mapP: (Hx) => [y Hy Hxy].
       exists (inv f y).
       rewrite /f_min.
-      change (dist_repr (f (inv f y)) == x).
+      change (equiv_repr (f (inv f y)) == x).
       by rewrite Hxy invK.
     Qed.
 
+    Definition f_min_fin: Fin_Eq_Cls :=
+      {| fin_surjective := f_min_surjective |}.
+
     Definition weak_nerode_to_nerode: Nerode_Rel L :=
       {|
-        nerode_func := {| fin_surjective := f_min_surjective |};
+        nerode_func := f_min_fin; 
         nerode_equiv := f_min_correct
       |}.
 
@@ -482,6 +480,12 @@ Section MyhillNerode.
       by rewrite /f /= H. 
     Qed.
 
+    Definition f_fin : Fin_Eq_Cls :=
+      {|
+        fin_f := f;
+        fin_surjective := f_surjective
+      |}.
+
     Lemma f_right_congruent: right_congruent f.
     Proof.
       move => u v a H.
@@ -498,7 +502,7 @@ Section MyhillNerode.
 
     Definition dfa_to_myhill : Myhill_Rel (dfa_lang A') :=
       {|
-        myhill_func := {| fin_surjective := f_surjective |};
+        myhill_func := f_fin;
         myhill_congruent := f_right_congruent;
         myhill_refining := f_refining
       |}.
@@ -521,6 +525,4 @@ Section MyhillNerode.
 
   End DFA_To_Nerode.
 
-  Check dfa_to_nerode.
-  
 End MyhillNerode.
