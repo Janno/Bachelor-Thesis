@@ -178,6 +178,7 @@ It will later be useful to have automata that only contain reachable states.
 Therefore, we define a procedure to extract the connected component containing the starting state from a given automaton.
 
 \begin{definition}
+    \label{A_c}
     Let $A = (Q, s, F, \delta)$ be a DFA.
     We define $\mathrm{reachable1}$ such that for all x and y, 
     $(x,y) \in \mathrm{reachable1} \iff \exists a, (x,a,y) \in \delta$.
