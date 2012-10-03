@@ -32,26 +32,24 @@ Section MyhillNerode.
     Record Fin_Eq_Cls :=
       {
         fin_type : finType;
-        fin_f :> word -> fin_type;
-        fin_surjective : surjective fin_f
+        fin_func :> word -> fin_type;
+        fin_surjective : surjective fin_func
       }.
 
     Section Inversion. 
 
       Variable f: Fin_Eq_Cls.
     
-      Definition inv (f: Fin_Eq_Cls) x :=
+      Definition cr (f: Fin_Eq_Cls) x :=
         xchoose (fin_surjective f x).
 
-      Lemma invK: cancel (inv f) f.
+      Lemma crK: cancel (cr f) f.
       Proof. move => x. by move: (xchooseP (fin_surjective f x)) => /eqP {2}<-. Qed.
 
       (* Needed? *)
-      Lemma eq_inv x: x = (f (inv f x)).
-      Proof. by rewrite invK. Qed.
+      Lemma eq_cr x: x = (f (cr f x)).
+      Proof. by rewrite crK. Qed.
       
-      Definition repr := inv f \o f.
-
     End Inversion.
 
     Section Myhill.
@@ -59,50 +57,38 @@ Section MyhillNerode.
       Definition right_congruent {X} (f: word -> X) :=
         forall u v a, f u = f v -> f (rcons u a) = f (rcons v a).
 
-      Definition refining {X} (f: word -> X) :=
+      Definition refines {X} (f: word -> X) :=
         forall u v, f u = f v -> u \in L = (v \in L).
         
       Record Myhill_Rel :=
         {
           myhill_func :> Fin_Eq_Cls; 
           myhill_congruent: right_congruent myhill_func;
-          myhill_refining: refining myhill_func
+          myhill_refines: refines myhill_func
         }.
         
     End Myhill.
 
     
-    Section Nerode.
+    Definition equal_suffix u v :=
+      forall w, u++w \in L = (v++w \in L).
 
-      Definition equal_suffix u v :=
-        forall w, u++w \in L = (v++w \in L).
-
-      Definition equiv_suffix {X} (f: word -> X) :=
-        forall u v, f u = f v <-> equal_suffix u v.
-      
-      Record Nerode_Rel :=
-        {
-          nerode_func :> Fin_Eq_Cls;
-          nerode_equiv: equiv_suffix nerode_func
-        }.
-
-    End Nerode.
-
+    Definition equiv_suffix {X} (f: word -> X) :=
+      forall u v, f u = f v <-> equal_suffix u v.
     
-    Section Nerode_Facts.
+    Record Nerode_Rel :=
+      {
+        nerode_func :> Fin_Eq_Cls;
+        nerode_equiv: equiv_suffix nerode_func
+      }.
 
-      Variable f: Nerode_Rel.
-
-      Lemma inv_rcons w a: f (rcons (inv f (f w)) a) = f (rcons w a).
-      Proof.
-        apply (f.(nerode_equiv)) => u.
-        rewrite -2!cats1 -2!catA /=. 
-        apply f.(nerode_equiv).
-        by rewrite invK.
-      Qed.
-      
-    End Nerode_Facts.
-    
+    Lemma cr_rcons (f: Nerode_Rel) w a: f (rcons (cr f (f w)) a) = f (rcons w a).
+    Proof.
+      apply (f.(nerode_equiv)) => u.
+      rewrite -2!cats1 -2!catA /=. 
+      apply f.(nerode_equiv).
+      by rewrite crK.
+    Qed.
 
     Section Weak_Nerode.
       
@@ -121,17 +107,17 @@ Section MyhillNerode.
 
       Variable f: Weak_Nerode_Rel.
 
-      Lemma inv_mem_L_cat u v: inv f (f u) ++ v \in L = (u ++ v \in L).
+      Lemma cr_mem_L_cat u v: cr f (f u) ++ v \in L = (u ++ v \in L).
       Proof.
         erewrite f.(weak_nerode_imply).
           reflexivity.
-        by rewrite invK.
+        by rewrite crK.
       Qed.
 
-      Lemma inv_mem_L w: inv f (f w) \in L = (w \in L).
+      Lemma cr_mem_L w: cr f (f w) \in L = (w \in L).
       Proof.
-        rewrite -(cats0 (inv f (f w))) -{2}(cats0 w).
-        exact: inv_mem_L_cat.
+        rewrite -(cats0 (cr f (f w))) -{2}(cats0 w).
+        exact: cr_mem_L_cat.
       Qed.
 
     End Weak_Nerode_Facts.
@@ -146,80 +132,46 @@ Section MyhillNerode.
       
   End Relations.
   
-  Section Myhill_Weak_Nerode.
-
-    Variable L: language char.
-    Variable f: Myhill_Rel L.
-
-    Lemma myhill_closure: imply_suffix L f.
-    Proof.
-      move => u v Huv w.
-      elim: w u v Huv => [|a w IHw] u v Huv.
-        rewrite 2!cats0.
-        exact: f.(myhill_refining).
-      rewrite -cat1s 2!catA 2!cats1.
-      apply: IHw.
-      exact: f.(myhill_congruent).
-    Qed.
-
-    Definition myhill_to_weak_nerode: Weak_Nerode_Rel L :=
-      {| weak_nerode_imply := myhill_closure |}.
-    
-  End Myhill_Weak_Nerode.
-  
-
-  Section Nerode_To_DFA.
-    Variable L: language char.
-    Variable f: Nerode_Rel L.
-
-    Definition state : finType := f.(fin_type).
-
-    Definition s0 : state := f [::].
-
-    Definition fin: pred state :=
-      [pred x | inv f x \in L ].
-    
-    Definition step x (a: char) :=
-      f (rcons (inv f x) a).
-
-    Definition nerode_to_dfa := {|dfa_s := s0; dfa_fin := fin; dfa_step := step |}.
-    
-    Lemma nerode_to_dfa_run_f w: last s0 (dfa_run' nerode_to_dfa s0 w) = f w.
-    Proof.
-      move: w.
-      apply: last_ind => [|w a IHw] //.
-      rewrite -{1}cats1 dfa_run'_cat last_cat IHw /=.
-      rewrite /step.
-      exact: inv_rcons.
-    Qed.
-      
-    Lemma nerode_to_dfa_correct: L =i dfa_lang nerode_to_dfa.
-    Proof.
-      move => w.
-      rewrite /dfa_lang /= -dfa_run_accept nerode_to_dfa_run_f in_simpl /=.
-      by rewrite (inv_mem_L f w).
-    Qed.
-      
-  End Nerode_To_DFA.
 
   Section Minimalization.
     Variable L: language char.
-    Variable f: Weak_Nerode_Rel L.
-    Definition X := f.(fin_type).
+    Variable f_0: Weak_Nerode_Rel L.
+    Definition X := f_0.(fin_type).
 
-    Definition ext := [ fun x a => f ((inv f x) ++ [::a]) ].
+    Definition succ := [ fun x a => f_0 ((cr f_0 x) ++ [::a]) ].
     
-    Definition pext := [ fun x y => [ fun a => (ext x a, ext y a) ] ].
+    Definition psucc := [ fun x y => [ fun a => (succ x a, succ y a) ] ].
 
-    Definition distinguishable := [ fun x y => (inv f x) \in L != ((inv f y) \in L) ].
+    Definition distinguishable := [ fun x y => (cr f_0 x) \in L != ((cr f_0 y) \in L) ].
 
     Definition distinct0 := [set x | distinguishable x.1 x.2 ].
 
+    Lemma distinct0P x:
+      reflect (cr f_0 x.1 \in L <> (cr f_0 x.2 \in L))
+              (x \in distinct0).
+    Proof.
+      rewrite /distinct0 /= !inE.
+      apply: iffP. apply idP.
+        by move/eqP.
+      by move/eqP.
+    Qed.
+        
+    Lemma distinct0NP x:
+      reflect (cr f_0 x.1 \in L = (cr f_0 x.2 \in L))
+              (x \notin distinct0).
+    Proof.
+      apply: iffP. apply idP.
+        move => H. apply/eqP. move: H.
+        apply: contraR. move/eqP.
+        by move/distinct0P.
+      move/eqP. apply: contraL. by move/distinct0P/eqP.
+    Qed.
+
     Definition distinctS (distinct: {set X*X}) :=
-      [set  (x,y) | x in X, y in X & [ exists a, pext x y a \in distinct ] ].
+      [set  (x,y) | x in X, y in X & [ exists a, psucc x y a \in distinct ] ].
 
     Lemma distinctSP (distinct: {set X*X}) x y:
-      reflect (exists a, pext x y a \in distinct)
+      reflect (exists a, psucc x y a \in distinct)
               ((x,y) \in distinctS distinct).
     Proof.
       apply: iffP. apply idP.
@@ -234,14 +186,14 @@ Section MyhillNerode.
     Qed.
 
     Lemma distinctSNP (distinct: {set X*X}) x y:
-      reflect (forall a, pext x y a \notin distinct)
+      reflect (forall a, psucc x y a \notin distinct)
               ((x,y) \notin distinctS distinct).
     Proof.
       apply: introP.
         move/distinctSP => H1 a.
         apply/negP => H2. by eauto.
       move/negbTE/distinctSP => [a H1] H2.
-      absurd (pext x y a \in distinct) => //.
+      absurd (psucc x y a \in distinct) => //.
       by apply/negP.
     Qed.
     
@@ -257,36 +209,42 @@ Section MyhillNerode.
         move/orP => [/orP [] |]; eauto using or3.
       by move/norP => [] /norP [] /negbTE -> /negbTE -> /negbTE -> [].
     Qed.
+
+    Lemma unnamedNP (distinct: {set X*X}) x:
+      reflect ([/\ x \notin distinct0, x \notin distinct & x \notin distinctS distinct])
+              (x \notin unnamed distinct).
+    Proof.
+      apply: introP.
+        by move/unnamedP/nand3P/and3P.
+      move/negbNE/unnamedP/nand3P => H1 H2.
+      apply: H1. by apply/and3P.
+    Qed.
       
     Definition distinct := mu unnamed.
 
     Notation "x ~!= y" := ((x,y) \in distinct) (at level 70, no associativity).
+    Notation "u ~!=_f_0 v" := (f_0(u) ~!= f_0(v)) (at level 70, no associativity).
     Notation "x ~= y" := ((x,y) \notin distinct) (at level 70, no associativity).
+    Notation "u ~=_f_0 v" := (f_0(u) ~= f_0(v)) (at level 70, no associativity).
 
+    Lemma distinctS_unnamed: mono distinctS.
+    Proof.
+      move => s t /subsetP H.
+      apply/subsetP.
+      move => [x y] /distinctSP [a H1].
+      apply/distinctSP. exists a.
+      exact: H.
+    Qed.
+      
     Lemma unnamed_mono: mono unnamed.
     Proof.
-      move => s t.
-      rewrite unlock /= => /existsP H.
-      apply/existsP => [] [] x /andP [].
-      move/unnamedP/nand3P/and3P => [].
-      move => /negbTE /negP H0 H1 H2 /unnamedP [] H3;
-        first by done.
-        apply: H. exists x.
-        by rewrite !inE H1 H3.
-      destruct x. move/distinctSP: H3 => [a H4].
-      move/distinctSP: H2 => H2. apply: H.
-      eexists. rewrite /=. apply/andP. split;
-        last by eassumption.
-      apply/negP => H5. by eauto.
-    Qed.
-    
-    Lemma unnamed_mono_in x y (s: {set _}):
-      (x,y) \in s ->
-      (x,y) \in (unnamed s).
-    Proof.
-      rewrite /unnamed.
-        move => H. rewrite 2!in_set. apply/orP. left.
-        apply/orP. by right.
+      move => s t H. apply/subsetP.
+      move => [x y] /unnamedP [] H1; apply/unnamedP;
+        first by eauto using or3.
+        move: (subsetP H _ H1).
+        by eauto using or3.
+      move/subsetP: (distinctS_unnamed H).
+      by eauto using or3.
     Qed.
 
     Lemma equiv0_refl x:
@@ -298,7 +256,7 @@ Section MyhillNerode.
       rewrite /distinct. move: x.
       apply mu_ind => [|dist IHdist] x.
         by rewrite  in_set.
-      apply/unnamedP/nand3P/and3P; econstructor => //;
+      apply/unnamedNP. econstructor => //;
         first by exact: equiv0_refl.
       apply/distinctSNP => a.
       exact: IHdist.
@@ -322,9 +280,8 @@ Section MyhillNerode.
       rewrite /distinct.
       apply mu_ind => [|s IHs] x y.
         by rewrite 2!in_set.
-      move/unnamedP/nand3P/and3P => [] H0 H1 H2.
-      apply/unnamedP. apply/nand3P. apply/and3P.
-      constructor.
+      move/unnamedNP => [] H0 H1 H2.
+      apply/unnamedNP. constructor.
           exact: equiv0_sym.
         exact: IHs.
       apply/distinctSNP => a. 
@@ -338,13 +295,10 @@ Section MyhillNerode.
       rewrite /distinct.
       apply mu_ind => [|s IHs] x y z.
         by rewrite 3!in_set.
-      move/unnamedP/nand3P/and3P => [] H1 H2 /distinctSNP H3.
-      move/unnamedP/nand3P/and3P => [] H4 H5 /distinctSNP H6.
-      apply/unnamedP. apply/nand3P. apply/and3P.
-      constructor.
-          move: H1 H4.
-          rewrite /distinct0 !inE /= => /negbNE.
-          by move => /eqP ->. 
+      move/unnamedNP => [] /distinct0NP H1 H2 /distinctSNP H3.
+      move/unnamedNP => [] /distinct0NP H4 H5 /distinctSNP H6.
+      apply/unnamedNP. constructor.
+          apply/distinct0NP. by rewrite H1 H4.
         by apply: IHs; eassumption.
       apply/distinctSNP => a.
       apply: IHs.
@@ -353,7 +307,7 @@ Section MyhillNerode.
     Qed.
 
 
-    Lemma equiv_equal_suffix u v: f u ~= f v -> equal_suffix L u v.
+    Lemma equiv_equal_suffix u v: u ~=_f_0 v -> equal_suffix L u v.
     Proof.
       move => H w. apply/eqP. move: H.
       apply: contraR.
@@ -361,18 +315,18 @@ Section MyhillNerode.
         rewrite 2!cats0.
         rewrite /distinct muE -/distinct /unnamed => H;
           last by exact: unnamed_mono.
-        by rewrite /distinct0  /= 3!in_set 2!inv_mem_L H.
+        by rewrite /distinct0  /= 3!in_set 2!cr_mem_L H.
       move => H.
       rewrite /distinct muE -/distinct;
         last by exact: unnamed_mono.
       apply/unnamedP. apply: Or33.
       apply/distinctSP. exists a.
       apply: IHw.
-      by rewrite -2!catA cat1s 2!(inv_mem_L_cat f).
+      by rewrite -2!catA 2!(cr_mem_L_cat f_0).
     Qed.
    
     Lemma distinct_not_equal_suffix u v:
-      f u ~!= f v ->
+      u ~!=_f_0 v ->
       exists w, u ++ w \in L != (v ++ w \in L). 
     Proof.
       rewrite /distinct.
@@ -380,18 +334,18 @@ Section MyhillNerode.
       apply mu_ind => [|dist IHdist] u v.
         by rewrite in_set.
       move/unnamedP => [].
-          rewrite /distinct0 in_set /= => H.
-          exists [::]. rewrite 2!cats0.
-          by rewrite 2!inv_mem_L in H.
+          move/distinct0P => /eqP.
+          rewrite !cr_mem_L /= => H.
+          exists [::]. by rewrite 2!cats0.
         exact: IHdist.
       move/distinctSP => [a] /IHdist [w].
-      rewrite -2!catA !cat1s !inv_mem_L_cat.
+      rewrite -2!catA !cr_mem_L_cat.
       by eauto.
     Qed.
 
     Lemma equivP u v:
       reflect (equal_suffix L u v)
-              (f u ~= f v).
+              (u ~=_f_0 v).
     Proof.
       apply: introP.
         exact: equiv_equal_suffix.
@@ -407,29 +361,29 @@ Section MyhillNerode.
     Lemma equiv_repr_refl x : x \in equiv_repr x.
     Proof. by rewrite in_set equiv_refl. Qed.
     
-    Definition X_min := map equiv_repr (enum (fin_type f)).
+    Definition X_min := map equiv_repr (enum (fin_type f_0)).
 
     Lemma equiv_repr_mem x: equiv_repr x \in X_min.
     Proof. apply/mapP. exists x => //. by rewrite mem_enum. Qed.
 
-    Definition f_min w := SeqSub _ (equiv_repr_mem (f w)).
+    Definition f_min w := SeqSub _ (equiv_repr_mem (f_0 w)).
       
     Lemma f_minP u v:
       reflect (f_min u = f_min v)
-              (f u ~= f v).
+              (u ~=_f_0 v).
     Proof.
       apply: iffP.
         apply idP.
         move => H.
         rewrite /f_min /=.
         apply/eqP.
-        change ([set x | (f u, x) \notin distinct] == [set x | (f v, x) \notin distinct]).
+        change ([set x | (f_0 u, x) \notin distinct] == [set x | (f_0 v, x) \notin distinct]).
         apply/eqP.
         apply/setP => x.
         rewrite 2!in_set.
         apply/idP/idP => H0;
           eauto using equiv_sym, equiv_trans.
-      move => [] /= /setP H1. move: (H1 (f v)).
+      move => [] /= /setP H1. move: (H1 (f_0 v)).
       by rewrite equiv_repr_refl in_set => ->.
     Qed.                                            
 
@@ -448,10 +402,10 @@ Section MyhillNerode.
     Proof.
       move => [x Hx].
       move/mapP: (Hx) => [y Hy Hxy].
-      exists (inv f y).
+      exists (cr f_0 y).
       rewrite /f_min.
-      change (equiv_repr (f (inv f y)) == x).
-      by rewrite Hxy invK.
+      change (equiv_repr (f_0 (cr f_0 y)) == x).
+      by rewrite Hxy crK.
     Qed.
 
     Definition f_min_fin: Fin_Eq_Cls :=
@@ -466,63 +420,113 @@ Section MyhillNerode.
   End Minimalization.
   
 
-  Section DFA_To_Nerode.
+  Section DFA_To_Myhill.
     Variable A: dfa char.
-    Definition A' := dfa_connected A.
-    Definition f := fun w => last (dfa_s A') (dfa_run A' w).
+    Definition A_c := dfa_connected A.
+    Definition f_M := fun w => last (dfa_s A_c) (dfa_run A_c w).
     
-    Definition f_surjective: surjective f.
+    Lemma f_M_surjective: surjective f_M.
     Proof.
       move => x.
-      move/dfa_connected_repr: (x).
-      move => [] w H.
-      exists w.
-      by rewrite /f /= H. 
+      move: (dfa_connected_repr x) => [] w <-.
+      by exists w.
     Qed.
 
     Definition f_fin : Fin_Eq_Cls :=
       {|
-        fin_f := f;
-        fin_surjective := f_surjective
+        fin_func := f_M;
+        fin_surjective := f_M_surjective
       |}.
 
-    Lemma f_right_congruent: right_congruent f.
+    Lemma f_M_right_congruent: right_congruent f_M.
     Proof.
       move => u v a H.
-      rewrite -2!cats1 /f /= 2!dfa_run'_cat.
-      by rewrite 2!last_cat -/(f u) -/(f v) H.
+      rewrite -2!cats1 /f_M /= 2!dfa_run'_cat.
+      by rewrite 2!last_cat -/(f_M u) -/(f_M v) H.
     Qed.
 
-    Lemma f_refining: refining (dfa_lang A') f.
+    Lemma f_M_refines: refines (dfa_lang A_c) f_M.
     Proof.
       move => u v H.
       rewrite -!dfa_run_accept.
-      by rewrite -/(f v) -/(f u) -H.
+      by rewrite -/(f_M v) -/(f_M u) -H.
     Qed.
 
-    Definition dfa_to_myhill : Myhill_Rel (dfa_lang A') :=
+    Definition dfa_to_myhill' : Myhill_Rel (dfa_lang A_c) :=
       {|
         myhill_func := f_fin;
-        myhill_congruent := f_right_congruent;
-        myhill_refining := f_refining
+        myhill_congruent := f_M_right_congruent;
+        myhill_refines := f_M_refines
       |}.
 
-    Definition dfa_to_nerode' : Nerode_Rel (dfa_lang A') :=
-      weak_nerode_to_nerode (myhill_to_weak_nerode dfa_to_myhill).
-
-    Lemma nerode_lang_eq L1 L2: L1 =i L2 -> Nerode_Rel L1 -> Nerode_Rel L2.
+    Lemma myhill_lang_eq L1 L2: L1 =i L2 -> Myhill_Rel L1 -> Myhill_Rel L2.
     Proof.
-      move => H [f H1]. econstructor.
-      move => u v. split.
-        move => H2 w. rewrite -!H. eapply H1.
-        by eassumption.
-      move => H2. apply H1 => w. rewrite !H.
-      exact: H2.
+      move => H [f H1]. econstructor;
+        first by eauto.
+      move => u v. rewrite -H. eauto.
     Qed.
 
-    Definition dfa_to_nerode : Nerode_Rel (dfa_lang A) :=
-      nerode_lang_eq (dfa_connected_correct A) dfa_to_nerode'.
+    Definition dfa_to_myhill : Myhill_Rel (dfa_lang A) :=
+      myhill_lang_eq (dfa_connected_correct A) dfa_to_myhill'.
 
-  End DFA_To_Nerode.
+  End DFA_To_Myhill.
+  
+  Section Myhill_Weak_Nerode.
+
+    Variable L: language char.
+    Variable f: Myhill_Rel L.
+
+    Lemma myhill_suffix: imply_suffix L f.
+    Proof.
+      move => u v Huv w.
+      elim: w u v Huv => [|a w IHw] u v Huv.
+        rewrite 2!cats0.
+        exact: f.(myhill_refines).
+      rewrite -cat1s 2!catA 2!cats1.
+      apply: IHw.
+      exact: f.(myhill_congruent).
+    Qed.
+
+    Definition myhill_to_weak_nerode: Weak_Nerode_Rel L :=
+      {|
+        weak_nerode_func := f;
+        weak_nerode_imply := myhill_suffix
+      |}.
+    
+  End Myhill_Weak_Nerode.
+
+  Section Nerode_To_DFA.
+    Variable L: language char.
+    Variable f: Nerode_Rel L.
+
+    Definition state : finType := f.(fin_type).
+
+    Definition s0 : state := f [::].
+
+    Definition fin: pred state :=
+      [pred x | cr f x \in L ].
+    
+    Definition step x (a: char) :=
+      f (rcons (cr f x) a).
+
+    Definition nerode_to_dfa := {|dfa_s := s0; dfa_fin := fin; dfa_step := step |}.
+    
+    Lemma nerode_to_dfa_run w: last s0 (dfa_run' nerode_to_dfa s0 w) = f w.
+    Proof.
+      move: w.
+      apply: last_ind => [|w a IHw] //.
+      rewrite -{1}cats1 dfa_run'_cat last_cat IHw /=.
+      rewrite /step.
+      exact: cr_rcons.
+    Qed.
+      
+    Lemma nerode_to_dfa_correct: L =i dfa_lang nerode_to_dfa.
+    Proof.
+      move => w.
+      rewrite /dfa_lang /= -dfa_run_accept nerode_to_dfa_run in_simpl /=.
+      by rewrite (cr_mem_L f w).
+    Qed.
+      
+  End Nerode_To_DFA.
 
 End MyhillNerode.
