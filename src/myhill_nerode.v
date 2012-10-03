@@ -499,24 +499,18 @@ Section MyhillNerode.
     Variable L: language char.
     Variable f: Nerode_Rel L.
 
-    Definition state : finType := f.(fin_type).
-
-    Definition s0 : state := f [::].
-
-    Definition fin: pred state :=
-      [pred x | cr f x \in L ].
+    Definition nerode_to_dfa :=
+      {|
+        dfa_s := f [::];
+        dfa_fin := [pred x | cr f x \in L ];
+        dfa_step := [fun x a => f (rcons (cr f x) a)]
+      |}.
     
-    Definition step x (a: char) :=
-      f (rcons (cr f x) a).
-
-    Definition nerode_to_dfa := {|dfa_s := s0; dfa_fin := fin; dfa_step := step |}.
-    
-    Lemma nerode_to_dfa_run w: last s0 (dfa_run' nerode_to_dfa s0 w) = f w.
+    Lemma nerode_to_dfa_run w: last (f[::]) (dfa_run' nerode_to_dfa (f [::]) w) = f w.
     Proof.
       move: w.
       apply: last_ind => [|w a IHw] //.
       rewrite -{1}cats1 dfa_run'_cat last_cat IHw /=.
-      rewrite /step.
       exact: cr_rcons.
     Qed.
       
