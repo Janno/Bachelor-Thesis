@@ -7,8 +7,6 @@ Unset Strict Implicit.
 Import Prenex Implicits.
 
 
-(* http://krchowdhary.com/toc/dfa-to-reg-exp.pdf *)
-
 (* Size induction. We need this for induction over split lists *)
 Lemma size_induction (X : Type) (f : X -> nat) (p: X ->Prop) :
 ( forall x, ( forall y, f y < f x -> p y) -> p x) -> forall x, p x.
@@ -33,6 +31,32 @@ Proof.
     move => [/eqP ->|] //.
   move => <-. by rewrite setU11.
 Qed.      
+
+Lemma plusP {char} r s (w: word char):
+  reflect (w \in r \/ w \in s)
+          (w \in plus r s).
+Proof. rewrite !inE. exact: orP. Qed.
+
+Lemma set_pick_size {F: finType} (X: {set F}) z: [pick z in X] = Some z -> #|X :\ z| < #|X|.
+Proof.
+  case: (pickP _) => // x [] H [] <-.
+  by rewrite (cardsD1 x X) H addnC addn1.
+Qed.
+    
+
+Lemma setU1_predI {F: finType} (X: {set F}) z: (z \notin X) -> (mem X) =1 predI (mem (z |: X)) (predC (pred1 z)).
+Proof.
+  move => H x.
+  rewrite /= in_setU1.
+  rewrite andbC andb_orr andNb /=.
+  apply/idP/idP.
+    move => H1.
+    apply/andP. split => //.
+    apply/negP. move/eqP => H2.
+    subst. by rewrite H1 in H.
+  by move/andP => [].
+Qed.
+    
 
 Section AllButLastDef.
   
@@ -122,7 +146,16 @@ Section AllButLast.
     move => H1 H2. move: (IHxs H1 H2).
     by apply: allbutlast_cons.
   Qed.
-
+  
+  Lemma allbutlast_cat xs ys: allbutlast p (xs++ys) ->  allbutlast p xs /\ allbutlast p ys.
+  Proof.
+      elim: xs ys => [|x xs IHxs] ys //.
+      rewrite -cat1s -catA cat1s.
+      move/allbutlast_cons'' => /orP [].
+        move/nilP. by case: xs IHxs; case ys => //.
+      move/andP => []. by firstorder using allbutlast_cons.
+  Qed.
+        
   (* with p (last xs) we can extend allbutlast to all. *)
   Lemma allbutlast_last x xs: allbutlast p xs -> p (last x xs) -> all p xs.
   Proof.
@@ -190,36 +223,6 @@ Section EqTypes.
     by rewrite mem_rcons in_cons IHxs orbT.
   Qed.
 
-  Lemma belast_index (x: X) xs: x \in belast xs -> index x (belast xs) = index x xs.
-  Proof.
-    move: xs. apply: last_ind => [|xs y IHxs] //.
-    rewrite belast_rcons.
-    rewrite -cats1 index_cat.
-    by move ->.
-  Qed.
-  
-  Lemma allbutlast_index xs (x: X): allbutlast (predC (pred1 x)) (take (index x xs).+1 xs).
-  Proof.
-    move: xs.
-    apply: last_ind => [|xs y IHxs] //.
-    case H1: (x \in xs).
-      rewrite -cats1 index_cat H1.
-      rewrite -index_mem in H1.
-      by rewrite takel_cat.
-    rewrite -{2}cats1 take_cat.
-    case H2: ((index x (rcons xs y)).+1 < size xs).
-      move: (H1). rewrite -index_mem => /negbT. rewrite -ltnNge => H1'.
-      by rewrite -cats1 index_cat H1 /= -{2}(addn0 (size xs)) -addnS ltn_add2l ltn0 in H2.
-    move/negbT: H2. rewrite -ltnNge => H2.
-    move: (H1). rewrite -index_mem => /negbT. rewrite -ltnNge => H1'.
-    apply: all_allbutlast_cat.
-      apply/allP => z H3 /=. apply/negP => /eqP H4.
-      rewrite H4 in H3.
-      by rewrite H3 in H1.
-    simpl.
-    by destruct ((index x (rcons xs y)).+1 - size xs).
-  Qed.    
-       
 End EqTypes.
   
 Section TransitiveClosure.
@@ -273,9 +276,18 @@ Section TransitiveClosure.
     by eauto.
   Qed.
           
-  Definition dfa_step_any :=
-    [ fun x y => enum ( [pred a | dfa_step A x a == y] ) ].
+  Definition dfa_step_any x y := enum ( [pred a | dfa_step A x a == y] ).
 
+  Lemma dfa_step_anyP x y a:
+    reflect (dfa_step A x a = y)
+            (a \in dfa_step_any x y).
+  Proof.
+    rewrite /dfa_step_any.
+    apply: iffP. apply idP.
+      by rewrite mem_enum !inE => /eqP.
+    by rewrite mem_enum !inE => ->.
+  Qed.
+    
   
   Definition R0 :=
     [ fun x y => 
@@ -286,46 +298,35 @@ Section TransitiveClosure.
     reflect (w = [::] /\ x=y \/ exists2 a, w = [::a] & dfa_step A x a = y)
             (w \in R0 x y). 
   Proof.
-    apply/introP.
+    apply/iffP. apply idP.
       rewrite /=. case H: (x == y).
-        rewrite -topredE /= /plus /= => /orP [].
+        rewrite -topredE /=. move/plusP => [].
           move/mem_nPlus => [r] /mapP [a].
-          rewrite /dfa_step_any /= mem_enum in_simpl /= => /eqP <- ->.
-          rewrite in_simpl /= => /eqP ->.
+          move/dfa_step_anyP => <- -> /eqP.
           by eauto.
         rewrite in_simpl /= => /eqP.
         move/eqP: H.
         by eauto.
       move/mem_nPlus => [r] /mapP [a].
-      rewrite /dfa_step_any /= mem_enum in_simpl /= => /eqP <- ->.
-      rewrite in_simpl /= => /eqP ->.
+      move/dfa_step_anyP => <- -> /eqP.
       by eauto.
-    move => H [[Hw Hxy]|[a Hw Hxay]].
+    move => [[Hw Hxy]|[a Hw Hxay]].
       subst.
-      move: H => /=. rewrite eq_refl -topredE /= /plus /=.
-      apply: negP. apply/negPn.
-      by rewrite in_simpl orbT.
-    apply/negP.
-      eexact H.
+      rewrite /R0 /= eq_refl -topredE /=.
+      apply/plusP. by eauto.
     rewrite /R0 /=.
     case: (x==y).
-      rewrite -topredE /= /plus /=. apply/orP. left.
+      rewrite -topredE /=. apply/plusP. left. 
       apply/mem_nPlus.
       exists (Atom a). apply/mapP. exists a => //.
-        by rewrite /dfa_step_any /= mem_enum in_simpl /= Hxay eq_refl.
-      by rewrite in_simpl Hw /= eq_refl.
+        by apply/dfa_step_anyP.
+      by rewrite !inE Hw /= eq_refl.
     apply/mem_nPlus.
       exists (Atom a). apply/mapP. exists a => //.
-        by rewrite /dfa_step_any /= mem_enum in_simpl /= Hxay eq_refl.
-      by rewrite in_simpl Hw /= eq_refl.
+        by apply/dfa_step_anyP.
+      by rewrite !inE Hw.
   Qed.
 
-  Lemma set_pick_size (X: {set A}) z: [pick z in X] = Some z -> #|X :\ z| < #|X|.
-  Proof.
-    case: (pickP _) => // x [] H [] <-.
-    by rewrite (cardsD1 x X) H addnC addn1.
-  Qed.
-    
   Function R (X: {set A}) (x y: A) {measure [fun X => #|X|] X} : regular_expression char :=
     match [pick z in X] with
     | None =>  R0 x y        
@@ -343,14 +344,23 @@ Section TransitiveClosure.
   Notation "'R^' X" := (R X) (at level 8).
   
   Definition L (X: {set A}) (x y: A) :=
-      [pred w |
-       (last x (dfa_run' A x w) == y)
-         && allbutlast (mem X) (dfa_run' A x w) 
+      [pred w | (last x (dfa_run' A x w) == y)
+                && allbutlast (mem X) (dfa_run' A x w) 
       ].
 
   Notation "'L^' X" := (L X) (at level 8).
        
   Section L.
+    
+    Lemma LP (X: {set A}) (x y: A) w:
+      reflect (last x (dfa_run' A x w) = y /\ allbutlast (mem X) (dfa_run' A x w))
+              (w \in L^X x y).
+    Proof.
+      apply: iffP. apply idP.
+        rewrite inE. by move/andP => [] /eqP.
+      rewrite inE. by move => [] /eqP -> ->.
+    Qed.
+    
     Lemma L_monotone (X: {set A}) (x y z: A): {subset L^X x y <= L^(z |: X) x y}.
     Proof.
       move => w.
@@ -368,82 +378,67 @@ Section TransitiveClosure.
       by move/eqP.
     Qed.
 
-    Lemma setU1_predI (X: {set A}) z: (z \notin X) -> (mem X) =1 predI (mem (z |: X)) (predC (pred1 z)).
-    Proof.
-      move => H x.
-      rewrite /= in_setU1.
-      rewrite andbC andb_orr andNb /=.
-      apply/idP/idP.
-        move => H1.
-        apply/andP. split => //.
-        apply/negP. move/eqP => H2.
-        subst. by rewrite H1 in H.
-      by move/andP => [].
-    Qed.
-
     Lemma setC1_pred1 (T: finType) (z: T): mem [set~ z] =1 predC (pred1 z).
     Proof.  move => x. by rewrite /= in_setC1.   Qed.
       
+    Lemma run_split x z a w:
+      z \in belast (dfa_run' A x (a::w)) ->
+      exists w1, exists w2,
+        a::w = w1++w2 /\
+        size w1 > 0 /\
+        z \notin belast (dfa_run' A x w1) /\
+        last x (dfa_run' A x w1) = z.
+    Proof.
+      elim: w a x z => [|b w IHw] a x z.
+        move/mem_belast.
+        rewrite !inE => /eqP ->.
+        exists [::a]. by exists [::].
+      rewrite /= in_cons.
+      case: (eqP) => /=.
+        exists [::a]. by exists (b::w).
+      move/eqP => H0 H1.
+      move/IHw: (H1) => [w1 [w2 [H2 H3]]].
+      exists (a::w1). exists w2.
+      rewrite cat_cons H2. firstorder.
+      rewrite /=.
+      elim: w1 H2 H H3 H4 => [|c w1 IHw1] H2 H H3 H4 //=.
+      rewrite in_cons. apply/norP => //.
+    Qed.
     
     Lemma L_split X x y z a w:
       (a::w) \in L^(z |: X) x y ->
       (a::w) \in L^X x y \/
       exists w1, exists w2,
         a::w = w1 ++ w2 /\
-        w1 != [::] /\
+        size w1 > 0 /\
         w1 \in L^X x z /\
         w2 \in L^(z |: X) z y.
     Proof.
-      move => H0.
+      move/LP => [H0 H1].
       case HX: (z \in X).
-        move/set1UrP: HX H0 => ->.
-        by left.
-      move/eqP in HX.
-      move/andP: H0 => [] H0 H1.
-      move: H0 H1.
-      pose w' := a::w.
-      pose xs := dfa_run' A x w'.
-      rewrite -/xs=> H0 H1.
-      case Hz: (z \in belast xs).
-        right.
-        have Hz2: z \in xs by (apply: mem_belast; by []).
-        move: (Hz) (Hz2).
-        pose i := index z xs.
-        rewrite -index_mem => Hi. rewrite -index_mem -/i => Hi2.
-        have: (i = index z (belast xs)) by (rewrite belast_index; by []).
-        (* we split after the first appearance of z, i.e. i+1. *)
-        exists (take i.+1 w'). exists (drop i.+1 w').
-        have Hw: (take i.+1 w' ++ drop i.+1 w' = w') by rewrite cat_take_drop.
-        have Hw1: (take i.+1 w' \in L^X x z).
-          rewrite  in_simpl -dfa_run'_take -/xs.
-          rewrite -nth_last nth_take size_takel //.
-          rewrite  nth_index // eq_refl andTb.
-          move/eqP/negbT: HX => HX.
-          rewrite (eq_allbutlast _ (setU1_predI HX)).
-          rewrite allbutlast_predI.
-          apply/andP. split.
-            exact: allbutlast_take.
-          exact: allbutlast_index.
-        firstorder.
-        rewrite -topredE /=. 
-        move/andP: (Hw1) => [/eqP Hw1l _].
-        rewrite -Hw1l -dfa_run'_drop -last_cat dfa_run'_drop.
-        rewrite -dfa_run'_cat Hw -/xs H0 andTb.
-        rewrite {1}Hw1l -dfa_run'_drop.
-        exact: allbutlast_drop.
-
+        move/set1UrP: HX H1 => ->.
+        left. by apply/LP.
+      case Hz: (z \in belast (dfa_run' A x (a::w))).
+        move/run_split: Hz => [w1 [w2 [H2 [H3 [H4 H5]]]]].
+        right. exists w1. exists w2. firstorder.
+          apply/LP. firstorder.
+          move/negbT/setU1_predI/eq_allbutlast: (HX) => ->.
+          rewrite allbutlast_predI /=. apply/andP. split.
+            move: H1. rewrite H2 dfa_run'_cat.
+            by move/allbutlast_cat => [].
+          move: H4. by rewrite -has_pred1 -all_predC.
+        apply/LP. firstorder.
+          move: H0. rewrite H2.
+          by rewrite dfa_run'_cat last_cat H5.
+        move: H1. rewrite H2 dfa_run'_cat.
+        move/allbutlast_cat => [].
+        by rewrite H5.
       left.
-      rewrite /= in_simpl H0 andTb.
-      have H2: allbutlast (predI (mem (z |: X)) (predC (pred1 z))) xs.
-        rewrite allbutlast_predI H1 andTb.
-        move/negbT: Hz.
-        by rewrite -has_pred1 -all_predC.
-      erewrite eq_allbutlast.
-      eexact H2.
-      apply setU1_predI.
-      by move/eqP/negbT: HX.
+      apply/LP. firstorder.
+      move/negbT/setU1_predI/eq_allbutlast: (HX) => ->.
+      rewrite allbutlast_predI /=. apply/andP. firstorder.
+      move/negbT: Hz. by rewrite -has_pred1 -all_predC.
     Qed.
-
 
     Lemma L_cat (X: {set A}) x y z w1 w2:
       z \in X ->
@@ -460,7 +455,6 @@ Section TransitiveClosure.
       rewrite inE.
       exact H0.
     Qed.
-    
 
     (* w1 \in L^k i k -> w2 \in L^k.+1 k j -> w1++w2 \in L^k.+1 i j *)
     Lemma L_catL X x y z w1 w2:
@@ -485,6 +479,20 @@ Section TransitiveClosure.
       exact: setU11.
     Qed.
             
+    Lemma  L_flatten (X: {set A}) z vv: z \in X ->  all [predD L^(X :\ z) z z & eps (symbol:=char)] vv ->
+      flatten vv \in L^X z z.
+    Proof.
+      move => H Hvv.
+        elim: vv Hvv => [|v vv IHvv] Hvv.
+          by apply/L_nil.
+        rewrite -(setD1K H).
+        apply: L_catL.
+          by move: Hvv => /= /andP [] /andP [].
+        rewrite setD1K => //.
+        apply: IHvv => //.
+        by move: Hvv => /= /andP [] /andP [].
+    Qed.
+    
     Lemma L_rec (X: {set A}) x y z:
       z \in X ->
       L^X x y =i plus (conc (L^(X :\ z) x z) (conc (star (L^(X :\ z) z z)) (L^(X :\ z) z y))) (L^(X :\ z) x y).
@@ -494,26 +502,20 @@ Section TransitiveClosure.
         move: w X z H x y .
         apply: (size_induction (f:=size)) => w IHw X z H x y .
         destruct w.
-          move => Hw.
-          rewrite -topredE /plus /=. apply/orP.
-          by right. 
+          move => Hw. apply/plusP. by right.
         rewrite -{1}(setD1K H).
         move/L_split.
         move Heqn: (s::w) => w'.
-        move => [|[w1 [w2 [Hw' [/eqP H1 [Hw1 Hw2]]]]]].
-          rewrite -topredE /plus /= => Hw. apply/orP.
-          by right.
+        move => [|[w1 [w2 [Hw' [H1 [Hw1 Hw2]]]]]].
+          move/LP => [H1 H2]. apply/plusP. right. by apply/LP.
         have Hsize: (size w2 < size w').
-          rewrite Hw' size_cat -{1}(add0n (size w2)) ltn_add2r lt0n => //.
-          by apply/nilP.
+          by rewrite Hw' size_cat -{1}(add0n (size w2)) ltn_add2r.
         rewrite -{1}Heqn in Hsize.
         rewrite setD1K in Hw2 => //.
-        move: (IHw w2 Hsize X z H z y Hw2) => H4.
-        rewrite -topredE /plus. apply/orP. left.
+        move: (IHw w2 Hsize X z H z y Hw2) => H4. apply/plusP. left.
         apply/concP. exists w1 => //. exists w2 => //.
         apply/concP.
-          move: H4.
-          rewrite -topredE /plus => /orP [].
+          move/plusP: H4 => [].
           move/concP => [w3 Hw3] [w4].
           move/concP => [w5 Hw5] [w6 Hw6].
           move => Hw4 Hw2'.
@@ -532,29 +534,19 @@ Section TransitiveClosure.
         move => Hw2'.
         exists [::] => //.
         by exists w2 => //.
-                          
-      rewrite /plus => /orP [].
+
+      move/plusP => [].
         move/concP => [w1 Hw1] [w2].
         move/concP => [w3 /starP [vv Hvv Hvvf]] [w4 Hw4] Hw2' Hw.
         subst.
         rewrite catA -(setD1K H).
-        have H0: (flatten vv \in L^(X) z z).
-          elim: vv Hvv => [|v vv IHvv] Hvv.
-            by apply/L_nil.
-          rewrite -(setD1K H).
-          apply: L_catL.
-            by move: Hvv => /= /andP [] /andP [].
-          rewrite setD1K => //.
-          apply: IHvv => //.
-          by move: Hvv => /= /andP [] /andP [].
-  
-        apply L_catR => //.
-        apply L_catL => //.
+ 
+        apply: L_catR => //.
+        apply: L_catL => //.
         rewrite setD1K => //.
-  
+        exact: L_flatten.
       rewrite -{2}(setD1K H).
-      rewrite simpl_predE.
-      apply: L_monotone.
+      exact: L_monotone.
     Qed.              
   End L.
 
@@ -592,18 +584,15 @@ Section TransitiveClosure.
     elim: n X x y => [|n IHn] X x y.
       move/cards0_eq => ->.
       rewrite R_equation.
-      case: pickP => [z|Hset0].
-        by rewrite in_set0.
-      move => w.
-      apply/idP/mem_R0.
-        move/andP => [] H.
+      case: pickP => [z|Hset0 w];
+        first by rewrite in_set0.
+      apply/LP/mem_R0.
+        move => [] H.
         move/(allbutlast_pred0 Hset0).
         destruct w; try destruct w => //;
-        move/eqP: H => /=;
         by eauto.
-      move => [[-> ->]|[a [-> <-]]].
-        by apply/L_nil.
-      by rewrite in_simpl /= eq_refl.
+      move => [[-> ->]|[a [-> <-]]]; last by done.
+      apply/LP. by apply/L_nil.
     move => HX w.
     rewrite R_equation.
     case: pickP => [z Hz|Hset0].
