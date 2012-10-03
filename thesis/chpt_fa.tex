@@ -19,8 +19,9 @@ A finite automaton consists of
         and a state-transition relation $\delta$. 
 \end{enumerate}
 
-We define a \textbf{run} of a word $w \in \Sigma^*$ on an automaton $A = (Q, s, F, \delta)$ as any sequence of states $\sigma$ such that 
-$\forall \, 0 <= i < \vert\sigma\vert-2. \, (\sigma_i, w_i, \sigma_{i-1}) \in \delta$.
+We define a \textbf{run} of a word $w \in \Sigma^*$ on an automaton $A = (Q, s, F, \delta)$ as a sequence of states $\sigma$ such that 
+for every two consequetive positions $i,i+1$ in $\sigma$ there is 
+$(\sigma_i, w_i, \sigma_{i+1}) \in \delta$.
 A word $w$ is \textbf{accepted} by $A$ in state $x$ if and only if there exists a run $\sigma$ of $w$ on $A$ such that $\sigma_0 = x \, \wedge \, \sigma_{\vert\sigma\vert-1} \in F$.
 The resulting set of accepted words is denoted by $\acc{x}{A}$.
 The \textbf{language} of $A$ is exactly $\acc{s}{A}$ and is denoted $\lang{A}$. 
