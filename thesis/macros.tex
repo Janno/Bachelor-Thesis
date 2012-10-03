@@ -14,10 +14,25 @@
     \code{#1}{#2}{#3}
 }
 
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{lemma}{Lemma}[section]
-\newtheorem{definition}{Definition}[section]
-\newtheorem{corollary}{Corollary}[section]
+
+\newcounter{dummy} \numberwithin{dummy}{section}
+
+
+\newtheorem{theorem}[dummy]{Theorem}
+\newtheorem{lemma}[dummy]{Lemma}
+\newtheorem{definition}[dummy]{Definition}
+\newtheorem{corollary}[dummy]{Corollary}
+
+\newcommand{\atoz}[0]{a b c d e f g h i j k l m n o p q r s t u v w x y z}
+\newcommand{\AtoZ}[0]{A B C D E F G H I J K L M N O P Q R S T U V W X Y Z}
+
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+    \node[shape=circle,draw,inner sep=2pt] (char) {\vphantom{\atoz\AtoZ}#1};}}
+
+\newcommand*\tcircled[1]{\tikz[baseline=(char.base)]{
+    \node[shape=circle,draw,inner sep=0.5pt] (char) {\vphantom{\atoz\AtoZ}#1};}}
+
+
 
 \newcommand{\dotcup}{\ensuremath{\mathaccent\cdot\cup}}
 

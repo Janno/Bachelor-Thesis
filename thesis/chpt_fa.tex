@@ -648,110 +648,96 @@ Based on our procedure to construct an equivalent automaton from a regular expre
 
 
 \subsection{Finite Automata to Regular Expressions}
-\paragraph{}
 We prove that there is an equivalent standard regular expression for every finite automaton.
-
+There are three ways to prove this. 
 
 \paragraph{}
-Since we are given an automaton it is not obvious how to partition our proof obligations into smaller parts.
-We use Kleene's original proof, the transitive closure method. 
+The first one is a method called ``state removal'' \cite{SignalFlow} (reformulated in \cite{springerlink:10.1007/978-3-540-30500-2}),
+which works by sequentially building up regular expressions on the edges between states. 
+In every step, one state is removed and it's adjacent states' edges are updated to incorporate the missing state into the regular expression.
+Finally, only two states remain. The resulting edges can be combined to form a regular expression that recognizes the language of the initial automaton.
+
+\paragraph{}
+The second method is known as ``Brzozowski's method'' \cite{DBLP:journals/jacm/Brzozowski64} and builds upon Brzowoski derivates of regular expressions.
+This method is algebraic in nature and arrivates at a regular expression by solving a system of linear equations on regular expressions. 
+Every state is assigned an unkown regular expression. 
+The intuition of these unkown regular expressions is that they recognize the words accepted in their associated state. 
+The system is solved by substituition and Arden's lemma \cite{DBLP:conf/focs/Arden61}.
+The regular expressions associated with the starting state recognizes the language of the automaton.
+
+\paragraph{}
+The third method, which we chose for our development, is due to Kleene \cite{KleeneNets}.
+It is known as the ``transitive closure method''.
 This method recursively constructs a regular expression that is equivalent to the given automaton.
-Given a DFA $A$, we first assign some ordering to its states. We then define $R^k_{i,j}$ such that 
-$\lang{R^k_{i,j}}$ is the set of all words that have a run on $A$ starting in state $i$ that ends in state $j$ without ever leaving a state smaller than $k$. 
-The base case $R^{0}_{i,j}$ is the set of all singleton words that are edges between state $i$ and $j$, and $\varepsilon$ if $i=j$. 
-Given $R^k_{i,j}$ we can easily define $R^{k+1}_{i,j}$ based on the observation that only one new state has to be considered:
-\todo{Insert complete formal definition}
-\begin{equation*}                    
-    R^{k+1}_{i,j} = R^{k}_{i,k} \cdot (R^{k}_{k,k})^* \cdot R^{k}_{k,j} + R^{k}_{i,j}.                    
-\end{equation*}
+For the remainder of the chapter, we assume that we are given a DFA $A=(Q,s,F,\delta)$.
+
 \paragraph{}
-We make use of \ssreflect's ordinals to get an ordering on states. 
-We chose to employ ordinals for $i$ and $j$, but not for $k$. 
-This simplifies the inductive definitions on $k$. 
-It does, however, lead to explicit conversions when $k$ is used in place of $i$ or $j$.
-In fact, $i$ and $j$ are states in our \coq\ implementation. 
-We only rely on ordinals for comparison to $k$.
-\todo{Add implementation of $R$}
+The idea of the ``transitive closure method'' is that we can give a regular expression to describe the path between any two states $x$ and $y$.
+This regular expression accepts all words whose run $\sigma$ on $A$ starting in $x$ ends in $y$.
+In fact, we can even give such a regular expression if we limit the set of paths through which the run is allowed to pass. 
+We will call this set $X$.
+Passing through, here, means that the restriction applies only to states that are traversed, i.e. not to the beginning or end of the run ($x$ and $y$ in this case).
+
 \paragraph{}
-Furthermore, we define $L^k_{i,j} \subseteq \lang{A}$ in terms of runs on the automaton. 
-The relation of $L^k_{i,j}$ to $\lang{A}$ can be proven very easily.
-We will also prove it equivalent to $R^k_{i,j}$.
-This allows us to connect $R^k_{i,j}$ to $\lang{A}$.
-\code{tc_allbutlast}{}{transitive_closure_allbutlast}
-\vspace{-0.3cm} 
-\code{tc_L}{}{transitive_closure_L}
+If we take $X$ to be the empty set, we only consider two types of runs.
+First, if $x \neq y$, every transition from $x$ to $y$ constitutes one (singelton) word. 
+Conversely, if there is a word which does not pass through a state and whose run on $A$ starts in $x$ and ends in $y$, 
+it can only be a singleton word consisting of one of the transitions from $x$ to $y$.
+Therefore, the corresponding regular expression is the disjunction of all transitions from $x$ to $y$. 
+These transitions constitutes all possible words that lead from $x$ to $y$ without passing through any state.
 
-\begin{theorem} We can express $\lang{A}$ in terms of $L$. $L$ is equivalent to $R$.
-    \label{LR}
-    \begin{equation*}                          
-        \lang{A} = \bigcup\limits_{f \in F} L^{|Q|}_{s, f} = \lang{\sum\limits_{f \in F} R^{|Q|}_{s, f}}.                            
-    \end{equation*}
-\end{theorem}
+Otherweise, if $x = y$, we also have to consider the empty word, since its run on $A$ starts in $x$ and ends in $y$.
+Thus, the corresponding regular expression is the disjunction of all transitions from $x$ to $y$ \textbf{and} $\varepsilon$.
 
-\begin{proof}
-    By definition, every $w \in \lang{A}$ has a run that ends in some $f \in F$. 
-    Then, by definition, $w \in  L^{|Q|}_{s, f}$. 
+\paragraph{}
+In the case of a non-empty $X$, we make the following observation. 
+If we pick an element $z \in X$, then any run $\sigma$ from $x$ to $y$ either passes through $z$, or does not pass through $z$.
+If it does, we can split it into three parts.
+\begin{enumerate}[label=(\roman*)]
+    \item  \label{R_xz}
+        The first part contains the prefix of $\sigma$ which contains all states up to the first occurrence of $z$ that is not the starting state.
+    \item  \label{R_zz}
+        The second part contains that part of the remainder of $\sigma$ which contains all further occurences of $z$, though not the last state if that is $z$.
+    \item  \label{R_zy}
+        The third part contains the remainder.
+\end{enumerate}
 
-    \paragraph{}
-    It remains to show that $\lang{R^k_{i,j}} = L^k_{i.j}$. 
-    This claim can be proven by induction over $k$. 
-    We begin with the inclusion of $\lang{R^k_{i,j}}$ in $L^k_{i,j}$. 
-    For $k=0$, we do a case distinction on $i==j$ and unfold $R$. 
-    The resulting three cases ($i==j \wedge w=\varepsilon$, $i==j \wedge |w|=1$, $i<>j \wedge |w|=1$) are easily closed. 
+Parts \ref{R_xz} and \ref{R_zy} can easily be expressed in terms of $X\backslash\{z\}$.
+Part \ref{R_zz} can be further decomposed into runs from $z$ to $z$ that do not pass through $z$.
+Thus, part \ref{R_zz} can also be expressed in terms of $X\backslash\{z\}$ with the help of the $\ ^*$ operator.
 
-    The inductive step has two cases: A triple concatenation and a simple recursion. 
-    The second case is solved by the inductive hypothesis.
-    In the firs case, we split up the concatenation such that
+If $\sigma$ does not pass through $z$, it is covered by the regular expression for pathes from $x$ to $y$ restricted to $X\backslash\{z\}$.
+
+
+\begin{definition}
+    \label{R}
+    Let $X \subseteq Q$. Let $x, y \in Q$.
+    We define R recursively on \todo{correct?}$|X|$:
     \begin{equation*}
-        w = w_1 \cdot w_2 \cdot w_3 
-        \wedge w_1 \in \lang{R^k_{i,k}} 
-        \wedge w_2 \in \lang{(R^k_{k,k})^*} 
-        \wedge w_3 \in \lang{R^k_{k,j}}.                               
+        R^X_{x,y} := \left\{  
+                \begin{array}{ll}
+                    \vphantom{ \sum\limits_{ \substack{ a \in \Sigma\\ (x,a,y) \in \delta \\ b \in \Sigma } } }
+                    \sum\limits_{
+                        \substack{
+                            a \in \Sigma\\
+                            (x,a,y) \in \delta
+                        }
+                    } a 
+                    & \mbox{if } X = \emptyset \wedge x != y; \\
+                    \vphantom{ \sum\limits_{ \substack{ a \in \Sigma\\ (x,a,y) \in \delta \\ b \in \Sigma } } }
+                    \sum\limits_{
+                        \substack{
+                            a \in \Sigma\\
+                            (x,a,y) \in \delta
+                        }
+                    } a + \varepsilon 
+                    & \mbox{if } X = \emptyset \wedge x = y; \\
+                     R^{X\backslash\{z\}}_{x,z} (R^{X\backslash\{z\}}_{z,z})^* R^{X\backslash\{z\}}_{z,y} + R^{X\backslash\{z\}}_{x,y}.
+                     & \mbox{if } \exists z \in X.
+                \end{array}
+            \right.
     \end{equation*}
-    \paragraph{}
-    The induction hypothesis is applied to $w_1$ and $w_3$ to get $w_1 \in L^k_{i,k}$ and $w_3 \in L^k_{k,j}$.
-    We use a lemma by Coquand and Siles that splits $w_2$ into a sequence of words from $\lang{R^k_{k,k}}$ to which we can apply the induction hypothesis. 
-    Two concatenation lemmas for $L$ are used to merge the sequence of words proven to be in $L^k_{k,k}$,
-    $w_1$ and $w_3$. This shows $\lang{R^k_{i,j}} \subseteq L^k_{i,j}$.
+\end{definition}
 
-    \paragraph{}
-    Next, we show the inclusion of $L^k_{i,j}$ in $\lang{R^k_{i,j}}$, again by induction over k. 
-    The base case is solved by case distinction on $i==j$. 
-    The inductive step requires a \textbf{splitting lemma} for $L$ which shows that every non-empty word in $L^{k+1}_{i,j}$ is either in $L^k_{i,j}$ or has a non-empty prefix in $L^k_{i,k}$ and a corresponding suffix in $L^{k+1}_{k,j}$.
-    The 
-    In the first case, we can apply the induction hypothesis. 
-    In the second case, we use size induction on the word, apply the original induction hypothesis to the prefix and the size induction hypothesis to the suffix. 
-    We use two concatenation lemmas for $R$ to merge the sub-expression. 
-    This finishes the proof.
-\end{proof}
-
-\paragraph{}
-Formalizing theorem \ref{LR} requires infrastructure to deal with $allbutlast$. 
-Once this is in place, we can formalize the concatenation lemmas for $R$ and $L$.
-These are required later to connect sub-results. 
-
-\code{tc_RcatL}{}{transitive_closure_R_catL_head}
-\code{tc_LcatL}{}{transitive_closure_L_catL_head}
-\code{tc_LcatR}{}{transitive_closure_L_catL_head}
-
-\paragraph{}
-We also need the splitting lemma mentioned earlier.
-This is quite intricate. We could split right after the first character and thereby simplify the lemma. 
-However, the current form has the advantage of requiring simple concatenation lemmas.
-
-\code{tc_split}{}{transitive_closure_L_split_head}
-
-\paragraph{}
-These lemmas suffice to show the claim of theorem \ref{LR}.
-\code{tc_RL*}{}{transitive_closure_R_L_star_head}
-\code{tc_RL}{}{transitive_closure_R_L_head}
-\code{tc_LR1}{}{transitive_closure_L_R_1_head}
-\code{tc_LR}{}{transitive_closure_L_R_head}
-\todo{Fix this mess}
-
-
-\paragraph{} 
-
-
-
-
+Based on the intuition given above, we try to express $\lang{A}$ by $R$.
+The goal of this chapter is to prove the following theorem. 
