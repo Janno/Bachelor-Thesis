@@ -652,13 +652,13 @@ We prove that there is an equivalent standard regular expression for every finit
 There are three ways to prove this. 
 
 \paragraph{}
-The first one is a method called ``state removal'' \cite{SignalFlow} (reformulated in \cite{springerlink:10.1007/978-3-540-30500-2}),
+The first one is a method called ``\textbf{state removal}'' \cite{SignalFlow} (reformulated in \cite{springerlink:10.1007/978-3-540-30500-2}),
 which works by sequentially building up regular expressions on the edges between states. 
 In every step, one state is removed and it's adjacent states' edges are updated to incorporate the missing state into the regular expression.
 Finally, only two states remain. The resulting edges can be combined to form a regular expression that recognizes the language of the initial automaton.
 
 \paragraph{}
-The second method is known as ``Brzozowski's method'' \cite{DBLP:journals/jacm/Brzozowski64} and builds upon Brzowoski derivates of regular expressions.
+The second method is known as ``\textbf{Brzozowski's method}'' \cite{DBLP:journals/jacm/Brzozowski64} and builds upon Brzowoski derivates of regular expressions.
 This method is algebraic in nature and arrivates at a regular expression by solving a system of linear equations on regular expressions. 
 Every state is assigned an unkown regular expression. 
 The intuition of these unkown regular expressions is that they recognize the words accepted in their associated state. 
@@ -667,16 +667,17 @@ The regular expressions associated with the starting state recognizes the langua
 
 \paragraph{}
 The third method, which we chose for our development, is due to Kleene \cite{KleeneNets}.
-It is known as the ``transitive closure method''.
+It is known as the ``\textbf{transitive closure method}''.
 This method recursively constructs a regular expression that is equivalent to the given automaton.
 For the remainder of the chapter, we assume that we are given a DFA $A=(Q,s,F,\delta)$.
 
 \paragraph{}
-The idea of the ``transitive closure method'' is that we can give a regular expression to describe the path between any two states $x$ and $y$.
+The idea of the transitive closure method is that we can give a regular expression to describe the path between any two states $x$ and $y$.
 This regular expression accepts all words whose run $\sigma$ on $A$ starting in $x$ ends in $y$.
 In fact, we can even give such a regular expression if we limit the set of paths through which the run is allowed to pass. 
 We will call this set $X$.
-Passing through, here, means that the restriction applies only to states that are traversed, i.e. not to the beginning or end of the run ($x$ and $y$ in this case).
+Passing through, here, means that the restriction applies only to states that are traversed, 
+i.e. not to the beginning or end of the run.
 
 \paragraph{}
 If we take $X$ to be the empty set, we only consider two types of runs.
@@ -739,5 +740,11 @@ If $\sigma$ does not pass through $z$, it is covered by the regular expression f
     \end{equation*}
 \end{definition}
 
-Based on the intuition given above, we try to express $\lang{A}$ by $R$.
+Based on the intuition given above, we try to express $\lang{A}$ by $R^Q$.
+Based on the observation that every accepted word has a run from $s$ to some state $f \in F$, 
+we only have to combine the corresponding regular expressions $R^Q_{sf}$ to form a regular expression for $\lang{A}$.
 The goal of this chapter is to prove the following theorem. 
+
+\begin{theorem}
+    \label{R_L}
+\end{theorem}
