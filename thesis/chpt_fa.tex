@@ -34,7 +34,7 @@ This is the case if and only if $\delta$ is not functional.
 \codeblock{nfa_accept}{}{automata_nfa_accept}
 \codeblock{nfa_lang}{}{automata_nfa_lang}
 
-\paragraph{}
+
 The acceptance criterion given here avoids the matter of runs.
 In many cases, this will help us with proofs by in induction on the accepted word.
 However, we will need runs in some of the proofs.
@@ -54,7 +54,7 @@ In this case, we write $\delta$ as a function in our \coq\ development.
 \codeblock{dfa_accept'}{}{automata_dfa_accept}
 \codeblock{dfa_lang}{}{automata_dfa_lang}
 
-\paragraph{}
+
 Again, we avoid runs in our formalization of the acceptance criterion in favor of a acceptance criterion that is easier to work with in proofs.
 In this case, however, we can give a function that computes the unique run of a word on $A$.
 This allows us to give an alternative acceptance criterion that is closer to the mathematical definition.
@@ -64,7 +64,7 @@ We also prove that both criteria are equivalent.
 \codeblock{dfa_run_accept}{}{automata_dfa_run_accept_head}
 
 
-%\paragraph{}
+%
 %We can give simpler formalizations of the acceptance on deterministic and non-deterministic automata.
 %These will allow us to hide runs and runs as much as possible and instead work with a simple, inductive, boolean predicate.
 
@@ -76,7 +76,7 @@ We also prove that both criteria are equivalent.
 \end{definition}
 
 \subsubsection{Equivalence between DFA and NFA}
-\paragraph{} 
+ 
 Deterministic and non-deterministic finite automata are equally expressive. 
 One direction is trivial since every DFA can be seen as a NFA. 
 We prove the other direction using the powerset construction. 
@@ -94,7 +94,7 @@ Given NFA $A$, we construct an equivalent DFA $A_{det}$ in the following way:
     A_{det} &:=&  (Q_{det}, s_{det}, F_{det}, \delta_{det}).
 \end{eqnarray*}
 
-\paragraph{}
+
 The formalization of $A_{det}$ is straight-forward. 
 We leave the set of states \lstinline!{set A}! implicit.
 
@@ -163,7 +163,7 @@ We leave the set of states \lstinline!{set A}! implicit.
     $\acc{s_{det}}{A_{det}} \subseteq \acc{s}{A}$, which proves the claim.
 \end{proof}
 
-\paragraph{}
+
 The formalization of this proof is straight-forward and follows the plan laid out above. 
 The corresponding Lemmas are:
 \code{powerset_complete}{}{automata_nfa_to_dfa_complete_head}
@@ -172,7 +172,7 @@ The corresponding Lemmas are:
 
 
 \section{Connected Components}
-\paragraph{} 
+ 
 Finite automata can have isolated subsets of states that are not reachable from the starting state. 
 These states can not contribute to the language of the automaton since there are no runs from the starting state to any of those unreachable states.
 It will later be useful to have automata that only contain reachable states. 
@@ -195,7 +195,7 @@ Therefore, we define a procedure to extract the connected component containing t
     \end{eqnarray*}
 \end{definition}
 
-\paragraph{}
+
 We make use of \ssreflect's $connect$ predicate to extract a sequence of all states reachable from $s$. 
 From this, we construct a finite type and use that as the new set of states. 
 These new states carry a proof of reachability. %(\lstinline{ssvalP}).
@@ -248,13 +248,13 @@ We also have to give a transition function that ensures transitions always end i
         %Unreachable states have no influence on the language of an automaton because there is no run from the starting state that contains such a state.
 \end{proof}
 
-\paragraph{}
+
 The formalization of lemma \ref{dfa_connected_correct'} and theorem \ref{dfa_connected_correct} is straight-forward.
 
 \code{automata_dfa_connected_correct'}{}{automata_dfa_connected_correct'_head}
 \codeblock{automata_dfa_connected_correct}{}{automata_dfa_connected_correct_head}
 
-\paragraph{}
+
 To make use of the fact that $A_c$ is fully connected, we will proof a characteristic property of $A_c$. 
 
 \begin{definition}
@@ -274,7 +274,7 @@ To make use of the fact that $A_c$ is fully connected, we will proof a character
     \todo{Choice?}
 \end{proof}
 
-\paragraph{}
+
 The formalization of theorem \ref{dfa_connected_repr} includes a more general version of the theorem, 
 which facilitates the proof by induction over the path.
 
@@ -283,7 +283,7 @@ which facilitates the proof by induction over the path.
 
 
 \section{Emptiness}
-\paragraph{}
+
 Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain the connected automaton of $A$ and check if there are any final states left. 
 
 \begin{theorem}
@@ -317,7 +317,7 @@ Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain
 \end{proof}
 
 
-\paragraph{}
+
 The formalization of lemma \ref{dfa_lang_empty} is split in two parts to facilitate its application. 
 
 \code{}{}{automata_dfa_lang_empty}
@@ -351,7 +351,7 @@ Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the langua
 
 \section{Regular Expressions and Finite Automata}
 
-\paragraph{} 
+ 
 We prove that there is a finite automaton for every extended regular expression and vice versa. 
 In fact, we can give a standard regular expression for every finite automaton.
 With this, we will prove that extended regular expressions are equivalent to standard regular expressions, 
@@ -360,12 +360,12 @@ thereby proving closure under intersection and negation.
 
 \subsection{Regular Expressions to Finite Automata}
 
-\paragraph{} 
+ 
 We prove that there exists an equivalent automaton for every extended regular expression.
 The structure of this proof is given by the inductive nature of regular expressions.
 For every constructor, we provide an equivalent automaton.
 
-\paragraph{}
+
 Depending on the constructor of the regular expression, we will construct an equivalent DFA or NFA.
 \lstinline{Void}, \lstinline{Eps}, \lstinline{Dot}, \lstinline{Atom}, \lstinline{Plus}, \lstinline{And} and \lstinline{Not} are very easy to implement on DFAs, whereas \lstinline{Star} and \lstinline{Conc} lend themselves well to NFAs.
 
@@ -643,7 +643,7 @@ Depending on the constructor of the regular expression, we will construct an equ
 
 \subsection{Deciding Equivalence of Regular Expressions}
 
-\paragraph{} 
+ 
 Based on our procedure to construct an equivalent automaton from a regular expression, we can decide equivalence of regular expressions. Given $r_1$ and $r_2$, we construct equivalent DFA $A_1$ and $A_2$ as above.
 
 
@@ -651,13 +651,13 @@ Based on our procedure to construct an equivalent automaton from a regular expre
 We prove that there is an equivalent standard regular expression for every finite automaton.
 There are three ways to prove this. 
 
-\paragraph{}
+
 The first one is a method called ``\textbf{state removal}'' \cite{SignalFlow} (reformulated in \cite{springerlink:10.1007/978-3-540-30500-2}),
 which works by sequentially building up regular expressions on the edges between states. 
 In every step, one state is removed and its adjacent states' edges are updated to incorporate the missing state into the regular expression.
 Finally, only two states remain. The resulting edges can be combined to form a regular expression that recognizes the language of the initial automaton.
 
-\paragraph{}
+
 The second method is known as ``\textbf{Brzozowski's method}'' \cite{DBLP:journals/jacm/Brzozowski64} and builds upon Brzowoski derivates of regular expressions.
 This method is algebraic in nature and arrivates at a regular expression by solving a system of linear equations on regular expressions. 
 Every state is assigned an unkown regular expression. 
@@ -665,13 +665,13 @@ The intuition of these unkown regular expressions is that they recognize the wor
 The system is solved by substituition and Arden's lemma \cite{DBLP:conf/focs/Arden61}.
 The regular expressions associated with the starting state recognizes the language of the automaton.
 
-\paragraph{}
+
 The third method, which we chose for our development, is due to Kleene \cite{KleeneNets}.
 It is known as the ``\textbf{transitive closure method}''.
 This method recursively constructs a regular expression that is equivalent to the given automaton.
 For the remainder of the chapter, we assume that we are given a DFA $A=(Q,s,F,\delta)$.
 
-\paragraph{}
+
 The idea of the transitive closure method is that we can give a regular expression to describe the path between any two states $x$ and $y$.
 This regular expression accepts all words whose run $\sigma$ on $A$ starting in $x$ ends in $y$.
 In fact, we can even give such a regular expression if we limit the set of paths through which the run is allowed to pass. 
@@ -679,7 +679,7 @@ We will call this set $X$.
 Passing through, here, means that the restriction applies only to states that are traversed, 
 i.e. not to the beginning or end of the run.
 
-\paragraph{}
+
 If we take $X$ to be the empty set, we only consider two types of runs.
 First, if $x \neq y$, every transition from $x$ to $y$ constitutes one (singelton) word. 
 Conversely, if there is a word which does not pass through a state and whose run on $A$ starts in $x$ and ends in $y$, 
@@ -690,7 +690,7 @@ These transitions constitutes all possible words that lead from $x$ to $y$ witho
 Otherweise, if $x = y$, we also have to consider the empty word, since its run on $A$ starts in $x$ and ends in $y$.
 Thus, the corresponding regular expression is the disjunction of all transitions from $x$ to $y$ \textit{and} $\varepsilon$.
 
-\paragraph{}
+
 In the case of a non-empty $X$, we make the following observation. 
 If we pick an element $z \in X$, then any run $\sigma$ from $x$ to $y$ either passes through $z$, or does not pass through $z$.
 If it does, we can split it into three parts.

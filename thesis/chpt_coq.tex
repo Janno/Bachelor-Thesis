@@ -1,7 +1,7 @@
 \chapter{\coq\ and \ssreflect}
 \label{chap:coq}
 
-\paragraph{}
+
 We decided to employ the Small Scale Reflection Extension (\textbf{\ssreflect}%
 \footnote{http://www.msr-inria.inria.fr/Projects/math-components})
 for the \textbf{\coq}%
@@ -11,18 +11,18 @@ The most important factors in this decision were \ssreflect's excellent support 
 
 \section{\coq}
 
-\paragraph{}
+
 \todo{Description, citation}
 
 \section{\ssreflect}
 
-\paragraph{}
+
 \ssreflect\ is a set of extensions to the proof scripting language of the \coq\ proof assistant. 
 They were originally developed to support small-scale reflection. 
 However, most of them are of quite general nature and improve the functionality of \coq\ in most basic areas such as script layout and structuring, proof context management and rewriting \cite{gonthier:inria-00258384}.
 
 \subsection{Finite Types and Ordinals}
-\paragraph{}
+
 The most important feature of \ssreflect\ for our purpose are finite types. 
 Finite types are based on lists. 
 Every element of a finite type is contained in the associated (de-duplicated) list and vice versa.
@@ -56,6 +56,6 @@ which can be written as \lstinline{[preim f of p]}.
 %The resulting predicates are called collective predicates. 
 %\ssreflect\ allows us to use infix notation, i.e. $x \in p$, for these predicates.
 
-\paragraph{}
+
 There are also applicative (functional) versions of of \lstinline{predC}, \lstinline{predU}, \lstinline{predI}, \lstinline{predD} which are functions that take predicates and return predicates.
 

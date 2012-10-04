@@ -1,12 +1,12 @@
 \chapter{Decidable Languages}
 \label{chap:lang}
 
-\paragraph{}
+
 We give basic definitions for languages, operators on languages and, finally, regular languages.
 We provide the corresponding formalizations from our development and prove their correctness.
 
 \section{Definitions}
-\paragraph{}
+
 We closely follow the definitions from \cite{DBLP:books/daglib/0011126}.
 An \textbf{alphabet} $\Sigma$ is a finite set of symbols. 
 A \textbf{word} $w$ is a finite sequence of symbols chosen from some alphabet. 
@@ -20,7 +20,7 @@ A language $L$ is \textbf{decidable} if and only if there exists a boolean predi
 We will only deal with decidable languages from here on.
 Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
 
-    \paragraph{} 
+     
     We employ finite types to formalize alphabets. 
     In most definitions, alphabets will not be made explicit.
     However, the same name and type will be used throughout the entire development.
@@ -33,10 +33,10 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
 
     \subsection{Operations on Languages}
 
-    \paragraph{}
+    
     We will later introduce a subset of the decidable language that is based on the following operations. For every operator, we will prove the decidabality of the resulting language.
 
-    \paragraph{}
+    
 
     The \textbf{concatenation} of two languages $L_1$ and $L_2$ is denoted $L_1 \cdot L_2$ and is defined as the set of words $w = w_1 w_2$ such that $w_1$ is in $L_1$ and $w_2$ is in $L_2$.
     The \textbf{Kleene closure} of a language $L$ is denoted $L^*$ and is defined as the set of words $w = w_1 \cdots w_k$ such that $w_1 \ldots w_k$ are in $L$. 
@@ -44,7 +44,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     We define the \textbf{complement} of a language $L$ as $L \backslash \Sigma^*$, which we write as $\neg L$.
     Furthermore, we make use of the standard set operations \textbf{union} and \textbf{intersection}.
 
-    \paragraph{}
+    
     For our \coq\ development,
     take Coquand and Siles's \cite{DBLP:conf/cpp/CoquandS11} implementation of these operators. 
     \lstinline{plus} and \lstinline{prod} refer to union and intersection, respectively. 
@@ -59,7 +59,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     \codeblock{lang_void}{}{regexp_void}
     \codeblock{lang_eps}{}{regexp_eps}
 
-    \paragraph{}
+    
     The definition of \lstinline{conc} is based on a characteristic property of the concatenation of two languages. The following lemma proves this property.
 
     \begin{lemma}
@@ -86,7 +86,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     
     \code{regexp_concP}{Formalization of lemma \ref{concP}}{regexp_concP_head}
 
-    \paragraph{}
+    
     The implementation of \lstinline{star} makes use of a property of the Kleene closure, 
     which is that any nonempty word in $L^*$ can be seen as the concatenation of a nonempty word in $L$ and a (possibly empty) word in $L^*$.
     This property allows us to implement star as a structurally recursive predicate.
@@ -138,7 +138,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
         \end{enumerate}
     \end{proof}
 
-    \paragraph{}
+    
     The formalization of lemma \ref{starP} connects the formalization of \lstinline{star} to the mathematical definition. The propositional formula given here appears slightly more restrictive than our mathemitcal definition as it requires all words from $L$ to be nonempty. 
     Mathematically, however, this is no restriction. 
     
@@ -161,7 +161,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
         The remaining operators (union, intersection, complement) can be applied directly to the result of the languages' boolean decision functions.
     \end{proof}
 
-    \paragraph{}
+    
 
 
     \section{Regular Languages}
@@ -184,7 +184,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
 
     \subsection{Regular Expressions}
 
-    \paragraph{} 
+     
     Regular expressions mirror the definition of regular languages very closely. 
     \begin{definition}
         \label{extregex}
@@ -195,7 +195,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     \end{equation*}
         
 
-    \paragraph{} 
+     
     The semantics of these constructors are as follows:
     \begin{align*}
         \lang{\emptyset} & = \emptyset
@@ -220,11 +220,11 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
         \end{equation*}
     \end{definition}
 
-    \paragraph{}
+    
     We will later show that equivalence of regular expressions is decidable.
 
 
-    \paragraph{}
+    
     We take the implementation of regular expressions from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
     The semantics defined in definition \ref{extregex} can be given as a boolean function.
     %They also give a decision function the language associated with a regular expression.
@@ -233,7 +233,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     \code{regexp}{Regular Expressions}{regexp_regular_expression}
     \codeblock{regexp_mem_reg}{}{regexp_mem_reg}
 
-    \paragraph{}
+    
     We will later prove that this definition is equivalent to the inductive definition of regular languages in \ref{REG}.
     In order to do that, we introduce a predicate on regular expressions that distinguishes \textbf{standard regular expressions} 
     from \textbf{extended regular expressions} (as introduced above).

@@ -10,7 +10,7 @@ In this chapter, we consider three additional characterizations of regular langu
     \item and Nerode relations.
 \end{enumerate}
 
-\paragraph{}
+
 We will show that these three concepts can be used to characterize regular languages 
 by proving them equivalent to the existence of a (deterministic) finite automaton.
 Our proof of equivalence will have the following structure:
@@ -62,7 +62,7 @@ Our proof of equivalence will have the following structure:
     \mathit{DFA}.
 \end{equation*}
 
-\paragraph{}
+
 We will first give a proof of \tcircled{c}, which is the most challenging proof and formalization in this chapter.
 We will then show \tcircled{a}, \tcircled{b}, and \tcircled{d}.
 
@@ -94,7 +94,7 @@ The following definitions (roughly following \cite{DBLP:books/daglib/0088160}) w
     $\equiv$ is of \textbf{finite index} if and only if the set of $\{[u]_\equiv \; | \; u \in \Sigma^* \}$ is finite.
 \end{definition}
 
-\paragraph{}
+
 Due to the lack of native support for quotient types in \coq, 
 we formalize equivalence relations of finite index 
 as surjective functions from $\Sigma^*$ to a finite type $X$.
@@ -109,7 +109,7 @@ as surjective functions from $\Sigma^*$ to a finite type $X$.
     For all $w \in \Sigma^*$, $f(w)$ can be seen as an equivalence class of $\equiv_f$.
 \end{definition}
 
-\paragraph{}
+
 It is easy to see that $\equiv_f$ is an equivalence relation. 
 Furthermore, from the finiteness of $X$, it follows that $\equiv_f$ is of finite index.
 %For our purposes, only surjective functions are relevant.
@@ -122,7 +122,7 @@ Furthermore, from the finiteness of $X$, it follows that $\equiv_f$ is of finite
     We write $\crep{x}$ to denote the \textbf{canonical representative} of $x$, which we obtain by constructive choice.
 \end{definition}
 
-\paragraph{}
+
 
 \code{}{}{myhill_nerode_cr}
 
@@ -162,7 +162,7 @@ Furthermore, from the finiteness of $X$, it follows that $\equiv_f$ is of finite
 \end{enumerate}
 \end{definition}
 
-\paragraph{}
+
 Building on our formalization of equivalence relations of finite index, 
 we only need to give formalizations of \ref{right_congruent} and \ref{refinement}.
 
@@ -170,7 +170,7 @@ we only need to give formalizations of \ref{right_congruent} and \ref{refinement
 \codeblock{}{}{myhill_nerode_refines}
 \codeblock{}{}{myhill_nerode_Myhill_Rel}
 
-\paragraph{}
+
 Myhill relations correspond to the equivalence relations 
 defined as the pairs of words $(u, v)$ whose runs on a DFA $A$ end in the same state. 
 These relations are right congruent, refine $\lang{A}$ and are of finite index as $A$ has finitely many states. 
@@ -187,7 +187,7 @@ We will later give a formal proof of this.
     \end{equation*}
 \end{definition}
 
-\paragraph{}
+
 The Nerode relation given above is a propositional statement in \coq. 
 To proof that the Nerode relation is of finite index, 
 we require an equivalence relation, 
@@ -210,7 +210,7 @@ such that $=_f$ is equivalent to $\doteq_L$.
 \codeblock{}{}{myhill_nerode_imply_suffix}
 \codeblock{}{}{myhill_nerode_Weak_Nerode_Rel}
 
-\paragraph{}
+
 The notion of a weak Nerode relation is not found in the literature.
 We will later prove them weaker than Myhill relations, in the sense that every Myhill relation is also a weak Nerode relation.
 
@@ -239,10 +239,10 @@ For this purpose, we employ a table-filling algorithm \cite{DBLP:books/daglib/00
 However, we do not rely on an automaton, as is usually done. 
 In fact, we use the finite type $X$, i.e., the equivalence classes, instead of states.
 
-\paragraph{}
+
 For the remainder of this section, we assume we are given a language $L$ and a weak Nerode relation $f_0$. 
 
-\paragraph{}
+
 We employ a fixed-point construction to find equivalence classes that are equivalent in the sense of $\doteq_L$.
 In each step, we add those equivalences classes that are distinguishable based on previously distinguishable equivalence classes.
 The initial set of distinguishable equivalence classes are distinguishable by the inclusion of their canonical representative in $L$. 
@@ -254,7 +254,7 @@ We denote this initial set $\mathit{dist_0}$.
 \code{}{}{myhill_nerode_distinguishable}
 \codeblock{}{}{myhill_nerode_distinct0}
 
-\paragraph{}
+
 To find more distinguishable equivalence classes, we have to identify equivalence classes that ``lead'' to distinguishable equivalence classes. 
 In allusion to the minimization procedure on automata, we define successors of equivalence classes.
 The intuition is that two states are distinguishable if they are succeeded by distinguishable states.
@@ -303,12 +303,12 @@ we define the set of pairs of distinguishable equivalence classes that are succe
     We iterate $\mathit{unnamed}$ $|X*X|+1 = |X|^2+1$ times on the empty set.
     Since there can only ever be $|X*X|$ items in the result of $\mathit{unnamed}$, 
     we will find the fixed point in no more than $|X*X|+1$ steps.
-    \paragraph{}
+    
 Let \textit{\textbf{distinct}} be the fixed point of $unnamed$ and let it be denoted by $\not\cong$. 
 We write \textit{\textbf{equiv}} for the complement of \textit{distinct} and denote it $\cong$.
 \end{proof}
 
-\paragraph{}
+
 We now show that $\cong$ is equivalent to the Nerode relation. 
 Formally, this means constructing a function that fulfills our definition
 of an equivalence relation of finite index.
@@ -481,7 +481,7 @@ since the two directions require different strategies.
     Thus, $\mathit{f_{min}}(u) = \mathit{f_{min}}(v)$ if and only if $u \doteq_L v$.
 \end{proof}
 
-\paragraph{}
+
 The formalization of $\mathit{f_{min}}$ is slightly more involved than the mathematical construction. 
 We first need to define the finite type of $\mathit{f_{min}}$'s domain, 
 which we do by enumerating all possible values of $\mathit{f_{min}}$.
@@ -490,7 +490,7 @@ which we do by enumerating all possible values of $\mathit{f_{min}}$.
 \codeblock{}{}{myhill_nerode_X_min}
 \codeblock{}{}{myhill_nerode_f_min}
 
-\paragraph{}
+
 We then prove lemmas \ref{f_min_surjective}, \ref{f_minP} and theorem \ref{f_min_correct} which are consequential and straight-forward.
 
 \code{}{}{myhill_nerode_f_min_surjective_head}
@@ -498,7 +498,7 @@ We then prove lemmas \ref{f_min_surjective}, \ref{f_minP} and theorem \ref{f_min
 \codeblock{}{}{myhill_nerode_f_min_correct_head}
 \codeblock{}{}{myhill_nerode_f_min_fin}
 
-\paragraph{}
+
 We can now state the result of this chapter. 
 
 \begin{corollary}
@@ -510,7 +510,7 @@ We can now state the result of this chapter.
 
 \code{}{}{myhill_nerode_weak_nerode_to_nerode}
 
-\paragraph{}
+
 This concludes step $(3) \implies (4)$ of theorem \ref{Myhill-Nerode} (step \tcircled{c}). 
 
 
@@ -546,7 +546,7 @@ This enables us to construct a surjective function from words to the states of $
 \codeblock{}{}{myhill_nerode_f_M_surjective_head}
 \codeblock{}{}{myhill_nerode_f_fin}
 
-\paragraph{}
+
 In order to show that $f_M$ is a Myhill relation, we prove that it fulfills definition \ref{Myhill}.
 
 \begin{lemma}
@@ -578,7 +578,7 @@ In order to show that $f_M$ is a Myhill relation, we prove that it fulfills defi
     This follows from lemma \ref{f_M_right_congruent} and lemma \ref{f_M_refines}.
 \end{proof}
 
-\paragraph{}
+
 We only have extensional equality on $\lang{A_c}$ and $\lang{A}$ in \coq.
 Thus, we first show that $f_M$ is a Myhill relation on $\lang{A_c}$.
 Then, we show that we can get a Myhill relation on $\lang{A}$ from a Myhill relation on $\lang{A_c}$.
@@ -587,7 +587,7 @@ Then, we show that we can get a Myhill relation on $\lang{A}$ from a Myhill rela
 \codeblock{}{}{myhill_nerode_myhill_lang_eq_head}
 \codeblock{}{}{myhill_nerode_dfa_to_myhill}
 
-\paragraph{}
+
 This concludes the proof of step $(1) \implies (2)$ (\tcircled{a}).
 
 \subsection{Myhill relations to weak Nerode relations}
@@ -611,7 +611,7 @@ In fact, we will prove that any Myhill relation \textbf{is} a weak Nerode relati
 \code{}{}{myhill_nerode_myhill_suffix_head}
 \codeblock{}{}{myhill_nerode_myhill_to_weak_nerode}
 
-\paragraph{}
+
 This concludes step $(2) \implies (3)$ (\tcircled{b}).
 
 \subsection{Nerode relations to Finite Automata}
@@ -633,7 +633,7 @@ The construction is very straight-forward and uses the equivalence classes of th
 
 \code{}{}{myhill_nerode_nerode_to_dfa}
 
-\paragraph{}
+
 In order to show that $A$ accepts the language $L$, we first need to connect runs on $A$ to the equivalence classes, i.e. the domain of $f$.
 The following lemma gives a direct connection.
 
@@ -666,5 +666,5 @@ The following lemma gives a direct connection.
     Thus $w$ is accepted if and only if $w \in L$.
 \end{proof}
 
-\paragraph{}
+
 This concludes the last step of theorem \ref{Myhill-Nerode}, namely $(4) \implies (1)$ (\tcircled{d}), and, consequently, this chapter.
