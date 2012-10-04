@@ -654,7 +654,7 @@ There are three ways to prove this.
 \paragraph{}
 The first one is a method called ``\textbf{state removal}'' \cite{SignalFlow} (reformulated in \cite{springerlink:10.1007/978-3-540-30500-2}),
 which works by sequentially building up regular expressions on the edges between states. 
-In every step, one state is removed and it's adjacent states' edges are updated to incorporate the missing state into the regular expression.
+In every step, one state is removed and its adjacent states' edges are updated to incorporate the missing state into the regular expression.
 Finally, only two states remain. The resulting edges can be combined to form a regular expression that recognizes the language of the initial automaton.
 
 \paragraph{}
@@ -742,9 +742,14 @@ If $\sigma$ does not pass through $z$, it is covered by the regular expression f
 
 Based on the intuition given above, we try to express $\lang{A}$ by $R^Q$.
 Based on the observation that every accepted word has a run from $s$ to some state $f \in F$, 
-we only have to combine the corresponding regular expressions $R^Q_{sf}$ to form a regular expression for $\lang{A}$.
+we only have to combine the corresponding regular expressions $R^Q_{s,f}$ to form a regular expression for $\lang{A}$.
 The goal of this chapter is to prove the following theorem. 
 
 \begin{theorem}
-    \label{R_L}
+    \label{R_L} $\lang{A}$ is recognizable by a regular expression, i.e.
+    \begin{equation*}
+        \lang{\sum\limits_{f \in F} R^Q_{s,f}} = \lang{A}.
+    \end{equation*}
 \end{theorem}
+
+We will first give a 
