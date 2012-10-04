@@ -63,14 +63,12 @@ Section AllButLastDef.
   Variable X: Type.
   Variable p: pred X.
   
-  Definition belast xs : seq X :=
-    (fix belast xs := 
+  Fixpoint belast (xs: seq X) :=
     match xs with
       | [::] => [::]
       | [::x] => [::]
       | x::xs => x::(belast xs)
-    end)
-    xs.
+    end.
 
   Lemma belast_rcons (x: X) xs:
     belast (rcons xs x) = xs.
@@ -80,8 +78,7 @@ Section AllButLastDef.
     destruct xs => //.
   Qed.
                      
-  Definition allbutlast : pred (seq X) :=
-    fun xs => all p (belast xs).
+  Definition allbutlast xs := all p (belast xs).
 End AllButLastDef.
 
 Implicit Arguments allbutlast [X].
@@ -229,24 +226,8 @@ Section TransitiveClosure.
 
   Variable char: finType.
   Variable A: dfa char.
-  
-    Section RE_Misc.
-      (* easy splitting for the (Plus r s) predicate *)
-      Lemma Plus_dist r s (w: word char): w \in Plus r s = (w \in r) || (w \in s). 
-      Proof. by rewrite -topredE. Qed.
 
-      (* easy splitting for foldr over Plus *)
-      Lemma foldr_Plus r rs (w: word char):
-        w \in foldr (@Plus char) r rs = (w \in r) || has (fun r => w \in r) rs. 
-      Proof.
-        elim: rs r => [|s rs IHrs] r /=. 
-          by rewrite orbF.
-        rewrite orbCA -IHrs.
-        by rewrite -topredE -topredE.
-      Qed.
-    End RE_Misc.
-
-  Definition nPlus : seq (regular_expression char) -> regular_expression char := [fun rs => foldr (@Plus _) (Void _) rs].
+  Definition nPlus rs := foldr (@Plus char) (Void _) rs.
 
   Lemma mem_nPlus (rs: seq _) w:
     reflect (exists2 r: regular_expression char, r \in rs & w \in r)
@@ -289,17 +270,15 @@ Section TransitiveClosure.
   Qed.
     
   
-  Definition R0 :=
-    [ fun x y => 
-      let r := nPlus (map (@Atom _) (dfa_step_any x y)) in
-        if x == y then Plus r (Eps _) else r ].
+  Definition R0 x y := let r := nPlus (map (@Atom _) (dfa_step_any x y)) in
+        if x == y then Plus r (Eps _) else r.
                                              
   Lemma mem_R0 w x y:
     reflect (w = [::] /\ x=y \/ exists2 a, w = [::a] & dfa_step A x a = y)
             (w \in R0 x y). 
   Proof.
     apply/iffP. apply idP.
-      rewrite /=. case H: (x == y).
+      rewrite /R0 /=. case H: (x == y).
         rewrite -topredE /=. move/plusP => [].
           move/mem_nPlus => [r] /mapP [a].
           move/dfa_step_anyP => <- -> /eqP.
@@ -327,7 +306,7 @@ Section TransitiveClosure.
       by rewrite !inE Hw.
   Qed.
 
-  Function R (X: {set A}) (x y: A) {measure [fun X => #|X|] X} : regular_expression char :=
+  Function R (X: {set A}) (x y: A) {measure [fun X => #|X|] X} :=
     match [pick z in X] with
     | None =>  R0 x y        
     | Some z =>  let X' := X :\ z in
@@ -345,8 +324,7 @@ Section TransitiveClosure.
   
   Definition L (X: {set A}) (x y: A) :=
       [pred w | (last x (dfa_run' A x w) == y)
-                && allbutlast (mem X) (dfa_run' A x w) 
-      ].
+                && allbutlast (mem X) (dfa_run' A x w) ].
 
   Notation "'L^' X" := (L X) (at level 8).
        
