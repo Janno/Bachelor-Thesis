@@ -15,9 +15,13 @@ src: src/Makefile
 thesis/chapters/%.pdf: thesis/%.tex
 	j=$(shell basename $@ .pdf); cd thesis; pdflatex -jobname=chapters/$$j "\includeonly{$$j,includes.tex}\input{thesis}"
 
-html_doc: all
+tex_doc: src
+	mkdir -p docs/tex
+	coqdoc -d docs/tex --latex --body-only src/*.v
+
+html_doc: src
 	mkdir -p docs/html
-	coqdoc -d docs/html automata.v misc.v transitive_closure.v
+	coqdoc -d docs/html src/*.v
 
 html_doc_beautiful: html_doc
 	mv docs/html/index.html docs/html/index.html.old
@@ -45,11 +49,12 @@ thesis/thesis.pdf: definitions thesis/*.tex thesis/vc.tex thesis/chapters ${CHPT
 
 thesis: thesis/thesis.pdf
 
+thesis/code.pdf: tex_doc
+	echo -n > thesis/code_all.tex
+	FILES=`cd src; make --dry-run -B 2>&1 | grep coqc | awk -F' ' '{print $$5".tex"}' `; for f in $$FILES; do cat docs/tex/$$f >> thesis/code_all.tex; done
+	cd thesis; latexmk -pdf code
 
-#chapters: thesis 
-#	cd thesis; bash -c 'for i in chpt_*.tex chpt_*.tex; do j=$${i%.tex}; ; done'
-
-doc: html_doc_beautiful definitions
+doc: definitions html_doc tex_doc
 
 clean:
 	rm -rf docs/html/* docs/definitions/*
