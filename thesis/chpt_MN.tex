@@ -83,7 +83,6 @@ We will then show \tcircled{a}, \tcircled{b}, and \tcircled{d}.
 \section{Definition}
 
 The following definitions (roughly following \cite{DBLP:books/daglib/0088160}) will lead us to the statement of the Myhill-Nerode theorem.
-\todo{put Theorem s/w}
 %Let $\equiv$ be an equivalence relation on $\Sigma^*$. Let $L$ be a language over $\Sigma$.
 
 \begin{definition}
@@ -214,16 +213,19 @@ such that $=_f$ is equivalent to $\doteq_L$.
 \paragraph{}
 The notion of a weak Nerode relation is not found in the literature.
 We will later prove them weaker than Myhill relations, in the sense that every Myhill relation is also a weak Nerode relation.
-\paragraph{}
-We can now move on to the statement of the Myhill-Nerode theorem.
+
+\subsection{Myhill-Nerode Theorem}
+We can now move on to the statement of the Myhill-Nerode theorem \cite{DBLP:books/daglib/0088160}.
+
+
 
 \begin{theorem}{(Myhill-Nerode)}
     \label{Myhill-Nerode}
-    Let $L$ be a language. The following four statements are equivalent \cite{DBLP:books/daglib/0088160}:
+    Let $L$ be a language. The following four statements are equivalent:
     \begin{enumerate}
-        \item there exists a (deterministic) finite automaton that accepts $L$
-        \item there exists a Myhill relation on $L$
-        \item there exists a weak Nerode relation on $L$
+        \item there exists a (deterministic) finite automaton that accepts $L$;
+        \item there exists a Myhill relation on $L$;
+        \item there exists a weak Nerode relation on $L$;
         \item the Nerode relation on $L$ is of finite index.
     \end{enumerate}
 \end{theorem}
