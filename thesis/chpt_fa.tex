@@ -688,7 +688,7 @@ Therefore, the corresponding regular expression is the disjunction of all transi
 These transitions constitutes all possible words that lead from $x$ to $y$ without passing through any state.
 
 Otherweise, if $x = y$, we also have to consider the empty word, since its run on $A$ starts in $x$ and ends in $y$.
-Thus, the corresponding regular expression is the disjunction of all transitions from $x$ to $y$ \textbf{and} $\varepsilon$.
+Thus, the corresponding regular expression is the disjunction of all transitions from $x$ to $y$ \textit{and} $\varepsilon$.
 
 \paragraph{}
 In the case of a non-empty $X$, we make the following observation. 
@@ -733,23 +733,63 @@ If $\sigma$ does not pass through $z$, it is covered by the regular expression f
                         }
                     } a + \varepsilon 
                     & \mbox{if } X = \emptyset \wedge x = y; \\
-                     R^{X\backslash\{z\}}_{x,z} (R^{X\backslash\{z\}}_{z,z})^* R^{X\backslash\{z\}}_{z,y} + R^{X\backslash\{z\}}_{x,y}.
+                     R^{X\backslash\{z\}}_{x,z} (R^{X\backslash\{z\}}_{z,z})^* R^{X\backslash\{z\}}_{z,y} + R^{X\backslash\{z\}}_{x,y}
                      & \mbox{if } \exists z \in X.
                 \end{array}
             \right.
     \end{equation*}
 \end{definition}
 
-Based on the intuition given above, we try to express $\lang{A}$ by $R^Q$.
+The formalization of $R$ is more involved than its mathematical definition. 
+We give some auxiliary definitions to keep the definition of $R$ as compact and readable as possible.
+\lstinline{nPlus} is $\sum$ on regular expressions.
+\lstinline{dfa_step_any} is the list of transitions from $x$ to $y$.
+\lstinline{R0} covers the case of $X=\emptyset$.
+
+\todo{explain measure}
+
+\code{}{}{transitive_closure_nPlus}
+\codeblock{}{}{transitive_closure_dfa_step_any}
+\codeblock{}{}{transitive_closure_R0}
+\codeblock{}{}{transitive_closure_R}
+
+Following the intuition given above, we try to express $\lang{A}$ by $R$.
 Based on the observation that every accepted word has a run from $s$ to some state $f \in F$, 
 we only have to combine the corresponding regular expressions $R^Q_{s,f}$ to form a regular expression for $\lang{A}$.
 The goal of this chapter is to prove the following theorem. 
 
 \begin{theorem}
-    \label{R_L} $\lang{A}$ is recognizable by a regular expression, i.e.
+    \label{dfa_to_regex} $\lang{A}$ is recognizable by a regular expression, i.e.
     \begin{equation*}
         \lang{\sum\limits_{f \in F} R^Q_{s,f}} = \lang{A}.
     \end{equation*}
 \end{theorem}
 
-We will first give a 
+In order to prove this theorem, we will first define a predicate in terms of runs that corresponds to $R^X_{x,y}$.
+We call this predicate $L^X_{x,y}$ and define it such that it includes those words 
+whose runs on $A$ starting in $x$ only pass through states in $X$ and end in $y$.
+This is a direct implementation of the idea behind $R^X_{x,y}$.
+Then, we show that $L^{X \cup \{z\}}$ can be expressed in terms of $L^X$.
+We prove that we can express $\lang{A}$ by $\bigcup_{f\in F} L^Q_{s,f}$.
+Finally, we show that $R^X_{x,y} = L^X_{x,y}$, thus proving theorem \ref{dfa_to_regex}.
+
+\begin{definition}
+    Let $w \in \Sigma^*$.
+    Let $X \subseteq Q$, and $x,y \in X$.
+    Let $\sigma$ be the run of $w$ on $A$ starting in $x$.
+    We define $L^X_{x,y}$ such that
+    \begin{equation*}
+        w \in L^X_{x,y} \iff \sigma_{|\sigma|-1} = y \; \wedge \; \forall i \in [1,|\sigma|-2]. \; \sigma_i \in X.
+    \end{equation*}
+\end{definition}
+
+The formalization of $L$ requires some infrastructure. 
+To check the second condition of $L$, we want to be able to state properties of all but the last items in a run.
+We define a function to remove the last element from a sequence.
+
+\code{}{}{transitive_closure_belast}
+\codeblock{}{}{transitive_closure_allbutlast}
+\codeblock{}{}{transitive_closure_L}
+
+
+
