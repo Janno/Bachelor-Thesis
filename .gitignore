@@ -1,4 +1,8 @@
+docs/definitions
+vc.tex
 *.vo
+*.swp
+*.v.d
 *.glob
 *#
 *~
@@ -10,4 +14,4 @@
 *.log
 *.out
 *.toc
-
+src/Makefile
