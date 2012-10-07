@@ -708,10 +708,9 @@ Proof. elim: w1 w2 x => [|a w1 IHw1] w2 x.
     move: (nfa_conc_cont _ _ _ H1) => H3.
     apply/nfa_accept_cat.
     exists [::] => /=.
-    apply: nfa_conc_fin1.
-      exact: H0.
+    apply: nfa_conc_fin1 => //.
     apply/nfa_run_accept.
-      eexists _; by eassumption.
+    by eauto.
   move => /existsP [] y /andP [] H1 H2 H3 /=.
   apply/existsP. exists (inl _ y).
   rewrite H1 /=.

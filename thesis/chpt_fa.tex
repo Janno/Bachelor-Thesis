@@ -20,7 +20,7 @@ A finite automaton consists of
 \end{enumerate}
 
 We define a \textbf{run} of a word $w \in \Sigma^*$ on an automaton $A = (Q, s, F, \delta)$ as a sequence of states $\sigma$ such that 
-for every two consequetive positions $i,i+1$ in $\sigma$ there is 
+for every two consecutive positions $i,i+1$ in $\sigma$ there is 
 $(\sigma_i, w_i, \sigma_{i+1}) \in \delta$.
 A word $w$ is \textbf{accepted} by $A$ in state $x$ if and only if there exists a run $\sigma$ of $w$ on $A$ such that $\sigma_0 = x \, \wedge \, \sigma_{\vert\sigma\vert-1} \in F$.
 The resulting set of accepted words is denoted by $\acc{x}{A}$.
@@ -96,7 +96,7 @@ Given NFA $A$, we construct an equivalent DFA $A_{det}$ in the following way:
 
 
 The formalization of $A_{det}$ is straight-forward. 
-We leave the set of states \lstinline!{set A}! implicit.
+We leave the set of states \lstinline_{set A}_ implicit.
 
 \code{}{}{automata_nfa_to_dfa}
 
@@ -118,7 +118,7 @@ We leave the set of states \lstinline!{set A}! implicit.
             For $w = a w'$ and $a w' \in \acc{x}{A}$ we get $y$ such that $w' \in \acc{y}{A}$ and $(x,a,y) \in \delta$.
             The latter gives us $y \in Y$ where $Y$ is such that $(X, a, Y) \in \delta_{det}$.
             With $y \in Y$ and $w' \in \acc{y}{A}$ we get 
-            which gives us $w' \in \acc{Y}{A_{det}}$ by induction hypothesis.
+            which gives us $w' \in \acc{Y}{A_{det}}$ by inductive hypothesis.
             With $(X, a, Y) \in \delta_{det}$ we get $a w' \in \acc{X}{A_{det}}$.
     \end{itemize}
 \end{proof}
@@ -134,7 +134,7 @@ We leave the set of states \lstinline!{set A}! implicit.
 \end{lemma}
 
 \begin{proof}
-    We do an induction on $w \in \Sigma^*$. %that there exists $x$ such that $x \in X \wedge w \in \acc{x}{A}$. 
+    By induction on $w$. %that there exists $x$ such that $x \in X \wedge w \in \acc{x}{A}$. 
     \begin{itemize}
         \item
             For $w = \varepsilon$ and $\varepsilon \in \acc{X}{A_{det}}$ we get  $X \cap F \neq \emptyset$.
@@ -142,7 +142,7 @@ We leave the set of states \lstinline!{set A}! implicit.
             Thus, we have $\varepsilon \in \acc{x}{A}$.
         \item
             For $w = a w'$ and $a w' \in \acc{X}{A_{det}}$ we get $Y$ such that $w' \in \acc{Y}{A_{det}}$ and $(X,a,Y) \in \delta_{det}$.
-            From the induction hypothesis we get $y$ such that $y \in Y$ and $w' \in \acc{y}{A}$.
+            From the inductive hypothesis we get $y$ such that $y \in Y$ and $w' \in \acc{y}{A}$.
             From $y \in Y$ and $(X, a, Y) \in \delta_{det}$ we get $x$ such that $x \in X$ and $(x, a, y) \in \delta$.
             Thus, $a w' \in \acc{x}{A}$.
     \end{itemize}
@@ -174,7 +174,8 @@ The corresponding Lemmas are:
 \section{Connected Components}
  
 Finite automata can have isolated subsets of states that are not reachable from the starting state. 
-These states can not contribute to the language of the automaton since there are no runs from the starting state to any of those unreachable states.
+Removing these states does not change the language.
+%can not contribute to the language of the automaton since there are no runs from the starting state to any of those unreachable states.
 It will later be useful to have automata that only contain reachable states. 
 Therefore, we define a procedure to extract the connected component containing the starting state from a given automaton.
 
@@ -229,7 +230,7 @@ We also have to give a transition function that ensures transitions always end i
             For $w = a w'$ we have have $y \in Q$ such that $(x, a, y) \in \delta$ and $w' \in \acc{y}{A}$.
             From $x \in \mathrm{reachable}$ we get $y \in \mathrm{reachable}$ by transitivity.
             Therefore, $(x,a,y) \in \delta_c$.
-            The induction hypothesis gives us $w' \in \acc{y}{A_c}$. 
+            The inductive hypothesis gives us $w' \in \acc{y}{A_c}$. 
             Thus, $a w' \in \acc{x}{A_c}$.
     \end{itemize}
 \end{proof}
@@ -256,6 +257,8 @@ The formalization of lemma \ref{dfa_connected_correct'} and theorem \ref{dfa_con
 
 
 To make use of the fact that $A_c$ is fully connected, we will proof a characteristic property of $A_c$. 
+We will need this property of $A_c$ in chapter \ref{chap:MN}.
+
 
 \begin{definition}
     A \textbf{representative} of a state $x$ is a word $w$ such that the unique run of $w$ on $A_c$ ends in $x$.
@@ -263,7 +266,7 @@ To make use of the fact that $A_c$ is fully connected, we will proof a character
 
 \begin{lemma}
     \label{dfa_connected_repr}
-    We can give a representative for every state $x \in Q_c$.
+    We can compute give a representative for every state $x \in Q_c$.
     %\todo{Sigma?}
 \end{lemma}
 
@@ -275,10 +278,10 @@ To make use of the fact that $A_c$ is fully connected, we will proof a character
 \end{proof}
 
 
-The formalization of theorem \ref{dfa_connected_repr} includes a more general version of the theorem, 
-which facilitates the proof by induction over the path.
+%The formalization of theorem \ref{dfa_connected_repr} includes a more general version of the theorem, 
+%which facilitates the proof by induction over the path.
 
-\code{dfa_connected_repr'}{}{automata_dfa_connected_repr'_head}
+%\code{dfa_connected_repr'}{}{automata_dfa_connected_repr'_head}
 \codeblock{}{}{automata_dfa_connected_repr_head}
 
 
@@ -318,11 +321,11 @@ Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain
 
 
 
-The formalization of lemma \ref{dfa_lang_empty} is split in two parts to facilitate its application. 
+%The formalization of lemma \ref{dfa_lang_empty} is split in two parts to facilitate its application. 
 
 \code{}{}{automata_dfa_lang_empty}
-\codeblock{dfa_lang_empty_complete}{}{automata_dfa_lang_empty_complete_head}
-\codeblock{dfa_lang_empty_sound}{}{automata_dfa_lang_empty_sound_head}
+%\codeblock{dfa_lang_empty_complete}{}{automata_dfa_lang_empty_complete_head}
+%\codeblock{dfa_lang_empty_sound}{}{automata_dfa_lang_empty_sound_head}
 \codeblock{dfa_lang_empty_correct}{}{automata_dfa_lang_empty_correct_head}
 
 
@@ -346,7 +349,7 @@ Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the langua
     Thus, equivalence is decidable.    
 \end{proof}
 
-\code{}{Formalization of theorem \ref{dfa_sym_diff_correct}}{automata_dfa_sym_diff}
+\code{}{}{automata_dfa_sym_diff}
 \codeblock{}{}{automata_dfa_sym_diff_correct_head}
 
 \section{Regular Expressions and Finite Automata}
@@ -363,7 +366,7 @@ thereby proving closure under intersection and negation.
  
 We prove that there exists an equivalent automaton for every extended regular expression.
 The structure of this proof is given by the inductive nature of regular expressions.
-For every constructor, we provide an equivalent automaton.
+%For every constructor, we provide an equivalent automaton.
 
 
 Depending on the constructor of the regular expression, we will construct an equivalent DFA or NFA.
@@ -433,7 +436,7 @@ Depending on the constructor of the regular expression, we will construct an equ
     Therefore, both directions are trivial.
     For $w = aw'$ we consider both directions independently. \\
     ``$\Rightarrow$'' We have $(t, a, f) \in \delta_\varepsilon$ and $w' \in \acc{f}{A_\varepsilon}$. By lemma \ref{dfa_eps_correct'}, this is a contradiction. \\
-    ``$\Leftarrow$'' We get a straigt-forward contradiction from $aw' \in \{\varepsilon\}$.
+    ``$\Leftarrow$'' We get a straight-forward contradiction from $aw' \in \{\varepsilon\}$.
 \end{proof}
 
 \code{}{}{automata_dfa_eps}
@@ -460,7 +463,7 @@ Depending on the constructor of the regular expression, we will construct an equ
 \begin{proof}
     We prove this by induction on $w \in \Sigma^*$. 
     For $w = \varepsilon$ we have $\varepsilon \notin \acc{f}{A_{Dot}}$ by $f \notin F_{Dot}$.
-    For $w = aw'$ we have $(f, a, f) \in \delta_{Dot}$ and $w' \notin \acc{f}{A_{Dot}}$ by induction hypothesis.
+    For $w = aw'$ we have $(f, a, f) \in \delta_{Dot}$ and $w' \notin \acc{f}{A_{Dot}}$ by inductive hypothesis.
     Thus, $aw' \notin \acc{f}{A_{Dot}}$.
 \end{proof}
 
@@ -501,7 +504,7 @@ Depending on the constructor of the regular expression, we will construct an equ
     For $w = \varepsilon$ we have $\varepsilon \in \acc{x}{A_\neg} \iff \varepsilon \in \acc{x}{A}$ from
     $x \in F \iff x \notin Q\backslash F$.
     For $w = aw'$ we get $(y,a,x) \in \delta$. 
-    By induction hypothesis, $w' \in \acc{x}{A_\neg} \iff w' \notin \acc{x}{A}$
+    By inductive hypothesis, $w' \in \acc{x}{A_\neg} \iff w' \notin \acc{x}{A}$
     Thus, $aw' \in \acc{y}{A_\neg} \iff aw' \notin \acc{y}{A}$.
 \end{proof}
 \begin{lemma}
@@ -540,7 +543,7 @@ Depending on the constructor of the regular expression, we will construct an equ
     $%\end{equation*} 
     \\
     For $w = aw'$ we get $(x_1, a, y_1) \in \delta_1$ and $(x_2, a, y_2) \in \delta_2$.
-    By induction hypothesis, we also have $w' \in \acc{x_1}{A_1} \vee w' \in \acc{x_2}{A_2}$.
+    By inductive hypothesis, we also have $w' \in \acc{x_1}{A_1} \vee w' \in \acc{x_2}{A_2}$.
     Thus, we get $aw' \in \acc{y_1}{A_1} \vee aw' \in \acc{x_2}{A_2}$.
 \end{proof}
 
@@ -589,7 +592,7 @@ Depending on the constructor of the regular expression, we will construct an equ
     $%\end{equation*} 
     \\
     For $w = aw'$ we get $(x_1, a, y_1) \in \delta_1$ and $(x_2, a, y_2) \in \delta_2$.
-    By induction hypothesis, we also have $w' \in \acc{x_1}{A_1} \wedge w' \in \acc{x_2}{A_2}$.
+    By inductive hypothesis, we also have $w' \in \acc{x_1}{A_1} \wedge w' \in \acc{x_2}{A_2}$.
     Thus, we get $aw' \in \acc{y_1}{A_1} \wedge aw' \in \acc{x_2}{A_2}$.
 \end{proof}
 
@@ -608,36 +611,109 @@ Depending on the constructor of the regular expression, we will construct an equ
 
 
 \subsubsection{Conc}
+We do not allow $\varepsilon$-transitions in our automata. 
+In order to build the concatenation automaton, we duplicate edges from
+the starting state of the second automaton and add them to all final states 
+of the first automaton.
+
 \begin{definition}
    Given two NFAs
     $A_1=(Q_1, s_1, F_1, \delta_1)$ and $A_2=(Q_2, s_2, F_2, \delta_2)$ 
     we construct the concatenation automaton in the following way:
-    \begin{eqnarray*}
-        Q_{Conc} &:=& Q_1 \; \dotcup \; Q_2 \\
-        s_{Conc} &:=& s_1 \\
-        F_{Conc} &:=&  \mathbf{TODO}\\
-        \delta_{Conc} &:=& \delta_1 \; \cup \; \delta_2 \; \cup \; 
+    %\begin{eqnarray*}
+    \begin{align*}
+        Q_{Conc} &:= Q_1 \; \dotcup \; Q_2 \\
+        s_{Conc} &:= s_1 \\
+        F_{Conc} &:= 
+            \begin{cases}
+                \begin{array}{ll}
+                    F_2 & \mbox{ if } s_2 \notin F_2 \\
+                    F_2 \cup F_1 & \mbox{ if } s_2 \in F_2
+                \end{array}
+            \end{cases}
+        \\ %\mathbf{TODO}\\
+        \delta_{Conc} &:= \delta_1 \; \cup \; \delta_2 \; \cup \; 
                          \{(x, a, y) \; | \; x \in Q_1, y \in Q_2, (s_2, a, y) \in \delta_2 \} \\
         %\{( (x_1, x_2),a,(y_1, y_2)) \; | \; a \in \Sigma, (x_1, a, y_1) \in \delta_1, (x_2, a, y_2) \in \delta_2 \} \\
-        A_{Conc} &:=& (Q_{Conc}, s_{Conc}, F_{Conc}, \delta_{Conc}).
-    \end{eqnarray*}\todo{Case dist. on $s_2 \in F_2$}
+        A_{Conc} &:= (Q_{Conc}, s_{Conc}, F_{Conc}, \delta_{Conc}).
+    \end{align*}
+    %\end{eqnarray*}
 \end{definition}
 
+Before we prove the correctness of $A_{Conc}$, we need a number of auxiliary lemmas.
+
 \begin{lemma}
-    \label{dfa_conc_cont}
-    Every run of $A_2$ can be mapped to a run in $A_3$.
+    \label{nfa_conc_cont}
+    Every run of $A_2$ can be mapped to a run in $A_{Conc}$.
 \end{lemma}
 \begin{proof}
     Let $\sigma$ be a run starting in $x$ for $w \in \Sigma^*$ on $A_2$.
     We do an induction on $\sigma$.
-    For $|\sigma| = 0$\todo{symbol for empty run}%
-    we have $w = \varepsilon$.
-    Therefore, we have that $\sigma$ is also a run starting in $x$ for $\varepsilon$ on $A_{Conc}$
-    For $\sigma = y\sigma'$ we have $w = aw'$, $(x, a, y) \in \delta_2$.
-    By definition of $\delta_{Conc}$ we also have $(x, a, y) \in \delta_{Conc}$.
-    By induction hypothesis, we have that $\sigma'$ is a run for $w'$ starting in $y$ on $A_{Conc}$.
-    Thus, $y\sigma'$ is a run for $aw'$ starting in $x$ on $A_{Conc}$.
+    \begin{enumerate}
+        \item 
+            For $\sigma = x$
+            we have $w = \varepsilon$.
+            Therefore, we have that $\sigma$ is also a run starting in $x$ for $\varepsilon$ on $A_{Conc}$.
+        \item
+            For $\sigma = xy\sigma'$ we have $w = aw'$, $(x, a, y) \in \delta_2$.
+            By definition of $\delta_{Conc}$ we also have $(x, a, y) \in \delta_{Conc}$.
+            By inductive hypothesis, we have that $y\sigma'$ is a run for $w'$ starting in $y$ on $A_{Conc}$.
+            Thus, $xy\sigma'$ is a run for $aw'$ starting in $x$ on $A_{Conc}$.
+    \end{enumerate}
 \end{proof}
+
+\code{}{}{automata_nfa_conc_cont_head}
+
+The next lemma shows that, in $A_{Conc}$, the final states of $A_1$ have all transitions that the starting state of $A_2$ also has.
+Consequently, the accept the same words.
+
+\begin{lemma}
+    \label{nfa_conc_fin1}
+    Let $x \in F_1$. Let $w \in \lang{A_2}$. Then $w \in \acc{x}{A_{Conc}}$.
+\end{lemma}
+\begin{proof}
+    By induction on $w$. 
+    \begin{enumerate}
+        \item For $w = \varepsilon$ we have get $s \in F_2$ by $\varepsilon \in \lang{A_2}$ and, thus, $x \in F_{Conc}$ by definition.
+        \item For $w = aw'$ we have $y \in Q_2$ such that $(s,a,y) \in \delta_2$ and thus $(x,a,y) \in \delta_{Conc}$.
+            %By inductive hypothesis we have $w \in \acc{y}{A_{Conc}}$.
+            We also have $w' \in \acc{y}{A_2}$ and thus, by lemma \ref{nfa_conc_cont}, $w' \in \acc{y}{A_{Conc}}$.
+            Thus, $aw' \in \acc{x}{A_{Conc}}$.
+    \end{enumerate}
+\end{proof}
+
+The next lemma is one direction of the proof of correctness of $A_{Conc}$.
+
+\begin{lemma}
+    \label{nfa_conc_complete}
+    Let $x \in Q_1$, $w_1 \in \acc{x}{A_1}$, and $w_2 \in \lang{A_2}$. Then $w_1 w_2 \in \acc{x}{A_{Conc}}$.
+\end{lemma}
+\begin{proof}
+    By induction on $w_1$.
+    \begin{enumerate}
+        \item For $w_1 = \varepsilon$ we get $x \in F_1$ and thus, by lemma \ref{nfa_conc_fin1}, the claim follows.
+        \item For $w_1 = aw_1'$ we get $(x,a,y) \in \delta_1$ and thus $(x,a,y) \in \delta_{Conc}$. By inductive hypothesis, the claim follows.
+    \end{enumerate}
+\end{proof}
+
+The next lemma constitutes the other direction. 
+Its statement is very general, even though we will only need one of the two cases for the proof of correctness of $A_{Conc}$.
+However, with the second case, there is no straight-forward inductive proof.
+
+\begin{lemma}
+    \label{nfa_conc_sound}
+    Let $x \in Q_{Conc}$. Let $w \in \acc{x}{A_{Conc}}$. Then, either
+    \begin{equation*}
+        x \in Q_1 \; \wedge \; \exists w_1. \; \exists w_2. \; w = w_1 w_2 \; \wedge \; w_1 \in \acc{x}{A_1} \; \wedge \; w_2 \in \lang{A_2},
+    \end{equation*}
+    or
+    \begin{equation*}
+        x \in Q_2 \; \wedge \; w \in \acc{x}{A_2}.
+    \end{equation*}
+\end{lemma}
+
+
+
 
 \todo{Include all proofs}
 
@@ -658,22 +734,23 @@ In every step, one state is removed and its adjacent states' edges are updated t
 Finally, only two states remain. The resulting edges can be combined to form a regular expression that recognizes the language of the initial automaton.
 
 
-The second method is known as ``\textbf{Brzozowski's method}'' \cite{DBLP:journals/jacm/Brzozowski64} and builds upon Brzowoski derivates of regular expressions.
-This method is algebraic in nature and arrivates at a regular expression by solving a system of linear equations on regular expressions. 
-Every state is assigned an unkown regular expression. 
-The intuition of these unkown regular expressions is that they recognize the words accepted in their associated state. 
-The system is solved by substituition and Arden's lemma \cite{DBLP:conf/focs/Arden61}.
+The second method is known as ``\textbf{Brzozowski's method}'' \cite{DBLP:journals/jacm/Brzozowski64} and builds upon Brzozowski derivatives of regular expressions.
+This method is algebraic in nature and arrives at a regular expression by solving a system of linear equations on regular expressions. 
+Every state is assigned an unknown regular expression. 
+The intuition of these unknown regular expressions is that they recognize the words accepted in their associated state. 
+The system is solved by substitution and Arden's lemma \cite{DBLP:conf/focs/Arden61}.
 The regular expressions associated with the starting state recognizes the language of the automaton.
 
 
 The third method, which we chose for our development, is due to Kleene \cite{KleeneNets}.
 It is known as the ``\textbf{transitive closure method}''.
 This method recursively constructs a regular expression that is equivalent to the given automaton.
+We now give a detailed 
 For the remainder of the chapter, we assume that we are given a DFA $A=(Q,s,F,\delta)$.
 
 
 The idea of the transitive closure method is that we can give a regular expression to describe the path between any two states $x$ and $y$.
-This regular expression accepts all words whose run $\sigma$ on $A$ starting in $x$ ends in $y$.
+This regular expression accepts every word whose run $\sigma$ on $A$ starts in $x$ ends in $y$.
 In fact, we can even give such a regular expression if we limit the set of paths through which the run is allowed to pass. 
 We will call this set $X$.
 Passing through, here, means that the restriction applies only to states that are traversed, 
@@ -681,13 +758,13 @@ i.e. not to the beginning or end of the run.
 
 
 If we take $X$ to be the empty set, we only consider two types of runs.
-First, if $x \neq y$, every transition from $x$ to $y$ constitutes one (singelton) word. 
+First, if $x \neq y$, every transition from $x$ to $y$ constitutes one (singleton) word. 
 Conversely, if there is a word which does not pass through a state and whose run on $A$ starts in $x$ and ends in $y$, 
 it can only be a singleton word consisting of one of the transitions from $x$ to $y$.
 Therefore, the corresponding regular expression is the disjunction of all transitions from $x$ to $y$. 
 These transitions constitutes all possible words that lead from $x$ to $y$ without passing through any state.
 
-Otherweise, if $x = y$, we also have to consider the empty word, since its run on $A$ starts in $x$ and ends in $y$.
+Otherwise, if $x = y$, we also have to consider the empty word, since its run on $A$ starts in $x$ and ends in $y$.
 Thus, the corresponding regular expression is the disjunction of all transitions from $x$ to $y$ \textit{and} $\varepsilon$.
 
 
@@ -698,7 +775,7 @@ If it does, we can split it into three parts.
     \item  \label{R_xz}
         The first part contains the prefix of $\sigma$ which contains all states up to the first occurrence of $z$ that is not the starting state.
     \item  \label{R_zz}
-        The second part contains that part of the remainder of $\sigma$ which contains all further occurences of $z$, though not the last state if that is $z$.
+        The second part contains that part of the remainder of $\sigma$ which contains all further occurrences of $z$, though not the last state if that is $z$.
     \item  \label{R_zy}
         The third part contains the remainder.
 \end{enumerate}
@@ -707,7 +784,7 @@ Parts \ref{R_xz} and \ref{R_zy} can easily be expressed in terms of $X\backslash
 Part \ref{R_zz} can be further decomposed into runs from $z$ to $z$ that do not pass through $z$.
 Thus, part \ref{R_zz} can also be expressed in terms of $X\backslash\{z\}$ with the help of the $\ ^*$ operator.
 
-If $\sigma$ does not pass through $z$, it is covered by the regular expression for pathes from $x$ to $y$ restricted to $X\backslash\{z\}$.
+If $\sigma$ does not pass through $z$, it is covered by the regular expression for paths from $x$ to $y$ restricted to $X\backslash\{z\}$.
 
 
 \begin{definition}
@@ -765,7 +842,7 @@ The goal of this chapter is to prove the following theorem.
     \end{equation*}
 \end{theorem}
 
-In order to prove this theorem, we will first define a predicate in terms of runs that corresponds to $R^X_{x,y}$.
+In order to prove this theorem, we will first define a predicate on words that corresponds to $\lang{R^X_{x,y}}$.
 We call this predicate $L^X_{x,y}$ and define it such that it includes those words 
 whose runs on $A$ starting in $x$ only pass through states in $X$ and end in $y$.
 This is a direct implementation of the idea behind $R^X_{x,y}$.
@@ -785,11 +862,215 @@ Finally, we show that $R^X_{x,y} = L^X_{x,y}$, thus proving theorem \ref{dfa_to_
 
 The formalization of $L$ requires some infrastructure. 
 To check the second condition of $L$, we want to be able to state properties of all but the last items in a run.
-We define a function to remove the last element from a sequence.
+We define a function \lstinline{belast} to remove the last element from a sequence. 
+Note that, mathematically, runs include the starting state.
+In our formaliziation, this is not the case.
+Thus, we do not need to remove the first state from a run to retrieve all states the run passes through.
 
 \code{}{}{transitive_closure_belast}
 \codeblock{}{}{transitive_closure_allbutlast}
 \codeblock{}{}{transitive_closure_L}
 
+We now prove properties of $L$ that we will need for our proof of theorem \ref{dfa_to_regex}.
+
+\begin{lemma}
+    \label{L_monotone}
+    L is monotone \todo{is this word correct?} in $X$, i.e.
+    \begin{equation*}
+        \forall X \subseteq Q, z \in X, x,y \in Q. \; L^X x y \subseteq L^{X\cup\{z\}} x y.
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    This follows directly from $X \subset X\cup\{z\}$.
+\end{proof}
+
+\code{}{}{transitive_closure_L_monotone_head}
+
+\begin{lemma}
+    \label{L_nil}
+    The empty word is contained in $L^X_{x,y}$ if and only if $x=y$.
+\end{lemma}
+\begin{proof}
+   This follows immediately from the definition of $L$. 
+\end{proof}
+
+\code{}{}{transitive_closure_L_nil_head}
+
+Next, we will prove that words whose run passes through a state $z$ can be split into two words. 
+The run of the first word will end in $z$, i.e. not pass through $z$.
+
+\begin{lemma}
+    \label{run_split}
+    Let $w \in \Sigma^*$. Let $x,z \in Q$. 
+    Let $\sigma$ be the run of $w$ on $A$ starting in $x$.
+    \todo{notation for membership in runs?}
+    Let $z \in \sigma_1 \ldots \last{\sigma}$.
+    Then there exist $w_1, w_2 \in \Sigma^*$ such that
+    \begin{equation*}
+        w = w_1 w_2 \; \wedge \; |w_2| < |w| \; \wedge \; z \notin \sigma_1 \ldots \sigma_{|w_1|-1} \; \wedge \; \sigma_{|w_1|} = z.
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    %From $z \in \belast{\sigma}$ we have $|w| > 0$.
+    Let $i$ be the first occurrence of $z$ in $\sigma_1 \dots \last{\sigma}$ such that
+    $\sigma_i = z$ and $i > 0$.
+    Let $w_1 := w_0 \ldots w_{i-1}$ and $w_2 := w_i \ldots \last{w}$.
+    The claim follows.
+\end{proof}
+
+\code{}{}{transitive_closure_run_split_head}
+
+We will make use of this fact in the next lemma, which splits words in $L^{X}$ into two parts,
+the first of which is again in $L^{X}$. 
+This will be quintessential later, when we split words in $L^{X}$ into three parts 
+that correspond to the recursive definition of $R^X$.
+
+\begin{lemma}
+    \label{L_split}
+    Let $X \subseteq Q$ and $x,y,z \in Q$.
+    Let $w \in L^{X\cup\{z\}}_{x,y}$.
+    We have that either    
+    \begin{equation*}
+        w \in L^{X}_{x,y}, 
+    \end{equation*}
+    or there exist $w_1$ and $w_2$ such that
+    \begin{equation*}
+        w = w_1 w_2 \; \wedge \; |w_2| < |w| \;
+        \wedge \; w_1 \in L^X_{x,z} \; \wedge \; w_2 \in L^{X \cup \{z\}}_{z,y}.
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    We first eliminate the case of $z \in X$, which is solved trivially.
+    Let $\sigma$ be the run of $w$ on $A$ starting in $x$.
+    We do a case distinction on $z \in \sigma_1 \ldots \last{\sigma}$.
+    \begin{enumerate}
+        \item For $z \notin \sigma_1 \ldots \last{\sigma}$ we can easily show $w \in L^X_{x,y}$.
+        \item 
+            For $z \in \sigma_1 \ldots \last{\sigma}$ we use lemma \ref{run_split} to split $w$ in $w_1$ and $w_2$.
+            From $w \in L^{X\cup\{z\}}_{x,y}$ and $\sigma_{|w_1|} = z$ we immediately get $w_2 \in L^{X\cup\{z\}}_{z,y}$.
+            We have $z \notin \sigma_1 \ldots \last{\sigma}$.
+            We also have that $X = (X \cup \{z\})\backslash\{z\}$ from $z \notin X$.
+            Thus, we get $w_1 \in L^{X}_{x,z}$. The remainder of the claim follows directly from lemma \ref{run_split}.
+    \end{enumerate}
+\end{proof}
+
+Before we show that $L^X$ respects the defining equation of $R^X$, 
+we have to show that we can combine words from $L^{X}_{x,z}$, $(L^{X}_{z,z})^*$, and $L^{X}_{z,y}$ to form a word in $L^{X\cup\{z\}}_{x,y}$.
+We prove a general concatenation lemma for $L^X$.
+
+\begin{lemma}
+    \label{L_cat}
+    Let $X \subseteq Q$, $x,y\in Q$, and $z \in X$. 
+    Let $w_1 \in L^X_{x,z}$ and $w_2 \in L^X_{z,x}$.
+    Then we have
+    \begin{equation*}
+        w_1 w_2 \in L^X_{x,y}.
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    By $z \in X$, $w_1 \in L^X_{x,y}$, and $\sigma_{|w_1|} = z$ we get $\sigma_1, \ldots, \sigma_{|w_1|} \in X$.
+    We also have $\sigma_{|w_1|+1}, \ldots, \sigma_{|\sigma|-2} \in X$ and $\last{\sigma} = y$. Thus, $w_1 w_2 \in L^X_{x,y}$.
+\end{proof}
+
+\code{}{}{transitive_closure_L_cat_head}
+
+With this, we can prove that a sequence of $n$ words $w_0, \ldots, w_{n-1} \in L^{X}_{z,z}$ 
+forms a word $w = w_1 \ldots w_{n-1}$ with $w \in L^{X\cup\{z\}}_{z,z}$.
+
+\begin{lemma}
+    \label{L_flatten}
+    Let $n \in \mathbb{N}$. Let $w_0, \ldots, w_{n-1} \in L^{X}_{z,z}$.
+    We have that
+    \begin{equation*}
+        w_0 \ldots w_{n-1} \in L^{X\cup\{z\}}_{z,z}.
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    By induction on $n$.
+    \begin{enumerate}
+        \item For $n = 0$ we have to prove $\varepsilon \in L^{X\cup\{z\}}_{z,z}$ which holds by lemma \ref{L_nil}.
+        \item For $n = n'+1$ we have $w_0 \ldots w_{n-2} \in L^{X\cup\{z\}}_{z,z}$ by inductive hypothesis.
+            We also have $w_0, \ldots, w_{n-1} \in L^{X}_{z,z}$ by assumption, and, thus, $w_{n-1} \in L^{X}_{z,z}$.
+            By lemma \ref{L_cat} we get $w_0 \ldots w_{n-1} \in L^{X\cup\{z\}}_{z,z}$.
+    \end{enumerate}
+\end{proof}
+\code{}{}{transitive_closure_L_flatten_head}
+
+Finally, we can show that $L^X$ respects the defining equation of $R^X$.
+This lemma is quite involved as it is a combination of many different results.
+There is, however, a very clear intuition behind the strategy to prove it.
+Lemma \ref{L_split} allows us to cut off a non-empty prefix from a word $w \in L^{X}_{x,y}$.
+This prefix is in $L^{X}_{x,z}$. 
+By size induction, the remainder of $w$ can be cut into three parts, 
+one in $L^{X}_{z,z}$, one in $(L^{X}_{z,z})^*$ and one in $L^{X}_{z,y}$. 
+We only have to merge the first two parts to prove this direction of the lemma.
+
+The other direction is easily solved by lemma \ref{L_cat}.
 
 
+\begin{lemma}
+    \label{L_rec}
+    Let $X \subseteq Q$, $x,y \in Q$, and $z \in X$.
+    We have that 
+    \begin{equation*}
+        L^{X\cup\{z\}}_{x,y} = L^X_{x,z} (L^X_{z,z})^* L^X_{z,y} + L^X_{x,y}.
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    ``$\Rightarrow$''
+    By induction on $|w|$.
+    \begin{enumerate}
+        \item For $|w| = 0$ we get $w \in L^X_{x,y}$ by lemma \ref{L_nil}. 
+        \item For $|w| > 0$ we get $w_1$ and $w_2$ such that $w = w_1 w_2$, $w_1 \in L^X_{x,z}$ and $w_2 \in L^{X\cup\{z\}}_{z,y}$.
+            By inductive hypothesis we get 
+            \begin{equation*}
+             w_2 \in
+               L^X_{z,z} (L^X_{z,z})^* L^X_{z,y} \; \vee \; w_2 \in L^X_{z,y}
+            \end{equation*}
+            The latter gives us $w \in L^{X\cup\{z\}}_{x,y}$ by lemma \ref{L_cat}.
+            With the former, we have $w_3$, $w_4$, and $w_4$ such that $w_2 = w_3 w_4 w_5$, $w_3 \in L^{X}_{z,z}$,
+            $w_4 \in (L^X_{z,z})*$ and $w_5 \in L^X_{z,y}$.
+            We merge $w_3$ and $w_4$ such that $w_3 w_4 \in (L^{X}_{z,z})^*$.
+            This gives us with $w_2  \in (L^{X}_{z,z})^* L^X_{z,y}$.
+            Thus, $w_1 w_2 \in L^X_{x,z} (L^X_{z,z})^* L^X_{z,y}$.
+        \end{enumerate}
+
+    ``$\Leftarrow$''
+    We have $w_1 \in L^X_{x,z}$, $w_2 \in (L^X_{z,z})^*$, and $w_3 \in L^X_{z,y}$.
+    By lemma \ref{L_flatten} we get $w_2 \in L^{X\cup\{z\}}_{z,z}$.
+    Thus, $w_1 w_2 w_3 \in L^{X\cup\{z\}}_{x,y}$ by lemma \ref{L_cat}.
+\end{proof}
+\code{}{}{transitive_closure_L_rec_head}
+
+All that remains to complete the proof of lemma \ref{dfa_to_regex} is a proof of $L^X_{x,y} = \lang{R^X_{x,y}}$.
+
+\begin{lemma}
+    \label{L_R}
+    Let $X \subseteq Q$. Let $x,y \in Q$. We have that 
+    \begin{equation*}
+        L^X_{x,y} = R^X_{x,y}.
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    By induction on $|X|$.
+    \begin{enumerate}
+        \item For $|X| = 0$, the claim follows immediately from the definitions of $L$ and $R$. 
+        \item For $|X| = n+1$ for some $n \in \mathbb{N}$ we get $\exists z \in X$ and thus 
+            \begin{equation*}
+                R^X_{x,y} = R^{X\backslash\{z\}}_{x,z} (R^{X\backslash\{z\}}_{z,z})^* R^{X\backslash\{z\}}_{z,y} 
+                + R^{X\backslash\{z\}}_{x,y}.
+            \end{equation*}
+            By lemma \ref{L_rec} we also know that 
+            \begin{equation*}
+                L^X_{x,y} = L^{X\backslash\{z\}}_{x,z} (L^{X\backslash\{z\}}_{z,z})^* L^{X\backslash\{z\}}_{z,y}
+                + L^{X\backslash\{z\}}_{x,y}.
+            \end{equation*}
+            The claim follows by inductive hypothesis.
+    \end{enumerate}
+\end{proof}
+
+\code{}{}{transitive_closure_L_R_head}
+
+This concludes the proof of theorem \ref{dfa_to_regex}.
+
+\code{}{}{transitive_closure_dfa_to_regex_head}

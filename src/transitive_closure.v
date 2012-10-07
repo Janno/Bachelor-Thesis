@@ -559,7 +559,7 @@ Section TransitiveClosure.
         by move => [].
       rewrite -(setD1K Hz).
       rewrite (L_rec _ _) -2!topredE /= /plus /= setD1K => //.
-      rewrite IHn => //.
+      rewrite !IHn => //.
       apply: orbr2.
       apply: conc_eq.
         move => v.
@@ -579,18 +579,17 @@ Section TransitiveClosure.
   Lemma dfa_L x y: L^setT x y =i [pred w | last x (dfa_run' A x w) == y ].
   Proof.
     move => w /=.
-    apply/andP/idP.
-      by move => [] H0 H1.
-    rewrite in_simpl => -> /=.
+    apply/LP/idP.
+      move => []. by rewrite !inE => /eqP.
+    rewrite in_simpl => /eqP -> /=.
     firstorder.
     erewrite eq_allbutlast.
     apply allbutlast_predT.
-    move => z.
-    by rewrite /= in_set.
+    move => z. by rewrite /setT !inE.
   Qed.
                  
   
-  Lemma dfa_to_regex: exists r: regular_expression char, dfa_lang A =i [pred w | w \in r ].
+  Lemma dfa_to_regex: exists r: regular_expression char, dfa_lang A =i r.
   Proof.
     exists (
         nPlus
@@ -614,5 +613,5 @@ Section TransitiveClosure.
       by rewrite dfa_L in_simpl -dfa_run_accept => /eqP ->.
     by rewrite cardsE.
   Qed.                                    
-    
+   
 End TransitiveClosure.

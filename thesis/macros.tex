@@ -5,6 +5,9 @@
 \newcommand{\acc}[2]{\mathcal{L}_{#1}(#2)}
 \newcommand{\crep}[1]{cr(#1)}
 
+\newcommand{\last}[1]{ {#1}_{|{#1}|-1} }
+\newcommand{\belast}[1]{ {#1}_1 \ldots {#1}_{|{#1}|-2} } 
+
 \newcommand{\code}[3]{
     \lstinputlisting[label=#1,caption=#2,language=coq]{../docs/definitions/#3}
 }

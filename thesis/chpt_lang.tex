@@ -46,7 +46,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
 
     
     For our \coq\ development,
-    take Coquand and Siles's \cite{DBLP:conf/cpp/CoquandS11} implementation of these operators. 
+    we take Coquand and Siles's \cite{DBLP:conf/cpp/CoquandS11} implementation of these operators. 
     \lstinline{plus} and \lstinline{prod} refer to union and intersection, respectively. 
     Additionally, we also introduce the singleton languages (\lstinline{atom}), the empty language (\lstinline{void}) and the language containing only the empty word (\lstinline{eps}).
 
@@ -84,7 +84,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
         It follows that $w_1 \in L_1$ and $w_2 \in L_2$.
     \end{proof}
     
-    \code{regexp_concP}{Formalization of lemma \ref{concP}}{regexp_concP_head}
+    \code{}{}{regexp_concP_head}
 
     
     The implementation of \lstinline{star} makes use of a property of the Kleene closure, 
@@ -196,7 +196,8 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
         
 
      
-    The semantics of these constructors are as follows:
+    %The semantics of these constructors are as follows:
+    The language of an extended regular expression is defined as follows:
     \begin{align*}
         \lang{\emptyset} & = \emptyset
         & 
@@ -219,11 +220,9 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
             \lang{r} = \lang{s}.
         \end{equation*}
     \end{definition}
-
-    
     We will later show that equivalence of regular expressions is decidable.
 
-
+    
     
     We take the implementation of regular expressions from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
     The semantics defined in definition \ref{extregex} can be given as a boolean function.
@@ -234,7 +233,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     \codeblock{regexp_mem_reg}{}{regexp_mem_reg}
 
     
-    We will later prove that this definition is equivalent to the inductive definition of regular languages in \ref{REG}.
+    We will later prove that extended regular expressions are equivalent to the inductive definition of regular languages in \ref{REG}.
     In order to do that, we introduce a predicate on regular expressions that distinguishes \textbf{standard regular expressions} 
     from \textbf{extended regular expressions} (as introduced above).
     The grammar of standard regular expression is as follows:

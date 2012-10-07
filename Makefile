@@ -12,7 +12,7 @@ src/Makefile:
 src: src/Makefile
 	cd src; make
 
-thesis/chapters/%.pdf: thesis/%.tex
+thesis/chapters/%.pdf: definitions thesis/%.tex
 	j=$(shell basename $@ .pdf); cd thesis; pdflatex -jobname=chapters/$$j "\includeonly{$$j,includes.tex}\input{thesis}"
 
 tex_doc: src
@@ -41,10 +41,10 @@ docs/definitions: src docs/extract_definitions.py
 
 definitions: docs/definitions
 
-thesis/chapters:
-	mkdir thesis/chapters
+thesis/chapters: definitions
+	mkdir -p thesis/chapters
 
-thesis/thesis.pdf: definitions thesis/*.tex thesis/vc.tex thesis/chapters ${CHPTS}
+thesis/thesis.pdf: thesis/*.tex thesis/vc.tex thesis/chapters ${CHPTS}
 	cd thesis; latexmk -pdf thesis
 
 thesis: thesis/thesis.pdf
