@@ -11,8 +11,159 @@ In this chapter, we consider three additional characterizations of regular langu
 \end{enumerate}
 
 
-We will show that these three concepts can be used to characterize regular languages 
+We will show that these three characterizations can be used to characterize regular languages 
 by proving them equivalent to the existence of a (deterministic) finite automaton.
+
+
+\section{Definitions}
+Before we can state the Myhill-Nerode theorem, we need a number of auxiliary definitions. We roughly follow \cite{DBLP:books/daglib/0088160}.
+\begin{definition}
+    The \textbf{equivalence class} of $u \in \Sigma^*$ w.r.t. $\equiv$ is the set of all $v$ such that $u \equiv v$.
+    It is denoted by $[u]_\equiv$.
+\end{definition}
+
+\begin{definition}
+    $\equiv$ is of \textbf{finite index} if and only if the set of $\{[u]_\equiv \; | \; u \in \Sigma^* \}$ is finite.
+\end{definition}
+
+
+Due to the lack of native support for quotient types in \coq, 
+we formalize equivalence relations of finite index 
+as surjective functions from $\Sigma^*$ to a finite type $X$.
+
+\begin{definition}
+    \label{equiv_f}
+    Let $f: \Sigma^* \mapsto X$ be surjective.
+    The relation $\equiv_f$ is defined such that for all $u,v \in \Sigma^*$ 
+    \begin{equation*}
+        u \equiv_f v \iff f(u) = f(v).
+    \end{equation*}
+\end{definition}
+
+For all $w \in \Sigma^*$, $f(w)$ can be seen as an equivalence class of $\equiv_f$.
+It is easy to see that $\equiv_f$ is the equivalence relation. 
+Furthermore, from the finiteness of $X$, it follows that $\equiv_f$ is of finite index.
+%For our purposes, only surjective functions are relevant.
+
+\code{}{}{myhill_nerode_Fin_Eq_Cls}
+
+\begin{definition}
+    Let $f$ be as above. 
+    Let $x \in X$. $w \in \Sigma^*$ is a \textbf{representative} of $x$ if and only if $f(w) = x$.
+    Since $f$ is surjective, every $w$ has a representative. 
+    We write $\crep{x}$ to denote the \textbf{canonical representative} of $x$, which we obtain by constructive choice.
+\end{definition}
+
+
+
+\code{}{}{myhill_nerode_cr}
+
+\subsection{Myhill Relations}
+
+\begin{definition} 
+    \label{Myhill}
+    Let $\equiv$ be an equivalence relation of finite index. $\equiv$ is a \textbf{Myhill}%
+    \textbf{relation} \cite{DBLP:books/daglib/0088160} on $L$ if and only if
+
+\begin{enumerate}[label=(\roman*)]
+
+    \item\label{right_congruent}
+                %\begin{definition}
+        $\equiv$ is \textbf{right congruent}, i.e. for all $u, v \in \Sigma^*$ and $a \in \Sigma$,
+        \begin{equation*}
+            u \equiv v \Rightarrow
+            u \cdot a \equiv v \cdot a.
+        \end{equation*}
+                %\end{definition}
+
+
+    \item\label{refinement}
+                %\begin{definition}
+        $\equiv$ \textbf{refines} $L$, i.e. for all $u,v \in \Sigma^*$,
+        \begin{equation*}
+            u \equiv v \Rightarrow
+            (u \in L \iff v \in L).
+        \end{equation*}
+                %\end{definition}
+
+\end{enumerate}
+\end{definition}
+
+Myhill relations are commonly referred to as ``Myhill-Nerode relations''. 
+In this thesis, it makes sense to split the concept of a Myhill relation from that of the Nerode relation.
+Apart from the Nerode relation, which can be seen as the coarsest Myhill relation, we also define
+weak Nerode relations that have no direction connection to Myhill relations.
+%Additionally, Myhill relations and both kind of Nerode relations inhabit different types in our formalization.
+Thus, we strictly separate the characterizations.
+
+
+Building on our formalization of equivalence relations of finite index, 
+we only need to give formalizations of \ref{right_congruent} and \ref{refinement}.
+
+\code{}{}{myhill_nerode_right_congruent}
+\codeblock{}{}{myhill_nerode_refines}
+\codeblock{}{}{myhill_nerode_Myhill_Rel}
+
+
+Myhill relations correspond to the equivalence relations 
+defined as the pairs of words $(u, v)$ whose runs on a DFA $A$ end in the same state. 
+These relations are right congruent, refine $\lang{A}$ and are of finite index as $A$ has finitely many states. 
+We will later give a formal proof of this.
+
+\subsection{Nerode Relations}
+
+\begin{definition}
+    \label{suffix_equal}
+    Let $u, v \in \Sigma^*$. Let $L$ be a language. We define the \textbf{Nerode relation} $\doteq_L$ on $L$ such that 
+    %We say that $u$ and $v$ are \textbf{invariant under concatenation} w.r.t. L if and only if
+    \begin{equation*}
+        u \doteq_L v \iff \forall w \in \Sigma^*. \; uw \in L \Leftrightarrow vw \in L. 
+    \end{equation*}
+\end{definition}
+
+
+The Nerode relation given above is a propositional statement in \coq. 
+To proof that the Nerode relation is of finite index, 
+we require an equivalence relation, 
+i.e. a function $f$ from words to a finite type,
+such that $=_f$ is equivalent to $\doteq_L$.
+
+\code{}{}{myhill_nerode_equiv_suffix}
+\codeblock{}{}{myhill_nerode_Nerode_Rel}
+
+\begin{definition}
+    \label{Weak_Nerode_Rel}
+    Let $L$ be a language and let $\equiv$ be an equivalence relation. We say that $\equiv$ is a \textbf{weak Nerode relation} on $L$ if and only if
+    \begin{equation*}
+        \forall u, v \in \Sigma^*. \; u \equiv v \implies u \doteq_L v.
+    \end{equation*}
+\end{definition}
+
+
+\code{}{}{myhill_nerode_suffix_equal}
+\codeblock{}{}{myhill_nerode_imply_suffix}
+\codeblock{}{}{myhill_nerode_Weak_Nerode_Rel}
+
+
+It appears that the notion of a weak Nerode relation is not found in the literature.
+We will later prove them weaker than Myhill relations, in the sense that every Myhill relation is also a weak Nerode relation.
+
+\subsection{Myhill-Nerode Theorem}
+We can now move on to the statement of the Myhill-Nerode theorem \cite{DBLP:books/daglib/0088160}.
+
+
+
+\begin{theorem}{(Myhill-Nerode)}
+    \label{Myhill-Nerode}
+    Let $L$ be a language. The following four statements are equivalent:
+    \begin{enumerate}
+        \item there exists a deterministic finite automaton that accepts $L$;
+        \item there exists a Myhill relation on $L$;
+        \item there exists a weak Nerode relation on $L$;
+        \item the Nerode relation on $L$ is of finite index.
+    \end{enumerate}
+\end{theorem}
+
 Our proof of equivalence will have the following structure:
 \begin{equation*}
     \lefteqn{
@@ -63,188 +214,180 @@ Our proof of equivalence will have the following structure:
 \end{equation*}
 
 
-We will first give a proof of \tcircled{c}, which is the most challenging proof and formalization in this chapter.
-We will then show \tcircled{a}, \tcircled{b}, and \tcircled{d}.
-
-%
-%We will prove the equivalence of the following four%
-%\footnote{The Myhill-Nerode theorem usually consists only of the equivalence of 
-%\ref{
-%}
-%statements. Let $L$ be a language.
-%\begin{enumerate}
-%    \item \label{mn_thm_fa} There exists a finite automaton $A$ such that $\lang{A} = L$.
-%    \item \label{mn_thm_myhill} There exists a Myhill relation on $L$.
-%    \item \label{mn_thm_weak_nerode} There exists a weak Nerode relation on $L$.
-%    \item \label{mn_
-%\end{enumerate}
+We will first show \tcircled{a}, \tcircled{b}, and \tcircled{d}.
+We will then give a proof of \tcircled{c}, which is the most challenging proof and formalization in this chapter.
 
 
-\section{Definition}
+\section{Finite Automata, Myhill relations, and Nerode relations}
+First, we will show that, given a DFA $A$, we can construct a Myhill relation on $\lang{A}$.
+We will then show that this also enables us to construct a weak Nerode relation $\lang{A}$.
+%As we have already covered the minimization of equivalence classes in the previous chapter,
+%this proves that the Nerode relation is of finite index.
 
-The following definitions (roughly following \cite{DBLP:books/daglib/0088160}) will lead us to the statement of the Myhill-Nerode theorem.
-%Let $\equiv$ be an equivalence relation on $\Sigma^*$. Let $L$ be a language over $\Sigma$.
+Conversely, knowing that the Nerode relation on language $L$ is of finite index,  we will show that we can construct a DFA that accepts $L$.
+
+\subsection{Finite Automata to Myhill relations}
+We assume we are given a DFA $A$. 
+We will be using the states of $A$ as equivalence classes.
+Our goal is to construct a Myhill relation, for which we will need an equivalence relation of finite index.
+Therefore, we first need to ensure that the mapping from words to equivalence classes is surjective.
+Thus, we consider the equivalent, connected automaton $A_c=(Q_c, s_c, F_c, \delta_c)$ (definition \ref{A_c}), which has only reachable states.
+This enables us to construct a surjective function from words to the states of $A_c$.
 
 \begin{definition}
-    The \textbf{equivalence class} of $u \in \Sigma^*$ w.r.t. $\equiv$ is the set of all $v$ such that $u \equiv v$.
-    It is denoted by $[u]_\equiv$.
-\end{definition}
-
-\begin{definition}
-    $\equiv$ is of \textbf{finite index} if and only if the set of $\{[u]_\equiv \; | \; u \in \Sigma^* \}$ is finite.
-\end{definition}
-
-
-Due to the lack of native support for quotient types in \coq, 
-we formalize equivalence relations of finite index 
-as surjective functions from $\Sigma^*$ to a finite type $X$.
-
-\begin{definition}
-    \label{equiv_f}
-    Let $f: \Sigma^* \mapsto X$ be surjective.
-    The relation $\equiv_f$ is defined such that for all $u,v \in \Sigma^*$ 
+    \label{f_M} 
+    Let $u \in \Sigma^*$. 
+    Let $\sigma$ be the run of $u$ on $A_c$. 
+    We define $f_M: \Sigma^* \mapsto Q_c$ such that $f_M(U)$ is the last state in $\sigma$, i.e.
     \begin{equation*}
-        u \equiv_f v \iff f(u) = f(v).
+        f_M(u) := \sigma_{|\sigma|-1}.
     \end{equation*}
-    For all $w \in \Sigma^*$, $f(w)$ can be seen as an equivalence class of $\equiv_f$.
+    Note that $f_M$ is surjective (follows directly from lemma \ref{dfa_connected_repr}) 
+    and, thus, an equivalence relation of finite index.
 \end{definition}
 
-
-It is easy to see that $\equiv_f$ is an equivalence relation. 
-Furthermore, from the finiteness of $X$, it follows that $\equiv_f$ is of finite index.
-%For our purposes, only surjective functions are relevant.
-
-\code{}{}{myhill_nerode_Fin_Eq_Cls}
-
-\begin{definition}
-    Let $f$ be as above. 
-    Let $x \in X$. $w \in \Sigma^*$ is a \textbf{representative} of $x$ if and only if $f(w) = x$.
-    We write $\crep{x}$ to denote the \textbf{canonical representative} of $x$, which we obtain by constructive choice.
-\end{definition}
+\code{}{}{myhill_nerode_f_M}
+\codeblock{}{}{myhill_nerode_f_M_surjective_head}
+\codeblock{}{}{myhill_nerode_f_fin}
 
 
+In order to show that $f_M$ is a Myhill relation, we prove that it fulfills definition \ref{Myhill}.
 
-\code{}{}{myhill_nerode_cr}
+\begin{lemma}
+    \label{f_M_right_congruent}
+    $f_M$ is right congruent.
+\end{lemma}
+\begin{proof}
+    Let $u,v \in \Sigma^*$ such that $u =_{f_M} v$.
+    Let $a \in \Sigma$. Since $A$ is deterministic, we get $ua =_{f_M} va$.
+\end{proof}
 
-\subsection{Myhill Relations}
+\begin{lemma}
+    \label{f_M_refines}
+    $f_M$ refines $\lang{A_c}$.
+\end{lemma}
+\begin{proof}
+    Let $u,v \in \Sigma^*$ such that $u =_{f_M} v$.
+    By definition of $f_M$, the runs $u$ and $v$ on $A$ end in the same state.
+    Thus, either $u$ and $v$ are both accepted, or both not accepted.
+\end{proof}
 
-\begin{definition} 
-    \label{Myhill}
-    Let $\equiv$ be an equivalence relation. $\equiv$ is a \textbf{Myhill}%
-    \footnote{Myhill relations are commonly referred to as ``Myhill-Nerode relations''. 
-    In this thesis, it makes sense to split the concept of a Myhill relation from that of the Nerode relation.}
-    \textbf{relation} \cite{DBLP:books/daglib/0088160} on $L$ if and only if
-
-\begin{enumerate}[label=(\roman*)]
-
-    \item\label{right_congruent}
-                %\begin{definition}
-        $\equiv$ is \textbf{right congruent}, i.e. for all $u, v \in \Sigma^*$ and $a \in \Sigma$,
-        \begin{equation*}
-            u \equiv v \Rightarrow
-            u \cdot a \equiv v \cdot a.
-        \end{equation*}
-                %\end{definition}
-
-
-    \item\label{refinement}
-                %\begin{definition}
-        $\equiv$ \textbf{refines} $L$, i.e. for all $u,v \in \Sigma^*$,
-        \begin{equation*}
-            u \equiv v \Rightarrow
-            (u \in L \iff v \in L).
-        \end{equation*}
-                %\end{definition}
-
-    \item\label{finite_index}
-                %\begin{definition}
-        $\equiv$ is of \textbf{finite index}.
-\end{enumerate}
-\end{definition}
-
-
-Building on our formalization of equivalence relations of finite index, 
-we only need to give formalizations of \ref{right_congruent} and \ref{refinement}.
-
-\code{}{}{myhill_nerode_right_congruent}
-\codeblock{}{}{myhill_nerode_refines}
-\codeblock{}{}{myhill_nerode_Myhill_Rel}
-
-
-Myhill relations correspond to the equivalence relations 
-defined as the pairs of words $(u, v)$ whose runs on a DFA $A$ end in the same state. 
-These relations are right congruent, refine $\lang{A}$ and are of finite index as $A$ has finitely many states. 
-We will later give a formal proof of this.
-
-\subsection{Nerode Relations}
-
-\begin{definition}
-    \label{equal_suffix}
-    Let $u, v \in \Sigma^*$. Let $L$ be a language. We define the \textbf{Nerode relation} $\doteq_L$ on $L$ such that 
-    %We say that $u$ and $v$ are \textbf{invariant under concatenation} w.r.t. L if and only if
-    \begin{equation*}
-        u \doteq_L v \iff \forall w \in \Sigma^*. \; uw \in L \Leftrightarrow vw \in L. 
-    \end{equation*}
-\end{definition}
-
-
-The Nerode relation given above is a propositional statement in \coq. 
-To proof that the Nerode relation is of finite index, 
-we require an equivalence relation, 
-i.e. a function $f$ from words to a finite type,
-such that $=_f$ is equivalent to $\doteq_L$.
-
-\code{}{}{myhill_nerode_equiv_suffix}
-\codeblock{}{}{myhill_nerode_Nerode_Rel}
-
-\begin{definition}
-    \label{Weak_Nerode_Rel}
-    Let $\equiv$ be an equivalence relation. Let $L$ be a language. We say that $\equiv$ is a \textbf{weak Nerode relation} on $L$ if and only if
-    \begin{equation*}
-        \forall u, v \in \Sigma^*. \; u \equiv v \implies u \doteq_L v.
-    \end{equation*}
-\end{definition}
-
-
-\code{}{}{myhill_nerode_equal_suffix}
-\codeblock{}{}{myhill_nerode_imply_suffix}
-\codeblock{}{}{myhill_nerode_Weak_Nerode_Rel}
-
-
-The notion of a weak Nerode relation is not found in the literature.
-We will later prove them weaker than Myhill relations, in the sense that every Myhill relation is also a weak Nerode relation.
-
-\subsection{Myhill-Nerode Theorem}
-We can now move on to the statement of the Myhill-Nerode theorem \cite{DBLP:books/daglib/0088160}.
-
-
-
-\begin{theorem}{(Myhill-Nerode)}
-    \label{Myhill-Nerode}
-    Let $L$ be a language. The following four statements are equivalent:
-    \begin{enumerate}
-        \item there exists a (deterministic) finite automaton that accepts $L$;
-        \item there exists a Myhill relation on $L$;
-        \item there exists a weak Nerode relation on $L$;
-        \item the Nerode relation on $L$ is of finite index.
-    \end{enumerate}
+\begin{theorem}
+    \label{dfa_to_myhill}
+    $f_M$ is a Myhill relation on $\lang{A}$.
 \end{theorem}
+\begin{proof}
+    By lemma \ref{dfa_connected_correct}, we have $\lang{A_c} = \lang{A}$.
+    Thus, it suffices to show that $f_M$ is a Myhill relation on $\lang{A_c}$.
+    This follows with lemma \ref{f_M_right_congruent} and lemma \ref{f_M_refines}.
+\end{proof}
 
+
+We only have extensional equality on $\lang{A_c}$ and $\lang{A}$ in \coq.
+Thus, we first show that $f_M$ is a Myhill relation on $\lang{A_c}$.
+Then, we show that we can get a Myhill relation on $\lang{A}$ from a Myhill relation on $\lang{A_c}$.
+
+\code{}{}{myhill_nerode_dfa_to_myhill'}
+\codeblock{}{}{myhill_nerode_myhill_lang_eq_head}
+\codeblock{}{}{myhill_nerode_dfa_to_myhill}
+
+
+This concludes the proof of step \tcircled{a}.
+
+\subsection{Myhill relations to weak Nerode relations}
+We show that, if there exists a Myhill relation, there also exists a weak Nerode relation.
+In fact, we will prove that any Myhill relation \textit{is} a weak Nerode relation.
+
+\begin{theorem}
+    \label{myhill_suffix}
+    Let $f$ be a Myhill relation on a language $L$.
+    Then $f$ is a weak Nerode relation on $L$.
+\end{theorem}
+\begin{proof}
+    Let $u, v \in \Sigma^*$ such that $u =_f v$. We have to show that for all $w \in \Sigma^*$, $u w \in L \Leftrightarrow v w \in L$.
+    By induction on $w$.
+    \begin{enumerate}
+        \item For $w = \varepsilon$, we get $u \in L \Leftrightarrow v \in L$ as $f$ refines $L$.
+        \item For $w = aw'$, we get $ua =_f va$ by congruence of $f$ and thus, by inductive hypothesis, $uaw' \in L \Leftrightarrow vaw' \in L$.
+    \end{enumerate}
+\end{proof}
+
+\code{}{}{myhill_nerode_myhill_suffix_head}
+\codeblock{}{}{myhill_nerode_myhill_to_weak_nerode}
+
+
+This concludes step \tcircled{b} of theorem \ref{Myhill-Nerode}.
+
+\subsection{Nerode relations to Finite Automata}
+We prove step \tcircled{d} of theorem \ref{Myhill-Nerode}. 
+If the Nerode relation on a language $L$ is of finite index, we can construct a DFA that accepts $L$.
+The construction is very straight-forward and uses the equivalence classes of the Nerode relation as the set of states for the automaton.
+
+\begin{definition}
+    \label{nerode_to_dfa} 
+    Let $L$ be a language. Let $X$ be a finite type. Let $f: \Sigma^* \mapsto X$ be the equivalence relation which proves that the Nerode relation on $L$ is of finite index.
+    We construct DFA $A$ such that
+\begin{eqnarray*}
+    s & := & f(\varepsilon) \\
+    F & := & \{ x | x \in X \wedge \crep{x} \in L \} \\
+    \delta & := & \{ (x, a, f(\crep{x} a)) \; | \; x \in X, a \in \Sigma \} \\
+    A &:=&  (X, s, F, \delta).
+\end{eqnarray*}
+\end{definition}
+
+\code{}{}{myhill_nerode_nerode_to_dfa}
+
+
+In order to show that $A$ accepts the language $L$, we first need to connect runs on $A$ to the equivalence classes, i.e. the range of $f$.
+The following lemma gives a direct connection.
+
+\begin{lemma}
+    \label{nerode_to_dfa_run}
+    Let $w \in \Sigma^*$. Let $\sigma$ be the run of $w$ on $A$ starting in $s$. We have that the last state of $\sigma$ is the equivalence class of $w$, i.e. 
+    \begin{equation*}
+        \sigma_{|\sigma|-1} = f(w).
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    We proceed by induction on $w$ from right to left.
+    \begin{enumerate}
+        \item For $w = \varepsilon$ we have $s = f(\varepsilon)$.
+        \item For $w = w'a$ we know that the run of $w'$ on $A$ starting in $s$ ends in $f(w')$. 
+            It remains to show that $(f(w'), a, f(w)) \in \delta$.
+            We have $\crep{f(w')}a =_f w$, i.e. $f(\crep{f(w')}a) = f(w)$ by definition of $f$.
+            Thus, it suffices to show $(f(w'), a, f(\crep{f(w')}a)) \in \delta$, which holds by definition of $\delta$.
+    \end{enumerate}
+\end{proof}
+
+\begin{theorem}
+    \label{nerode_to_dfa_correct}
+    $A$ accepts $L$, i.e. $\lang{A} = L$.
+\end{theorem}
+\begin{proof}
+    Let $w \in \Sigma^*$. Let $\sigma$ be the run of $w$ on $A$ starting in $s$. 
+    $w$ is accepted if and only if $\sigma_{|\sigma|-1} \in F$, i.e. if and only if $\crep{\sigma_{|\sigma|-1}} \in L$.
+    We have $w =_f \crep{\sigma_{|\sigma|-1}}$ and therefore $w \in L \Leftrightarrow \crep{\sigma_{|\sigma|-1}} \in L$.
+    Thus $w$ is accepted if and only if $w \in L$.
+\end{proof}
+
+
+This concludes step \tcircled{d} of theorem \ref{Myhill-Nerode}.
 
 \section{Minimizing Equivalence Classes}
-
-We will prove that if there is a weak Nerode relation on a language $L$, the Nerode relation is of finite index.
-This proves step $(3) \implies (4)$ and thus step \tcircled{c} of our plan.
-For this purpose, we employ a table-filling algorithm \cite{DBLP:books/daglib/0011126} to find indistinguishable states under the Myhill-Nerode relation. 
-However, we do not rely on an automaton, as is usually done. 
-In fact, we use the finite type $X$, i.e., the equivalence classes, instead of states.
+Finally, we prove that if there is a weak Nerode relation on a language $L$, the Nerode relation is of finite index.
+This proves step \tcircled{c} of the theorem \ref{Myhill-Nerode} and thus complets its proof.
+For this purpose, we employ a table-filling algorithm \cite{Huffman1954161} to find indistinguishable states under the Myhill-Nerode relation. 
+%However, we do not rely on an automaton, as is usually done. 
+This algorithm was originally intended to be used on automata. 
+It identifies (un)distinguishable states based on their successors.
+We use the finite type $X$, i.e., the equivalence classes, instead of states.
 
 
 For the remainder of this section, we assume we are given a language $L$ and a weak Nerode relation $f_0$. 
 
 
-We employ a fixed-point construction to find equivalence classes that are equivalent in the sense of $\doteq_L$.
-In each step, we add those equivalences classes that are distinguishable based on previously distinguishable equivalence classes.
+We employ a fixed-point construction to find equivalence classes that are $\doteq_L$-equivalent.
+In each step, we add those equivalences classes that are distinguishable based on equivalence classes that were distinguishable in the previous step.
 The initial set of distinguishable equivalence classes are distinguishable by the inclusion of their canonical representative in $L$. 
 We denote this initial set $\mathit{dist_0}$.
 \begin{equation*}
@@ -256,24 +399,27 @@ We denote this initial set $\mathit{dist_0}$.
 
 
 To find more distinguishable equivalence classes, we have to identify equivalence classes that ``lead'' to distinguishable equivalence classes. 
-In allusion to the minimization procedure on automata, we define successors of equivalence classes.
-The intuition is that two states are distinguishable if they are succeeded by distinguishable states.
+In analogy to the minimization procedure on automata, we define successors of equivalence classes with respect to a single character.
+The intuition is that two states are distinguishable if they are succeeded by a pair of distinguishable states.
 Conversely, if a pair of states is not distinguishable, then their predecessors can not be distinguished by those states.
-Thus, two states are undistinguishable, i.e. equivalent, if none of their succeeding pairs of states are distinguishable.
+Thus, two states are undistinguishable if none of their succeeding pairs of states are distinguishable.
 
 
 \begin{definition}
     %We say that an equivalence class $x$ \textbf{transitions} to $y$ with $a \in \Sigma$ if and only if
     Let $x,y \in X$ and $a \in \Sigma$.
-    We define $\mathit{succ_a}$ and $\mathit{psucc_a}$. $\mathit{succ_a}(x) := \crep{x}\cdot a$ and $\mathit{psucc_a}(x,y) := (\mathit{succ_a}(x), \mathit{succ_a}(y))$.
+    We define $\mathit{succ_a}$ and $\mathit{psucc_a}$. $\mathit{succ_a}(x) := {f_0}(\crep{x}\cdot a)$ and $\mathit{psucc_a}(x,y) := (\mathit{succ_a}(x), \mathit{succ_a}(y))$.
 \end{definition}
+\code{}{}{myhill_nerode_succ}
+\codeblock{}{}{myhill_nerode_psucc}
 
 The fixed-point algorithm tries to extend the set of distinguishable equivalence classes by looking for a pair of equivalence classes that transitions to a pair of distinguishable equivalence classes. 
 Given a set of pairs of equivalence classes $\mathit{dist}$, 
-we define the set of pairs of distinguishable equivalence classes that are succeeded by pairs in $\mathit{dist}$ as
+we define the set of pairs of distinguishable equivalence classes that have successors in $\mathit{dist}$ as
 \begin{equation*}
     \mathit{distinct_S}(\mathit{dist}) := \{ (x,y) \; | \; \exists a. \, \mathit{psucc_a}(x,y) \in \mathit{dist}\}.
 \end{equation*}
+\code{}{}{myhill_nerode_distinctS}
 
 \begin{definition}
     \label{unnamed}
@@ -282,15 +428,8 @@ we define the set of pairs of distinguishable equivalence classes that are succe
         \mathit{unnamed}(\mathit{dist}) := \mathit{dist_0} \cup \mathit{dist} \cup \mathit{distinct_S}(\mathit{dist}).
     \end{equation*}
 \end{definition}
+\code{}{}{myhill_nerode_unnamed}
 
-
-\code{}{}{myhill_nerode_succ}
-
-\codeblock{}{}{myhill_nerode_psucc}
-
-\codeblock{}{}{myhill_nerode_distinctS}
-
-\codeblock{}{}{myhill_nerode_unnamed}
 
 \begin{lemma}
     \label{dist_monotone}
@@ -307,6 +446,9 @@ we define the set of pairs of distinguishable equivalence classes that are succe
 Let \textit{\textbf{distinct}} be the fixed point of $unnamed$ and let it be denoted by $\not\cong$. 
 We write \textit{\textbf{equiv}} for the complement of \textit{distinct} and denote it $\cong$.
 \end{proof}
+\code{}{}{base_lfp}
+\codeblock{}{}{myhill_nerode_distinct}
+
 
 
 We now show that $\cong$ is equivalent to the Nerode relation. 
@@ -322,30 +464,33 @@ since the two directions require different strategies.
     $\cong$ is an equivalence relation.
 \end{lemma}
 \begin{proof}
-    We first state transitivity of $\cong$ in terms of $\not\cong$ and call this property of $\not\cong$ \textbf{complementary transitivity}:
-    \begin{equation*}
+    We first state transitivity of $\cong$ in terms of $\not\cong$:% and call this property of $\not\cong$ \textbf{complementary transitivity}:
+    \begin{equation}
+        \tag{*}
+        \label{trans}
         \forall x,y,z \in X. \; \neg (x \not\cong y) \implies \neg (y \not\cong z) \implies \neg (x \not\cong z).
-    \end{equation*}
-    It suffices to show that $\mathit{distinct}$ is anti-reflexive, symmetric and complementarily transitive.
+    \end{equation}
+    It suffices to show that $\mathit{distinct}$ is anti-reflexive, symmetric and fulfills (\ref{trans}).
     Note that complementary transitivity, anti-reflexivity and symmetry are closed under union.
     We proceed by fixed-point induction.
     \begin{enumerate}
-        \item For $\mathit{unnamed}(\mathit{dist}) = \emptyset$ we have anti-reflexivity, symmetry and complementary transitivity
+        \item For $\mathit{unnamed}(\mathit{dist}) = \emptyset$ we have anti-reflexivity, symmetry and (\ref{trans}) %complementary transitivity
             by the properties of $\emptyset$.
         \item For $\mathit{unnamed}(\mathit{dist}) = \mathit{dist'}$ 
-            we have $\mathit{dist}$ anti-reflexive, symmetric and complementarily transitive.
+            we have $\mathit{dist}$ anti-reflexive, symmetric and (\ref{trans}). %complementarily transitive.
             It remains to show that
             $\mathit{dist_0}$ 
             and $\mathit{distinct_S}(\mathit{dist})$ 
-            are anti-reflexive, symmetric and complementarily transitive.
+            are anti-reflexive, symmetric and fulfill (\ref{trans}). 
             
-            $\mathit{dist_0}$ is anti-reflexive, symmetric and complementarily transitive by definition. 
+            $\mathit{dist_0}$ is anti-reflexive, symmetric and fulfills (\ref{trans})  by definition. 
 
             $\mathit{distinct_S}(\mathit{dist})$ can be seen as an intersection 
-            of a symmetric subset of $X \times X$ defined by $\mathit{psucc_a}$ and the anti-reflexive, symmetric and complementarily transitive $\mathit{dist}$.
-            Thus, $\mathit{distinct_S}(\mathit{dist})$ is anti-reflexive, symmetric and complementarily transitive.
+            of a symmetric subset of $X \times X$ defined by $\mathit{psucc_a}$ and  $\mathit{dist}$, 
+            the latter of which is anti-reflexive, symmetric and fulfills (\ref{trans}).
+            Thus, $\mathit{distinct_S}(\mathit{dist})$ is anti-reflexive, symmetric and fulfills (\ref{trans}). % complementarily transitive.
             
-            Therefore, $\mathit{dist'}$ is anti-reflexive, symmetric and complementarily transitive.
+            Therefore, $\mathit{dist'}$ is anti-reflexive, symmetric and fulfills (\ref{trans}). %complementarily transitive.
     \end{enumerate}
 \end{proof}
 
@@ -363,7 +508,7 @@ since the two directions require different strategies.
     \begin{equation*}
         uw \in L \not\Leftrightarrow vw \in L \implies u \not\cong_{f_0} v.
     \end{equation*}    
-    Induction on $w$ and generalize over $u$ and $v$.
+    By induction on $w$.
     \begin{enumerate}
         \item For $w = \varepsilon$ we have $u \in L \not\Leftrightarrow v \in L$ which gives us $({f_0}(u),{f_0}(v)) \in dist_0$.
             Thus, $u \not\cong_{f_0} v$.
@@ -421,9 +566,12 @@ since the two directions require different strategies.
         u \cong_{f_0} v \iff u \doteq_L v.
     \end{equation*}
 \end{corollary}
+\begin{proof}
+    Follows immediately with lemma \ref{equiv_final} and lemma \ref{distinct_final}. 
+\end{proof}
 
-\code{}{}{myhill_nerode_equiv_equal_suffix_head}
-\codeblock{}{}{myhill_nerode_distinct_not_equal_suffix_head}
+\code{}{}{myhill_nerode_equiv_suffix_equal_head}
+\codeblock{}{}{myhill_nerode_distinct_not_suffix_equal_head}
 \codeblock{}{}{myhill_nerode_equivP_head}
 
 \begin{definition}
@@ -433,7 +581,7 @@ since the two directions require different strategies.
     \begin{equation*}
         \mathit{f_{min}}(w) := \{ x \; | \; x \in X, \; {f_0}(w) \cong x \}.
     \end{equation*}
-    Note that the domain of $\mathit{f_{min}}$ is finite (since $X$ is finite) and contains no empty sets (due to reflexivity of $\cong$).
+    Note that the range of $\mathit{f_{min}}$ is finite (since $X$ is finite) and does not contain the empty set (due to reflexivity of $\cong$).
 \end{definition}
 
 \begin{lemma}
@@ -441,10 +589,11 @@ since the two directions require different strategies.
     $\mathit{f_{min}}$ is surjective.
 \end{lemma}
 \begin{proof}
-    Let $s \in dom(\mathit{f_{min}})$. 
-    There exists $x \in X$ such that $x \in s$ since $s \neq \emptyset$. 
+    Let $s \in range(\mathit{f_{min}})$. 
+    Since $s \neq \emptyset$, 
+    there exists $x \in X$ such that $x \in s$.
     We have ${f_0}(x) = {f_0}(\crep{x}$) and therefore $x \cong_{f_0} \crep{x}$ by reflexivity of $\cong$.
-    Thus, $\crep{x}$ is a representative of $s$ since $\mathit{f_{min}}(x) = \mathit{f_{min}}(\crep{x}) = s$.
+    Thus, ${f_0}(\crep{x}) = s$ since  $\mathit{f_{min}}(x) = \mathit{f_{min}}(\crep{x}) = s$.
 \end{proof}
 
 \begin{lemma}
@@ -463,7 +612,7 @@ since the two directions require different strategies.
     We have $u \cong_{f_0} v$. 
     Let $x \in X$.
     It suffices to show that ${f_0}(u) \cong x$ if and only if ${f_0}(v) \cong x$.
-    This follows from symmetry and transitivity of $\cong$.
+    This follows with symmetry and transitivity of $\cong$.
 \end{proof}
 
 \begin{lemma}
@@ -483,7 +632,7 @@ since the two directions require different strategies.
 
 
 The formalization of $\mathit{f_{min}}$ is slightly more involved than the mathematical construction. 
-We first need to define the finite type of $\mathit{f_{min}}$'s domain, 
+We first need to define the finite type of $\mathit{f_{min}}$'s range, 
 which we do by enumerating all possible values of $\mathit{f_{min}}$.
 
 \code{}{}{myhill_nerode_equiv_repr}
@@ -511,160 +660,6 @@ We can now state the result of this chapter.
 \code{}{}{myhill_nerode_weak_nerode_to_nerode}
 
 
-This concludes step $(3) \implies (4)$ of theorem \ref{Myhill-Nerode} (step \tcircled{c}). 
+This concludes step \tcircled{c} of theorem \ref{Myhill-Nerode}. 
 
 
-\section{Finite Automata, Myhill relations, and Nerode relations}
-First, we will show that, given a DFA $A$, we can construct a Myhill relation on $\lang{A}$.
-We will then show that this also enables us to construct a weak Nerode relation $\lang{A}$.
-As we have already covered the minimization of equivalence classes in the previous chapter,
-this proves that the Nerode relation is of finite index.
-
-Conversely, knowing that the Nerode relation on language $L$ is of finite index,  we will show that we can construct a DFA that accepts $L$.
-
-\subsection{Finite Automata to Myhill relations}
-We assume we are given a DFA $A$. 
-We will be using the states of $A$ as equivalence classes.
-Our goal is to construct a Myhill relation, for which we will need an equivalence relation of finite index.
-Therefore, we first need to ensure that the mapping from words to equivalence classes is surjective.
-Thus, we consider the equivalent, connected automaton $A_c=(Q_c, s_c, F_c, \delta_c)$ (definition \ref{A_c}), which has only reachable states.
-This enables us to construct a surjective function from words to the states of $A_c$.
-
-\begin{definition}
-    \label{f_M} 
-    Let $u \in \Sigma^*$. 
-    Let $\sigma$ be the run of $u$ on $A_c$. 
-    We define $f: \Sigma^* \mapsto Q_c$ such that $f_M(U)$ is the last state in $\sigma$, i.e.
-    \begin{equation*}
-        f_M(u) := \sigma_{|\sigma|-1}.
-    \end{equation*}
-    Note that $f_M$ is surjective (follows directly from lemma \ref{dfa_connected_repr}) 
-    and, thus, an equivalence relation.
-\end{definition}
-
-\code{}{}{myhill_nerode_f_M}
-\codeblock{}{}{myhill_nerode_f_M_surjective_head}
-\codeblock{}{}{myhill_nerode_f_fin}
-
-
-In order to show that $f_M$ is a Myhill relation, we prove that it fulfills definition \ref{Myhill}.
-
-\begin{lemma}
-    \label{f_M_right_congruent}
-    $f_M$ is right congruent.
-\end{lemma}
-\begin{proof}
-    Let $u,v \in \Sigma^*$ such that $u =_{f_M} v$.
-    Let $a \in \Sigma$. Since $A$ is deterministic, we get $ua =_{f_M} va$.
-\end{proof}
-
-\begin{lemma}
-    \label{f_M_refines}
-    $f_M$ refines $\lang{A_c}$.
-\end{lemma}
-\begin{proof}
-    Let $u,v \in \Sigma^*$ such that $u =_{f_M} v$.
-    By definition of $f_M$, the runs $u$ and $v$ on $A$ end in the same stat.
-    Thus, either $u$ and $v$ are both accepted, or both not accepted.
-\end{proof}
-
-\begin{theorem}
-    \label{dfa_to_myhill}
-    $f_M$ is a Myhill relation on $\lang{A}$.
-\end{theorem}
-\begin{proof}
-    By lemma \ref{dfa_connected_correct}, we have $\lang{A_c} = \lang{A}$.
-    Thus, it suffices to show that $f_M$ is a Myhill relation on $\lang{A_c}$.
-    This follows from lemma \ref{f_M_right_congruent} and lemma \ref{f_M_refines}.
-\end{proof}
-
-
-We only have extensional equality on $\lang{A_c}$ and $\lang{A}$ in \coq.
-Thus, we first show that $f_M$ is a Myhill relation on $\lang{A_c}$.
-Then, we show that we can get a Myhill relation on $\lang{A}$ from a Myhill relation on $\lang{A_c}$.
-
-\code{}{}{myhill_nerode_dfa_to_myhill'}
-\codeblock{}{}{myhill_nerode_myhill_lang_eq_head}
-\codeblock{}{}{myhill_nerode_dfa_to_myhill}
-
-
-This concludes the proof of step $(1) \implies (2)$ (\tcircled{a}).
-
-\subsection{Myhill relations to weak Nerode relations}
-We show that, if there exists a Myhill relation, there also exists a weak Nerode relation.
-In fact, we will prove that any Myhill relation \textbf{is} a weak Nerode relation.
-
-\begin{theorem}
-    \label{myhill_suffix}
-    Let $f$ be a Myhill relation on a language $L$.
-    Then $f$ is a weak Nerode relation on $L$.
-\end{theorem}
-\begin{proof}
-    Let $u, v \in \Sigma^*$ such that $u =_f v$. We have to show that for all $w \in \Sigma^*$, $u w \in L \Leftrightarrow v w \in L$.
-    Induction on $w$ and generalize over $u$ and $v$.
-    \begin{enumerate}
-        \item For $w = \varepsilon$, we get $u \in L \Leftrightarrow v \in L$ as $f$ refines $L$.
-        \item For $w = aw'$, we get $ua =_f va$ by congruence of $f$ and thus, by inductive hypothesis, $uaw' \in L \Leftrightarrow vaw' \in L$.
-    \end{enumerate}
-\end{proof}
-
-\code{}{}{myhill_nerode_myhill_suffix_head}
-\codeblock{}{}{myhill_nerode_myhill_to_weak_nerode}
-
-
-This concludes step $(2) \implies (3)$ (\tcircled{b}).
-
-\subsection{Nerode relations to Finite Automata}
-Finally, we will prove the last step of theorem \ref{Myhill-Nerode}. 
-If the Nerode relation on a language $L$ is of finite index, we can construct a DFA that accepts $L$.
-The construction is very straight-forward and uses the equivalence classes of the Nerode relation as the set of states for the automaton.
-
-\begin{definition}
-    \label{nerode_to_dfa} 
-    Let $L$ be a language. Let $X$ be a finite type. Let $f: \Sigma^* \mapsto X$ be the equivalence relation which proves that the Nerode relation on $L$ is of finite index.
-    We construct DFA $A$ such that
-\begin{eqnarray*}
-    s & := & f(\varepsilon) \\
-    F & := & \{ x | x \in X \wedge \crep{x} \in L \} \\
-    \delta & := & \{ (x, a, f(\crep{x} a)) \; | \; x \in X, a \in \Sigma \} \\
-    A &:=&  (X, s, F, \delta).
-\end{eqnarray*}
-\end{definition}
-
-\code{}{}{myhill_nerode_nerode_to_dfa}
-
-
-In order to show that $A$ accepts the language $L$, we first need to connect runs on $A$ to the equivalence classes, i.e. the domain of $f$.
-The following lemma gives a direct connection.
-
-\begin{lemma}
-    \label{nerode_to_dfa_run}
-    Let $w \in \Sigma^*$. Let $\sigma$ be the run of $w$ on $A$ starting in $s$. We have that the last state of $\sigma$ is the equivalence class of $w$, i.e. 
-    \begin{equation*}
-        \sigma_{|\sigma|-1} = f(w).
-    \end{equation*}
-\end{lemma}
-\begin{proof}
-    We proceed by induction on $w$ from right to left.
-    \begin{enumerate}
-        \item For $w = \varepsilon$ we have $s = f(\varepsilon)$.
-        \item For $w = w'a$ we know that the run of $w'$ on $A$ starting in $s$ ends in $f(w')$. 
-            It remains to show that $(f(w'), a, f(w)) \in \delta$.
-            We have $\crep{f(w')}a =_f w$, i.e. $f(\crep{f(w')}a) = f(w)$ by definition of $f$.
-            Thus, it suffices to show $(f(w'), a, f(\crep{f(w')}a)) \in \delta$, which holds by definition of $\delta$.
-    \end{enumerate}
-\end{proof}
-
-\begin{theorem}
-    \label{nerode_to_dfa_correct}
-    $A$ accepts $L$, i.e. $\lang{A} = L$.
-\end{theorem}
-\begin{proof}
-    Let $w \in \Sigma^*$. Let $\sigma$ be the run of $w$ on $A$ starting in $s$. 
-    $w$ is accepted if and only if $\sigma_{|\sigma|-1} \in F$, i.e. if and only if $\crep{\sigma_{|\sigma|-1}} \in L$.
-    We have $w =_f \crep{\sigma_{|\sigma|-1}}$ and therefore $w \in L \Leftrightarrow \crep{\sigma_{|\sigma|-1}} \in L$.
-    Thus $w$ is accepted if and only if $w \in L$.
-\end{proof}
-
-
-This concludes the last step of theorem \ref{Myhill-Nerode}, namely $(4) \implies (1)$ (\tcircled{d}), and, consequently, this chapter.

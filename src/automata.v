@@ -764,8 +764,7 @@ Proof.
     move/nfa_conc_sound.
     rewrite /nfa_conc /nfa_s.
     move => [] w1 [] w2 /andP [] /andP [] /eqP H0 H1 H2.
-    exists w1 => //.
-    by exists w2.
+    by eauto.
   move => [] w1 H0 [] w2 H2 ->.
   by apply/nfa_conc_complete.
   Qed.  

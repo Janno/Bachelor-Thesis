@@ -640,6 +640,8 @@ of the first automaton.
     %\end{eqnarray*}
 \end{definition}
 
+\code{}{}{automata_nfa_conc}
+
 Before we prove the correctness of $A_{Conc}$, we need a number of auxiliary lemmas.
 
 \begin{lemma}
@@ -682,6 +684,8 @@ Consequently, the accept the same words.
     \end{enumerate}
 \end{proof}
 
+\code{}{}{automata_nfa_conc_fin1_head}
+
 The next lemma is one direction of the proof of correctness of $A_{Conc}$.
 
 \begin{lemma}
@@ -696,6 +700,8 @@ The next lemma is one direction of the proof of correctness of $A_{Conc}$.
     \end{enumerate}
 \end{proof}
 
+\code{}{}{automata_nfa_conc_complete_head}
+
 The next lemma constitutes the other direction. 
 Its statement is very general, even though we will only need one of the two cases for the proof of correctness of $A_{Conc}$.
 However, with the second case, there is no straight-forward inductive proof.
@@ -703,14 +709,50 @@ However, with the second case, there is no straight-forward inductive proof.
 \begin{lemma}
     \label{nfa_conc_sound}
     Let $x \in Q_{Conc}$. Let $w \in \acc{x}{A_{Conc}}$. Then, either
-    \begin{equation*}
+    \begin{equation}
+        \tag{*}
+        \label{nfa_conc_sound1}
         x \in Q_1 \; \wedge \; \exists w_1. \; \exists w_2. \; w = w_1 w_2 \; \wedge \; w_1 \in \acc{x}{A_1} \; \wedge \; w_2 \in \lang{A_2},
-    \end{equation*}
+    \end{equation}
     or
-    \begin{equation*}
+    \begin{equation}
+        \tag{**}
+        \label{nfa_conc_sound2}
         x \in Q_2 \; \wedge \; w \in \acc{x}{A_2}.
-    \end{equation*}
+    \end{equation}
 \end{lemma}
+\begin{proof}
+    By induction on $w$. 
+    \begin{enumerate}
+        \item For $w = \varepsilon$ we get either $x \in F_1$ and $s_2 \in F_2$ or $x \in F_2$.
+            In the first case, we need to prove (\ref{nfa_conc_sound1}), which we do by choosing $w_1 := \varepsilon$ and $w_2 := \varepsilon$.
+            In the second case, we need to prove $\varepsilon \in \acc{x}{A_2}$ and thus $x \in F_2$ which we have by assumption.
+        \item For $w = aw'$ we get $y$ such that $(x,a,y) \in \delta_{Conc}$ and $w' \in \acc{y}{A_{Conc}}$. 
+            We are left with four cases, depending on the origin of $x$ and $y$.
+            \begin{enumerate}
+                \item For $x,y \in Q_2$ we have $(x,a,y) \in Q_2$ and claim (\ref{nfa_conc_sound2}) follows.
+                \item For $x,y \in Q_1$ we prove (\ref{nfa_conc_sound1}). 
+                    By inductive hypothesis we get $w_1$ and $w_2$ such that (\ref{nfa_conc_sound1}) holds for $y$.
+                \item For $x \in Q_1$ and $y \in Q_2$ the claim follows with $w_1 := \varepsilon$ and $w_2 := aw'$ by inductive hypothesis.
+                \item For $x \in Q_2$ and $y \in Q_1$ we have $(x, a, y) \in \delta_{Conc}$, which is a contradiction.
+            \end{enumerate}
+    \end{enumerate}
+\end{proof}
+
+\code{}{}{automata_nfa_conc_sound_head}
+
+\begin{corollary}
+    The language of $A_{Conc}$ is the concatenation of the languages of $A_1$ and $A_2$, i.e. $\lang{A_{Conc}} = \lang{A_1} \cdot \lang{A_2}$.
+\end{corollary}
+\begin{proof}
+    Follows directly from lemma \ref{nfa_conc_complete} and lemma \ref{nfa_conc_sound}. 
+\end{proof}
+
+\code{}{}{automata_nfa_conc_correct_head}
+
+
+\subsubsection{Star}
+
 
 
 

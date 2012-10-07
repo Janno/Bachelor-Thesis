@@ -1,12 +1,10 @@
 \chapter{Introduction}
 \label{chap:intro}
 
-Our goal is to give a concise formalization of the equivalence between regular expressions, finite automata and the Myhill-Nerode characterization. 
+Our goal is to give a concise formalization of the equivalence between regular expressions, finite automata and the Myhill-Nerode characterizations.
 We give procedures to convert between these characterizations and prove their correctness.
 Our development is done in the proof assistant \coq.
-%\todo{famous coq examples}%
 We make use of the \ssreflect\ plugin which provides support for finite types and other useful infrastructure for our purpose.
-%\ssreflect\ was famously used to carry out a complete formalization of the four colour theorem\cite{DBLP:conf/ascm/Gonthier07}.
 
 
 Regular languages are a well-studied class of formal languages. 
@@ -14,18 +12,22 @@ In their current form, they were first studied by Kleene \cite{KleeneNets}, who 
 The concept of deterministic finite automata was introduced before Kleene's invention of regular expressions by Huffman \cite{Huffman1954161} and Moore \cite{Moore56}. 
 Rabin and Scott later introduced the concept non-deterministic finite automata \cite{Rabin:1959:FAD:1661907.1661909}, for which they were given the Turing award \cite{Ashenhurst:1987:ATA:27609}.
 
+One of the challenges in the formalization was to find a suitable representation of quotient types in \coq, which has no notion of quotient types.
 
 
 \section{Related work}
 
-There have been many publications on regular languages in recent years.
+There have been many publications on formalizations of the theory of regular languages in recent years.
 Most of them investigate decidability of equivalence of regular expressions, often with a focus on automatically deciding Kleene algebras.
 
 
-Coquand and Siles develop a decision procedure for equivalence of regular expressions \cite{DBLP:conf/cpp/CoquandS11} on the basis of Brzozowski derivatives \cite{DBLP:journals/jacm/Brzozowski64} in \coq\ (with \ssreflect) with the goal of providing a tactic on top of the decision procedure. Their development weighs in at 7,500 lines of code, 700 of which serve as the basis of our formalization.
+Coquand and Siles develop a decision procedure for equivalence of regular expressions \cite{DBLP:conf/cpp/CoquandS11} on the basis of Brzozowski derivatives \cite{DBLP:journals/jacm/Brzozowski64} in \coq\ (with \ssreflect) with the goal of providing a potentially executable tactic on top of the decision procedure. 
+Their development weighs in at 7,500 lines of code, 700 of which serve as the basis of our formalization.
 
 
-Krauss and Nipkow give a decision procedure for equivalence of regular expressions in Isabelle/HOL \cite{DBLP:journals/jar/KraussN12}. Their development is very concise with just over 1,000 lines of code. Being interested only in a correct (and efficient) tactic for deciding equivalences, they did not prove completeness and termination.
+Krauss and Nipkow give a decision procedure for equivalence of regular expressions in Isabelle/HOL \cite{DBLP:journals/jar/KraussN12}. 
+Their development is very concise with just over 1,000 lines of code. 
+Being interested only in a correct (and efficient) tactic for deciding equivalences, they did not prove completeness and termination. 
 
 
 Another decision procedure for equivalence of regular expressions is developed by Braibant and Pous \cite{DBLP:journals/corr/abs-1105-4537}, with the goal of deciding Kleene algebras in \coq. Their formalization is based on matrices and weighs in at 19,000 lines of code. It encompasses finite automata, regular expressions and the Myhill-Nerode theorem.
@@ -53,8 +55,7 @@ Our development weighs in at about 3,500 lines of code.
 
 
 \section{Outline}
-In Chapter \ref{chap:coq} we introduce the \coq\ framework and the \ssreflect\ extension. 
-We give a brief introduction of the \ssreflect-specific syntax and concepts that are relevant to our formalization.
+In Chapter \ref{chap:coq} we give a brief introduction to \coq\ and \ssreflect\ and introduce concepts that are relevant to our formalization.
 
 In Chapter \ref{chap:lang} we give basic definitions (words, languages, etc.). 
 We also introduce decidable languages, regular languages and regular expressions. 
@@ -64,8 +65,7 @@ In Chapter \ref{chap:FA} we introduce finite automata.
 We prove the equivalence of deterministic and non-deterministic finite automata.
 We also give a procedure to remove unreachable states from deterministic finite automata.
 Furthermore, we prove decidability of emptiness and equivalence of finite automata.
-Finally, we prove the equivalence of regular expressions and finite automata. 
+Finally, we prove that regular expressions and finite automata are equally expressive.
 
 In Chapter \ref{chap:MN} we introduce the Myhill-Nerode theorem.
-We give three different characterizations of regular languages based on the Myhill-Nerode theorem and prove them equivalent to finite automata.
-The formalization of these characterizations is interesting in itself due to the fact that we had to find a suitable representation of quotient types in \coq, which has no notion of quotient types.
+We give three different characterizations of regular languages based on the Myhill-Nerode theorem and prove them all equally expressive to finite automata.

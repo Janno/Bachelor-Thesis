@@ -228,11 +228,11 @@ Section FixPoint.
   Variable F : {set T} -> {set T}.
   Hypothesis monoF : mono F.
 
-  Definition mu := iter #|T|.+1 F set0.
+  Definition lfp := iter #|T|.+1 F set0.
 
-  Lemma mu_ind (P : {set T} -> Type) : P set0 -> (forall s , P s -> P (F s)) -> P mu.
+  Lemma lfp_ind (P : {set T} -> Type) : P set0 -> (forall s , P s -> P (F s)) -> P lfp.
   Proof.
-    move => P0 Pn. rewrite /mu. set n := #|T|.+1. elim: n => //= n. exact: Pn.
+    move => P0 Pn. rewrite /lfp. set n := #|T|.+1. elim: n => //= n. exact: Pn.
   Qed.
 
   Lemma iterFsub n : iter n F set0 \subset iter n.+1 F set0.
@@ -248,7 +248,7 @@ Section FixPoint.
     move/IH => /= IHe. apply: subset_trans; first apply IHe. exact:iterFsub.
   Qed.
  
-  Lemma muE : mu = F mu.
+  Lemma lfpE : lfp = F lfp.
   Proof.
     have: ~~ [ forall m : 'I_#|T|.+1 , iter m F set0 \proper iter m.+1 F set0 ].
       apply/negP => /forallP H.

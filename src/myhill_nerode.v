@@ -40,8 +40,7 @@ Section MyhillNerode.
 
       Variable f: Fin_Eq_Cls.
     
-      Definition cr (f: Fin_Eq_Cls) x :=
-        xchoose (fin_surjective f x).
+      Definition cr (f: Fin_Eq_Cls) x := xchoose (fin_surjective f x).
 
       Lemma crK: cancel (cr f) f.
       Proof. move => x. by move: (xchooseP (fin_surjective f x)) => /eqP {2}<-. Qed.
@@ -70,11 +69,11 @@ Section MyhillNerode.
     End Myhill.
 
     
-    Definition equal_suffix u v :=
+    Definition suffix_equal u v :=
       forall w, u++w \in L = (v++w \in L).
 
     Definition equiv_suffix {X} (f: word -> X) :=
-      forall u v, f u = f v <-> equal_suffix u v.
+      forall u v, f u = f v <-> suffix_equal u v.
     
     Record Nerode_Rel :=
       {
@@ -93,7 +92,7 @@ Section MyhillNerode.
     Section Weak_Nerode.
       
       Definition imply_suffix {X} (f: word -> X) :=
-        forall u v, f u = f v -> equal_suffix u v.
+        forall u v, f u = f v -> suffix_equal u v.
       
       Record Weak_Nerode_Rel :=
         {
@@ -133,292 +132,6 @@ Section MyhillNerode.
   End Relations.
   
 
-  Section Minimalization.
-    Variable L: language char.
-    Variable f_0: Weak_Nerode_Rel L.
-    Definition X := f_0.(fin_type).
-
-    Definition succ := [ fun x a => f_0 ((cr f_0 x) ++ [::a]) ].
-    
-    Definition psucc := [ fun x y => [ fun a => (succ x a, succ y a) ] ].
-
-    Definition distinguishable := [ fun x y => (cr f_0 x) \in L != ((cr f_0 y) \in L) ].
-
-    Definition distinct0 := [set x | distinguishable x.1 x.2 ].
-
-    Lemma distinct0P x:
-      reflect (cr f_0 x.1 \in L <> (cr f_0 x.2 \in L))
-              (x \in distinct0).
-    Proof.
-      rewrite /distinct0 /= !inE.
-      apply: iffP. apply idP.
-        by move/eqP.
-      by move/eqP.
-    Qed.
-        
-    Lemma distinct0NP x:
-      reflect (cr f_0 x.1 \in L = (cr f_0 x.2 \in L))
-              (x \notin distinct0).
-    Proof.
-      apply: iffP. apply idP.
-        move => H. apply/eqP. move: H.
-        apply: contraR. move/eqP.
-        by move/distinct0P.
-      move/eqP. apply: contraL. by move/distinct0P/eqP.
-    Qed.
-
-    Definition distinctS (distinct: {set X*X}) :=
-      [set  (x,y) | x in X, y in X & [ exists a, psucc x y a \in distinct ] ].
-
-    Lemma distinctSP (distinct: {set X*X}) x y:
-      reflect (exists a, psucc x y a \in distinct)
-              ((x,y) \in distinctS distinct).
-    Proof.
-      apply: iffP. apply idP.
-        move/imset2P => [] x' y' _. 
-        rewrite !inE /= => /existsP [] a.
-        move => H [H1 H2]. subst.
-        by eauto.
-      move => [a H].
-      apply mem_imset2; first by done.
-      rewrite !inE /=. apply/existsP.
-      exists a. exact H.
-    Qed.
-
-    Lemma distinctSNP (distinct: {set X*X}) x y:
-      reflect (forall a, psucc x y a \notin distinct)
-              ((x,y) \notin distinctS distinct).
-    Proof.
-      apply: introP.
-        move/distinctSP => H1 a.
-        apply/negP => H2. by eauto.
-      move/negbTE/distinctSP => [a H1] H2.
-      absurd (psucc x y a \in distinct) => //.
-      by apply/negP.
-    Qed.
-    
-    Definition unnamed distinct :=
-        distinct0 :|: distinct :|: (distinctS distinct).
-
-    Lemma unnamedP (distinct: {set X*X}) x:
-      reflect ([\/ x \in distinct0, x \in distinct | x \in distinctS distinct])
-              (x \in unnamed distinct).
-    Proof.
-      rewrite /unnamed !inE.
-      apply: introP.
-        move/orP => [/orP [] |]; eauto using or3.
-      by move/norP => [] /norP [] /negbTE -> /negbTE -> /negbTE -> [].
-    Qed.
-
-    Lemma unnamedNP (distinct: {set X*X}) x:
-      reflect ([/\ x \notin distinct0, x \notin distinct & x \notin distinctS distinct])
-              (x \notin unnamed distinct).
-    Proof.
-      apply: introP.
-        by move/unnamedP/nand3P/and3P.
-      move/negbNE/unnamedP/nand3P => H1 H2.
-      apply: H1. by apply/and3P.
-    Qed.
-      
-    Definition distinct := mu unnamed.
-
-    Notation "x ~!= y" := ((x,y) \in distinct) (at level 70, no associativity).
-    Notation "u ~!=_f_0 v" := (f_0(u) ~!= f_0(v)) (at level 70, no associativity).
-    Notation "x ~= y" := ((x,y) \notin distinct) (at level 70, no associativity).
-    Notation "u ~=_f_0 v" := (f_0(u) ~= f_0(v)) (at level 70, no associativity).
-
-    Lemma distinctS_unnamed: mono distinctS.
-    Proof.
-      move => s t /subsetP H.
-      apply/subsetP.
-      move => [x y] /distinctSP [a H1].
-      apply/distinctSP. exists a.
-      exact: H.
-    Qed.
-      
-    Lemma unnamed_mono: mono unnamed.
-    Proof.
-      move => s t H. apply/subsetP.
-      move => [x y] /unnamedP [] H1; apply/unnamedP;
-        first by eauto using or3.
-        move: (subsetP H _ H1).
-        by eauto using or3.
-      move/subsetP: (distinctS_unnamed H).
-      by eauto using or3.
-    Qed.
-
-    Lemma equiv0_refl x:
-      (x,x) \notin distinct0.
-    Proof. by rewrite in_set /= eq_refl. Qed.
-
-    Lemma equiv_refl x: x ~= x.
-    Proof.
-      rewrite /distinct. move: x.
-      apply mu_ind => [|dist IHdist] x.
-        by rewrite  in_set.
-      apply/unnamedNP. econstructor => //;
-        first by exact: equiv0_refl.
-      apply/distinctSNP => a.
-      exact: IHdist.
-    Qed.
-
-    Lemma dist_sym x y: distinguishable x y -> distinguishable y x.
-    Proof. by rewrite /= eq_sym. Qed.
-
-    Lemma not_dist_sym x y: ~~ distinguishable x y -> ~~ distinguishable y x.
-    Proof. apply: contraL. move/dist_sym => H. by apply/negPn. Qed.
-    
-    Lemma equiv0_sym x y: (x,y) \notin distinct0 -> (y,x) \notin distinct0.
-    Proof. by rewrite /distinct0 /= 2!in_set eq_sym. Qed.
-    
-    Lemma distinct0_sym x y: (x,y) \in distinct0 -> (y,x) \in distinct0.
-    Proof. by rewrite /distinct0 /= 2!in_set eq_sym. Qed.
-
-    Lemma equiv_sym x y:  x ~= y -> y ~= x.
-    Proof.
-      move: x y.  
-      rewrite /distinct.
-      apply mu_ind => [|s IHs] x y.
-        by rewrite 2!in_set.
-      move/unnamedNP => [] H0 H1 H2.
-      apply/unnamedNP. constructor.
-          exact: equiv0_sym.
-        exact: IHs.
-      apply/distinctSNP => a. 
-      move/distinctSNP in H2. 
-      apply: IHs. exact: H2.
-    Qed.
-
-    Lemma equiv_trans x y z: x ~= y -> y ~= z -> x ~= z.
-    Proof.
-      move: x y z.  
-      rewrite /distinct.
-      apply mu_ind => [|s IHs] x y z.
-        by rewrite 3!in_set.
-      move/unnamedNP => [] /distinct0NP H1 H2 /distinctSNP H3.
-      move/unnamedNP => [] /distinct0NP H4 H5 /distinctSNP H6.
-      apply/unnamedNP. constructor.
-          apply/distinct0NP. by rewrite H1 H4.
-        by apply: IHs; eassumption.
-      apply/distinctSNP => a.
-      apply: IHs.
-        by eapply H3.
-      exact: H6.
-    Qed.
-
-
-    Lemma equiv_equal_suffix u v: u ~=_f_0 v -> equal_suffix L u v.
-    Proof.
-      move => H w. apply/eqP. move: H.
-      apply: contraR.
-      elim: w u v => [|a w IHw] u v.
-        rewrite 2!cats0.
-        rewrite /distinct muE -/distinct /unnamed => H;
-          last by exact: unnamed_mono.
-        by rewrite /distinct0  /= 3!in_set 2!cr_mem_L H.
-      move => H.
-      rewrite /distinct muE -/distinct;
-        last by exact: unnamed_mono.
-      apply/unnamedP. apply: Or33.
-      apply/distinctSP. exists a.
-      apply: IHw.
-      by rewrite -2!catA 2!(cr_mem_L_cat f_0).
-    Qed.
-   
-    Lemma distinct_not_equal_suffix u v:
-      u ~!=_f_0 v ->
-      exists w, u ++ w \in L != (v ++ w \in L). 
-    Proof.
-      rewrite /distinct.
-      move: u v.
-      apply mu_ind => [|dist IHdist] u v.
-        by rewrite in_set.
-      move/unnamedP => [].
-          move/distinct0P => /eqP.
-          rewrite !cr_mem_L /= => H.
-          exists [::]. by rewrite 2!cats0.
-        exact: IHdist.
-      move/distinctSP => [a] /IHdist [w].
-      rewrite -2!catA !cr_mem_L_cat.
-      by eauto.
-    Qed.
-
-    Lemma equivP u v:
-      reflect (equal_suffix L u v)
-              (u ~=_f_0 v).
-    Proof.
-      apply: introP.
-        exact: equiv_equal_suffix.
-      move/negbNE => /distinct_not_equal_suffix [w H] H0.
-      move: (H0 w).
-      move => H1. move/eqP: H.
-      by rewrite H1.
-    Qed.
-    
-    
-    Definition equiv_repr x := [set y | x ~= y].
-
-    Lemma equiv_repr_refl x : x \in equiv_repr x.
-    Proof. by rewrite in_set equiv_refl. Qed.
-    
-    Definition X_min := map equiv_repr (enum (fin_type f_0)).
-
-    Lemma equiv_repr_mem x: equiv_repr x \in X_min.
-    Proof. apply/mapP. exists x => //. by rewrite mem_enum. Qed.
-
-    Definition f_min w := SeqSub _ (equiv_repr_mem (f_0 w)).
-      
-    Lemma f_minP u v:
-      reflect (f_min u = f_min v)
-              (u ~=_f_0 v).
-    Proof.
-      apply: iffP.
-        apply idP.
-        move => H.
-        rewrite /f_min /=.
-        apply/eqP.
-        change ([set x | (f_0 u, x) \notin distinct] == [set x | (f_0 v, x) \notin distinct]).
-        apply/eqP.
-        apply/setP => x.
-        rewrite 2!in_set.
-        apply/idP/idP => H0;
-          eauto using equiv_sym, equiv_trans.
-      move => [] /= /setP H1. move: (H1 (f_0 v)).
-      by rewrite equiv_repr_refl in_set => ->.
-    Qed.                                            
-
-    Lemma f_min_correct: equiv_suffix L f_min.
-    Proof.
-      move => u v.
-      split.
-        move/f_minP.
-        exact: equiv_equal_suffix.
-     move => H. 
-     apply/f_minP.
-     by apply/equivP.
-    Qed.                                                  
-
-    Lemma f_min_surjective: surjective f_min.
-    Proof.
-      move => [x Hx].
-      move/mapP: (Hx) => [y Hy Hxy].
-      exists (cr f_0 y).
-      rewrite /f_min.
-      change (equiv_repr (f_0 (cr f_0 y)) == x).
-      by rewrite Hxy crK.
-    Qed.
-
-    Definition f_min_fin: Fin_Eq_Cls :=
-      {| fin_surjective := f_min_surjective |}.
-
-    Definition weak_nerode_to_nerode: Nerode_Rel L :=
-      {|
-        nerode_func := f_min_fin; 
-        nerode_equiv := f_min_correct
-      |}.
-
-  End Minimalization.
-  
 
   Section DFA_To_Myhill.
     Variable A: dfa char.
@@ -522,5 +235,292 @@ Section MyhillNerode.
     Qed.
       
   End Nerode_To_DFA.
+  
+  Section Minimalization.
+    Variable L: language char.
+    Variable f_0: Weak_Nerode_Rel L.
+    Definition X := f_0.(fin_type).
+
+    Definition succ := [ fun x a => f_0 ((cr f_0 x) ++ [::a]) ].
+    
+    Definition psucc := [ fun x y => [ fun a => (succ x a, succ y a) ] ].
+
+    Definition distinguishable := [ fun x y => (cr f_0 x) \in L != ((cr f_0 y) \in L) ].
+
+    Definition distinct0 := [set x | distinguishable x.1 x.2 ].
+
+    Lemma distinct0P x:
+      reflect (cr f_0 x.1 \in L <> (cr f_0 x.2 \in L))
+              (x \in distinct0).
+    Proof.
+      rewrite /distinct0 /= !inE.
+      apply: iffP. apply idP.
+        by move/eqP.
+      by move/eqP.
+    Qed.
+        
+    Lemma distinct0NP x:
+      reflect (cr f_0 x.1 \in L = (cr f_0 x.2 \in L))
+              (x \notin distinct0).
+    Proof.
+      apply: iffP. apply idP.
+        move => H. apply/eqP. move: H.
+        apply: contraR. move/eqP.
+        by move/distinct0P.
+      move/eqP. apply: contraL. by move/distinct0P/eqP.
+    Qed.
+
+    Definition distinctS (distinct: {set X*X}) :=
+      [set  (x,y) | x in X, y in X & [ exists a, psucc x y a \in distinct ] ].
+
+    Lemma distinctSP (distinct: {set X*X}) x y:
+      reflect (exists a, psucc x y a \in distinct)
+              ((x,y) \in distinctS distinct).
+    Proof.
+      apply: iffP. apply idP.
+        move/imset2P => [] x' y' _. 
+        rewrite !inE /= => /existsP [] a.
+        move => H [H1 H2]. subst.
+        by eauto.
+      move => [a H].
+      apply mem_imset2; first by done.
+      rewrite !inE /=. apply/existsP.
+      exists a. exact H.
+    Qed.
+
+    Lemma distinctSNP (distinct: {set X*X}) x y:
+      reflect (forall a, psucc x y a \notin distinct)
+              ((x,y) \notin distinctS distinct).
+    Proof.
+      apply: introP.
+        move/distinctSP => H1 a.
+        apply/negP => H2. by eauto.
+      move/negbTE/distinctSP => [a H1] H2.
+      absurd (psucc x y a \in distinct) => //.
+      by apply/negP.
+    Qed.
+    
+    Definition unnamed distinct :=
+        distinct0 :|: distinct :|: (distinctS distinct).
+
+    Lemma unnamedP (distinct: {set X*X}) x:
+      reflect ([\/ x \in distinct0, x \in distinct | x \in distinctS distinct])
+              (x \in unnamed distinct).
+    Proof.
+      rewrite /unnamed !inE.
+      apply: introP.
+        move/orP => [/orP [] |]; eauto using or3.
+      by move/norP => [] /norP [] /negbTE -> /negbTE -> /negbTE -> [].
+    Qed.
+
+    Lemma unnamedNP (distinct: {set X*X}) x:
+      reflect ([/\ x \notin distinct0, x \notin distinct & x \notin distinctS distinct])
+              (x \notin unnamed distinct).
+    Proof.
+      apply: introP.
+        by move/unnamedP/nand3P/and3P.
+      move/negbNE/unnamedP/nand3P => H1 H2.
+      apply: H1. by apply/and3P.
+    Qed.
+      
+    Definition distinct := lfp unnamed.
+
+    Notation "x ~!= y" := ((x,y) \in distinct) (at level 70, no associativity).
+    Notation "u ~!=_f_0 v" := (f_0(u) ~!= f_0(v)) (at level 70, no associativity).
+    Notation "x ~= y" := ((x,y) \notin distinct) (at level 70, no associativity).
+    Notation "u ~=_f_0 v" := (f_0(u) ~= f_0(v)) (at level 70, no associativity).
+
+    Lemma distinctS_unnamed: mono distinctS.
+    Proof.
+      move => s t /subsetP H.
+      apply/subsetP.
+      move => [x y] /distinctSP [a H1].
+      apply/distinctSP. exists a.
+      exact: H.
+    Qed.
+      
+    Lemma unnamed_mono: mono unnamed.
+    Proof.
+      move => s t H. apply/subsetP.
+      move => [x y] /unnamedP [] H1; apply/unnamedP;
+        first by eauto using or3.
+        move: (subsetP H _ H1).
+        by eauto using or3.
+      move/subsetP: (distinctS_unnamed H).
+      by eauto using or3.
+    Qed.
+
+    Lemma equiv0_refl x:
+      (x,x) \notin distinct0.
+    Proof. by rewrite in_set /= eq_refl. Qed.
+
+    Lemma equiv_refl x: x ~= x.
+    Proof.
+      rewrite /distinct. move: x.
+      apply lfp_ind => [|dist IHdist] x.
+        by rewrite  in_set.
+      apply/unnamedNP. econstructor => //;
+        first by exact: equiv0_refl.
+      apply/distinctSNP => a.
+      exact: IHdist.
+    Qed.
+
+    Lemma dist_sym x y: distinguishable x y -> distinguishable y x.
+    Proof. by rewrite /= eq_sym. Qed.
+
+    Lemma not_dist_sym x y: ~~ distinguishable x y -> ~~ distinguishable y x.
+    Proof. apply: contraL. move/dist_sym => H. by apply/negPn. Qed.
+    
+    Lemma equiv0_sym x y: (x,y) \notin distinct0 -> (y,x) \notin distinct0.
+    Proof. by rewrite /distinct0 /= 2!in_set eq_sym. Qed.
+    
+    Lemma distinct0_sym x y: (x,y) \in distinct0 -> (y,x) \in distinct0.
+    Proof. by rewrite /distinct0 /= 2!in_set eq_sym. Qed.
+
+    Lemma equiv_sym x y:  x ~= y -> y ~= x.
+    Proof.
+      move: x y.  
+      rewrite /distinct.
+      apply lfp_ind => [|s IHs] x y.
+        by rewrite 2!in_set.
+      move/unnamedNP => [] H0 H1 H2.
+      apply/unnamedNP. constructor.
+          exact: equiv0_sym.
+        exact: IHs.
+      apply/distinctSNP => a. 
+      move/distinctSNP in H2. 
+      apply: IHs. exact: H2.
+    Qed.
+
+    Lemma equiv_trans x y z: x ~= y -> y ~= z -> x ~= z.
+    Proof.
+      move: x y z.  
+      rewrite /distinct.
+      apply lfp_ind => [|s IHs] x y z.
+        by rewrite 3!in_set.
+      move/unnamedNP => [] /distinct0NP H1 H2 /distinctSNP H3.
+      move/unnamedNP => [] /distinct0NP H4 H5 /distinctSNP H6.
+      apply/unnamedNP. constructor.
+          apply/distinct0NP. by rewrite H1 H4.
+        by apply: IHs; eassumption.
+      apply/distinctSNP => a.
+      apply: IHs.
+        by eapply H3.
+      exact: H6.
+    Qed.
+
+
+    Lemma equiv_suffix_equal u v: u ~=_f_0 v -> suffix_equal L u v.
+    Proof.
+      move => H w. apply/eqP. move: H.
+      apply: contraR.
+      elim: w u v => [|a w IHw] u v.
+        rewrite 2!cats0.
+        rewrite /distinct lfpE -/distinct /unnamed => H;
+          last by exact: unnamed_mono.
+        by rewrite /distinct0  /= 3!in_set 2!cr_mem_L H.
+      move => H.
+      rewrite /distinct lfpE -/distinct;
+        last by exact: unnamed_mono.
+      apply/unnamedP. apply: Or33.
+      apply/distinctSP. exists a.
+      apply: IHw.
+      by rewrite -2!catA 2!(cr_mem_L_cat f_0).
+    Qed.
+   
+    Lemma distinct_not_suffix_equal u v:
+      u ~!=_f_0 v ->
+      exists w, u ++ w \in L != (v ++ w \in L). 
+    Proof.
+      rewrite /distinct.
+      move: u v.
+      apply lfp_ind => [|dist IHdist] u v.
+        by rewrite in_set.
+      move/unnamedP => [].
+          move/distinct0P => /eqP.
+          rewrite !cr_mem_L /= => H.
+          exists [::]. by rewrite 2!cats0.
+        exact: IHdist.
+      move/distinctSP => [a] /IHdist [w].
+      rewrite -2!catA !cr_mem_L_cat.
+      by eauto.
+    Qed.
+
+    Lemma equivP u v:
+      reflect (suffix_equal L u v)
+              (u ~=_f_0 v).
+    Proof.
+      apply: introP.
+        exact: equiv_suffix_equal.
+      move/negbNE => /distinct_not_suffix_equal [w H] H0.
+      move: (H0 w).
+      move => H1. move/eqP: H.
+      by rewrite H1.
+    Qed.
+    
+    
+    Definition equiv_repr x := [set y | x ~= y].
+
+    Lemma equiv_repr_refl x : x \in equiv_repr x.
+    Proof. by rewrite in_set equiv_refl. Qed.
+    
+    Definition X_min := map equiv_repr (enum (fin_type f_0)).
+
+    Lemma equiv_repr_mem x: equiv_repr x \in X_min.
+    Proof. apply/mapP. exists x => //. by rewrite mem_enum. Qed.
+
+    Definition f_min w := SeqSub _ (equiv_repr_mem (f_0 w)).
+      
+    Lemma f_minP u v:
+      reflect (f_min u = f_min v)
+              (u ~=_f_0 v).
+    Proof.
+      apply: iffP.
+        apply idP.
+        move => H.
+        rewrite /f_min /=.
+        apply/eqP.
+        change ([set x | (f_0 u, x) \notin distinct] == [set x | (f_0 v, x) \notin distinct]).
+        apply/eqP.
+        apply/setP => x.
+        rewrite 2!in_set.
+        apply/idP/idP => H0;
+          eauto using equiv_sym, equiv_trans.
+      move => [] /= /setP H1. move: (H1 (f_0 v)).
+      by rewrite equiv_repr_refl in_set => ->.
+    Qed.                                            
+
+    Lemma f_min_correct: equiv_suffix L f_min.
+    Proof.
+      move => u v.
+      split.
+        move/f_minP.
+        exact: equiv_suffix_equal.
+     move => H. 
+     apply/f_minP.
+     by apply/equivP.
+    Qed.                                                  
+
+    Lemma f_min_surjective: surjective f_min.
+    Proof.
+      move => [x Hx].
+      move/mapP: (Hx) => [y Hy Hxy].
+      exists (cr f_0 y).
+      rewrite /f_min.
+      change (equiv_repr (f_0 (cr f_0 y)) == x).
+      by rewrite Hxy crK.
+    Qed.
+
+    Definition f_min_fin: Fin_Eq_Cls :=
+      {| fin_surjective := f_min_surjective |}.
+
+    Definition weak_nerode_to_nerode: Nerode_Rel L :=
+      {|
+        nerode_func := f_min_fin; 
+        nerode_equiv := f_min_correct
+      |}.
+
+  End Minimalization.
+  
 
 End MyhillNerode.

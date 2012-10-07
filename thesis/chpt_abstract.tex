@@ -1,7 +1,13 @@
 \chapter*{Abstract}
 \label{chap:abstract}
-Existing formalizations of regular languages in constructive settings are mostly limited to regular expressions and finite automata. 
-Furthermore, these usually require in the order of 10,000 lines of code.\todo{Citations?} %
-The goal of this thesis is to show that an extensive, yet elegant formalization of regular languages can be achieved in constructive type theory. 
-In addition to regular expressions and finite automata, our formalization includes the Myhill-Nerode theorem. 
-The entire development weighs in at approximately 3,300 lines of code.\todo{Reduce \& update} %
+%Existing formalizations of regular languages in constructive settings are mostly limited to regular expressions and finite automata. 
+%Furthermore, these usually require in the order of 10,000 lines of code.\todo{Citations?} %
+%The goal of this thesis is to show that an extensive, yet elegant formalization of regular languages can be achieved in constructive type theory. 
+%In addition to regular expressions and finite automata, our formalization includes the Myhill-Nerode theorem. 
+%The entire development weighs in at approximately 3,300 lines of code.\todo{Reduce \& update} %
+
+
+Our goal is to give a concise formalization of the equivalence between regular expressions, finite automata and the Myhill-Nerode characterization. 
+We give procedures to convert between these characterizations and prove their correctness.
+Our development is done in the proof assistant \coq.
+We make use of the \ssreflect\ plugin which provides support for finite types and other useful infrastructure for our purpose.
