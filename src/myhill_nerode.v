@@ -247,35 +247,35 @@ Section MyhillNerode.
 
     Definition distinguishable := [ fun x y => (cr f_0 x) \in L != ((cr f_0 y) \in L) ].
 
-    Definition distinct0 := [set x | distinguishable x.1 x.2 ].
+    Definition dist0 := [set x | distinguishable x.1 x.2 ].
 
-    Lemma distinct0P x:
+    Lemma dist0P x:
       reflect (cr f_0 x.1 \in L <> (cr f_0 x.2 \in L))
-              (x \in distinct0).
+              (x \in dist0).
     Proof.
-      rewrite /distinct0 /= !inE.
+      rewrite /dist0 /= !inE.
       apply: iffP. apply idP.
         by move/eqP.
       by move/eqP.
     Qed.
         
-    Lemma distinct0NP x:
+    Lemma dist0NP x:
       reflect (cr f_0 x.1 \in L = (cr f_0 x.2 \in L))
-              (x \notin distinct0).
+              (x \notin dist0).
     Proof.
       apply: iffP. apply idP.
         move => H. apply/eqP. move: H.
         apply: contraR. move/eqP.
-        by move/distinct0P.
-      move/eqP. apply: contraL. by move/distinct0P/eqP.
+        by move/dist0P.
+      move/eqP. apply: contraL. by move/dist0P/eqP.
     Qed.
 
-    Definition distinctS (distinct: {set X*X}) :=
-      [set  (x,y) | x in X, y in X & [ exists a, psucc x y a \in distinct ] ].
+    Definition distS (dist: {set X*X}) :=
+      [set  (x,y) | x in X, y in X & [ exists a, psucc x y a \in dist ] ].
 
-    Lemma distinctSP (distinct: {set X*X}) x y:
-      reflect (exists a, psucc x y a \in distinct)
-              ((x,y) \in distinctS distinct).
+    Lemma distSP (dist: {set X*X}) x y:
+      reflect (exists a, psucc x y a \in dist)
+              ((x,y) \in distS dist).
     Proof.
       apply: iffP. apply idP.
         move/imset2P => [] x' y' _. 
@@ -288,70 +288,69 @@ Section MyhillNerode.
       exists a. exact H.
     Qed.
 
-    Lemma distinctSNP (distinct: {set X*X}) x y:
-      reflect (forall a, psucc x y a \notin distinct)
-              ((x,y) \notin distinctS distinct).
+    Lemma distSNP (dist: {set X*X}) x y:
+      reflect (forall a, psucc x y a \notin dist)
+              ((x,y) \notin distS dist).
     Proof.
       apply: introP.
-        move/distinctSP => H1 a.
+        move/distSP => H1 a.
         apply/negP => H2. by eauto.
-      move/negbTE/distinctSP => [a H1] H2.
-      absurd (psucc x y a \in distinct) => //.
+      move/negbTE/distSP => [a H1] H2.
+      absurd (psucc x y a \in dist) => //.
       by apply/negP.
     Qed.
     
-    Definition unnamed distinct :=
-        distinct0 :|: distinct :|: (distinctS distinct).
+    Definition one_step_dist dist := dist0 :|: dist :|: (distS dist).
 
-    Lemma unnamedP (distinct: {set X*X}) x:
-      reflect ([\/ x \in distinct0, x \in distinct | x \in distinctS distinct])
-              (x \in unnamed distinct).
+    Lemma one_step_distP (dist: {set X*X}) x:
+      reflect ([\/ x \in dist0, x \in dist | x \in distS dist])
+              (x \in one_step_dist dist).
     Proof.
-      rewrite /unnamed !inE.
+      rewrite /one_step_dist !inE.
       apply: introP.
         move/orP => [/orP [] |]; eauto using or3.
       by move/norP => [] /norP [] /negbTE -> /negbTE -> /negbTE -> [].
     Qed.
 
-    Lemma unnamedNP (distinct: {set X*X}) x:
-      reflect ([/\ x \notin distinct0, x \notin distinct & x \notin distinctS distinct])
-              (x \notin unnamed distinct).
+    Lemma one_step_distNP (dist: {set X*X}) x:
+      reflect ([/\ x \notin dist0, x \notin dist & x \notin distS dist])
+              (x \notin one_step_dist dist).
     Proof.
       apply: introP.
-        by move/unnamedP/nand3P/and3P.
-      move/negbNE/unnamedP/nand3P => H1 H2.
+        by move/one_step_distP/nand3P/and3P.
+      move/negbNE/one_step_distP/nand3P => H1 H2.
       apply: H1. by apply/and3P.
     Qed.
       
-    Definition distinct := lfp unnamed.
+    Definition distinct := lfp one_step_dist.
 
     Notation "x ~!= y" := ((x,y) \in distinct) (at level 70, no associativity).
     Notation "u ~!=_f_0 v" := (f_0(u) ~!= f_0(v)) (at level 70, no associativity).
     Notation "x ~= y" := ((x,y) \notin distinct) (at level 70, no associativity).
     Notation "u ~=_f_0 v" := (f_0(u) ~= f_0(v)) (at level 70, no associativity).
 
-    Lemma distinctS_unnamed: mono distinctS.
+    Lemma distS_mono: mono distS.
     Proof.
       move => s t /subsetP H.
       apply/subsetP.
-      move => [x y] /distinctSP [a H1].
-      apply/distinctSP. exists a.
+      move => [x y] /distSP [a H1].
+      apply/distSP. exists a.
       exact: H.
     Qed.
       
-    Lemma unnamed_mono: mono unnamed.
+    Lemma one_step_dist_mono: mono one_step_dist.
     Proof.
       move => s t H. apply/subsetP.
-      move => [x y] /unnamedP [] H1; apply/unnamedP;
+      move => [x y] /one_step_distP [] H1; apply/one_step_distP;
         first by eauto using or3.
         move: (subsetP H _ H1).
         by eauto using or3.
-      move/subsetP: (distinctS_unnamed H).
+      move/subsetP: (distS_mono H).
       by eauto using or3.
     Qed.
 
     Lemma equiv0_refl x:
-      (x,x) \notin distinct0.
+      (x,x) \notin dist0.
     Proof. by rewrite in_set /= eq_refl. Qed.
 
     Lemma equiv_refl x: x ~= x.
@@ -359,9 +358,9 @@ Section MyhillNerode.
       rewrite /distinct. move: x.
       apply lfp_ind => [|dist IHdist] x.
         by rewrite  in_set.
-      apply/unnamedNP. econstructor => //;
+      apply/one_step_distNP. econstructor => //;
         first by exact: equiv0_refl.
-      apply/distinctSNP => a.
+      apply/distSNP => a.
       exact: IHdist.
     Qed.
 
@@ -371,11 +370,11 @@ Section MyhillNerode.
     Lemma not_dist_sym x y: ~~ distinguishable x y -> ~~ distinguishable y x.
     Proof. apply: contraL. move/dist_sym => H. by apply/negPn. Qed.
     
-    Lemma equiv0_sym x y: (x,y) \notin distinct0 -> (y,x) \notin distinct0.
-    Proof. by rewrite /distinct0 /= 2!in_set eq_sym. Qed.
+    Lemma equiv0_sym x y: (x,y) \notin dist0 -> (y,x) \notin dist0.
+    Proof. by rewrite /dist0 /= 2!in_set eq_sym. Qed.
     
-    Lemma distinct0_sym x y: (x,y) \in distinct0 -> (y,x) \in distinct0.
-    Proof. by rewrite /distinct0 /= 2!in_set eq_sym. Qed.
+    Lemma dist0_sym x y: (x,y) \in dist0 -> (y,x) \in dist0.
+    Proof. by rewrite /dist0 /= 2!in_set eq_sym. Qed.
 
     Lemma equiv_sym x y:  x ~= y -> y ~= x.
     Proof.
@@ -383,12 +382,12 @@ Section MyhillNerode.
       rewrite /distinct.
       apply lfp_ind => [|s IHs] x y.
         by rewrite 2!in_set.
-      move/unnamedNP => [] H0 H1 H2.
-      apply/unnamedNP. constructor.
+      move/one_step_distNP => [] H0 H1 H2.
+      apply/one_step_distNP. constructor.
           exact: equiv0_sym.
         exact: IHs.
-      apply/distinctSNP => a. 
-      move/distinctSNP in H2. 
+      apply/distSNP => a. 
+      move/distSNP in H2. 
       apply: IHs. exact: H2.
     Qed.
 
@@ -398,12 +397,12 @@ Section MyhillNerode.
       rewrite /distinct.
       apply lfp_ind => [|s IHs] x y z.
         by rewrite 3!in_set.
-      move/unnamedNP => [] /distinct0NP H1 H2 /distinctSNP H3.
-      move/unnamedNP => [] /distinct0NP H4 H5 /distinctSNP H6.
-      apply/unnamedNP. constructor.
-          apply/distinct0NP. by rewrite H1 H4.
+      move/one_step_distNP => [] /dist0NP H1 H2 /distSNP H3.
+      move/one_step_distNP => [] /dist0NP H4 H5 /distSNP H6.
+      apply/one_step_distNP. constructor.
+          apply/dist0NP. by rewrite H1 H4.
         by apply: IHs; eassumption.
-      apply/distinctSNP => a.
+      apply/distSNP => a.
       apply: IHs.
         by eapply H3.
       exact: H6.
@@ -416,14 +415,14 @@ Section MyhillNerode.
       apply: contraR.
       elim: w u v => [|a w IHw] u v.
         rewrite 2!cats0.
-        rewrite /distinct lfpE -/distinct /unnamed => H;
-          last by exact: unnamed_mono.
-        by rewrite /distinct0  /= 3!in_set 2!cr_mem_L H.
+        rewrite /distinct lfpE -/distinct /one_step_dist => H;
+          last by exact: one_step_dist_mono.
+        by rewrite /dist0  /= 3!in_set 2!cr_mem_L H.
       move => H.
       rewrite /distinct lfpE -/distinct;
-        last by exact: unnamed_mono.
-      apply/unnamedP. apply: Or33.
-      apply/distinctSP. exists a.
+        last by exact: one_step_dist_mono.
+      apply/one_step_distP. apply: Or33.
+      apply/distSP. exists a.
       apply: IHw.
       by rewrite -2!catA 2!(cr_mem_L_cat f_0).
     Qed.
@@ -436,12 +435,12 @@ Section MyhillNerode.
       move: u v.
       apply lfp_ind => [|dist IHdist] u v.
         by rewrite in_set.
-      move/unnamedP => [].
-          move/distinct0P => /eqP.
+      move/one_step_distP => [].
+          move/dist0P => /eqP.
           rewrite !cr_mem_L /= => H.
           exists [::]. by rewrite 2!cats0.
         exact: IHdist.
-      move/distinctSP => [a] /IHdist [w].
+      move/distSP => [a] /IHdist [w].
       rewrite -2!catA !cr_mem_L_cat.
       by eauto.
     Qed.
@@ -521,6 +520,7 @@ Section MyhillNerode.
       |}.
 
   End Minimalization.
+
   
 
 End MyhillNerode.

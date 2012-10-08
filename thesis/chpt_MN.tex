@@ -396,7 +396,7 @@ We denote this initial set $\mathit{dist_0}$.
 \end{equation*}
 
 \code{}{}{myhill_nerode_distinguishable}
-\codeblock{}{}{myhill_nerode_distinct0}
+\codeblock{}{}{myhill_nerode_dist0}
 
 
 To find more distinguishable equivalence classes, we have to identify equivalence classes that ``lead'' to distinguishable equivalence classes. 
@@ -418,33 +418,33 @@ The fixed-point algorithm tries to extend the set of distinguishable equivalence
 Given a set of pairs of equivalence classes $\mathit{dist}$, 
 we define the set of pairs of distinguishable equivalence classes that have successors in $\mathit{dist}$ as
 \begin{equation*}
-    \mathit{distinct_S}(\mathit{dist}) := \{ (x,y) \; | \; \exists a. \, \mathit{psucc_a}(x,y) \in \mathit{dist}\}.
+    \mathit{dist_S}(\mathit{dist}) := \{ (x,y) \; | \; \exists a. \, \mathit{psucc_a}(x,y) \in \mathit{dist}\}.
 \end{equation*}
-\code{}{}{myhill_nerode_distinctS}
+\code{}{}{myhill_nerode_distS}
 
 \begin{definition}
-    \label{unnamed}
-    Let $\mathit{dist}$ be a subset of $X \times X$. We define $\mathit{unnamed}$ such that
+    \label{one_step_dist}
+    Let $\mathit{dist}$ be a subset of $X \times X$. We define $\mathit{one\mhyphen step\mhyphen dist}$ such that
     \begin{equation*}
-        \mathit{unnamed}(\mathit{dist}) := \mathit{dist_0} \cup \mathit{dist} \cup \mathit{distinct_S}(\mathit{dist}).
+        \mathit{one\mhyphen step\mhyphen dist}(\mathit{dist}) := \mathit{dist_0} \cup \mathit{dist} \cup \mathit{distinct_S}(\mathit{dist}).
     \end{equation*}
 \end{definition}
-\code{}{}{myhill_nerode_unnamed}
+\code{}{}{myhill_nerode_one_step_dist}
 
 
 \begin{lemma}
     \label{dist_monotone}
-    $unnamed$ is monotone and has a fixed-point.
+    $\mathit{one\mhyphen step\mhyphen dist}$ is monotone and has a fixed-point.
 \end{lemma}
 \begin{proof}
     Monotonicity follows directly from the monotonicity of $\cup$. 
     The number of sets in $X \times X$ is finite. 
-    Therefore, $unnamed$ has a fixed point.
-    We iterate $\mathit{unnamed}$ $|X*X|+1 = |X|^2+1$ times on the empty set.
-    Since there can only ever be $|X*X|$ items in the result of $\mathit{unnamed}$, 
+    Therefore, $\mathit{one\mhyphen step\mhyphen dist}$ has a fixed point.
+    We iterate $\mathit{one\mhyphen step\mhyphen dist}$ $|X*X|+1 = |X|^2+1$ times on the empty set.
+    Since there can only ever be $|X*X|$ items in the result of $\mathit{one\mhyphen step\mhyphen dist}$, 
     we will find the fixed point in no more than $|X*X|+1$ steps.
     
-Let \textit{\textbf{distinct}} be the fixed point of $unnamed$ and let it be denoted by $\not\cong$. 
+    Let \textit{\textbf{distinct}} be the fixed point of $\mathit{one\mhyphen step\mhyphen dist}$ and let it be denoted by $\not\cong$. 
 We write \textit{\textbf{equiv}} for the complement of \textit{distinct} and denote it $\cong$.
 \end{proof}
 \code{}{}{base_lfp}
@@ -475,9 +475,9 @@ since the two directions require different strategies.
     Note that complementary transitivity, anti-reflexivity and symmetry are closed under union.
     We proceed by fixed-point induction.
     \begin{enumerate}
-        \item For $\mathit{unnamed}(\mathit{dist}) = \emptyset$ we have anti-reflexivity, symmetry and (\ref{trans}) %complementary transitivity
+        \item For $\mathit{one\mhyphen step\mhyphen dist}(\mathit{dist}) = \emptyset$ we have anti-reflexivity, symmetry and (\ref{trans}) %complementary transitivity
             by the properties of $\emptyset$.
-        \item For $\mathit{unnamed}(\mathit{dist}) = \mathit{dist'}$ 
+        \item For $\mathit{one\mhyphen step\mhyphen dist}(\mathit{dist}) = \mathit{dist'}$ 
             we have $\mathit{dist}$ anti-reflexive, symmetric and (\ref{trans}). %complementarily transitive.
             It remains to show that
             $\mathit{dist_0}$ 
@@ -515,7 +515,7 @@ since the two directions require different strategies.
             Thus, $u \not\cong_{f_0} v$.
         \item For $w = aw'$ we have $uaw \in L \not\Leftrightarrow vaw \in L$.
             We have to show $u \not\cong_{f_0} v$, i.e. $({f_0}(u), {f_0}(v)) \in \mathit{distinct}$.
-            By definition of $\mathit{distinct}$, it suffices to show $({f_0}(u), {f_0}(v)) \in \mathit{unnamed}(\mathit{distinct})$.
+            By definition of $\mathit{distinct}$, it suffices to show $({f_0}(u), {f_0}(v)) \in \mathit{one\mhyphen step\mhyphen dist}(\mathit{distinct})$.
 
              For this, we prove $({f_0}(u), {f_0}(v)) \in \mathit{distinct_S}(\mathit{distinct})$. 
              By $uaw \in L \not\Leftrightarrow vaw \in L$ we have $({f_0}(\crep{u}a), {f_0}(\crep{v}a)) \in dist_0$.
@@ -538,8 +538,8 @@ since the two directions require different strategies.
 \begin{proof}
     We do a fixed-point induction.
     \begin{enumerate}
-        \item For $\mathit{unnamed}(\mathit{dist}) = \emptyset$ we have $({f_0}(u), {f_0}(v)) \in \emptyset$ and thus a contradiction. 
-        \item For $\mathit{unnamed}(\mathit{dist}) = \mathit{dist'}$ we have $({f_0}(u), {f_0}(v)) \in \mathit{dist'}$. 
+        \item For $\mathit{one\mhyphen step\mhyphen dist}(\mathit{dist}) = \emptyset$ we have $({f_0}(u), {f_0}(v)) \in \emptyset$ and thus a contradiction. 
+        \item For $\mathit{one\mhyphen step\mhyphen dist}(\mathit{dist}) = \mathit{dist'}$ we have $({f_0}(u), {f_0}(v)) \in \mathit{dist'}$. 
             We do a case distinction on $\mathit{dist'}$.
             \begin{enumerate}
                 \item $({f_0}(u), {f_0}(v)) \in \mathit{dist_0}$.
