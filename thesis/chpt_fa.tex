@@ -103,7 +103,7 @@ The set of states is an implicit argument of the DFA constructor and thus not sh
 \code{}{}{automata_nfa_to_dfa}
 
 \begin{lemma}
-    \label{nfa_to_dfa_complete}
+    \label{nfa_to_dfa_aux2}
     For all powerset states $X$ and for all states $x$ with $x \in X$ we have that
     \begin{equation*}
         \acc{x}{A} \subseteq \acc{X}{A_{det}}.
@@ -127,7 +127,7 @@ The set of states is an implicit argument of the DFA constructor and thus not sh
 
 
 \begin{lemma}
-    \label{nfa_to_dfa_sound}
+    \label{nfa_to_dfa_aux1}
     For all powerset states $X$ and all words $w \in \acc{X}{A_{det}}$ there exists a state $x$ such that 
     \begin{equation*}
         x \in X \wedge
@@ -158,18 +158,18 @@ The set of states is an implicit argument of the DFA constructor and thus not sh
 \end{theorem}
 \begin{proof}
     ``$\subseteq$'' 
-    This follows directly from lemma \ref{nfa_to_dfa_complete} with $x = s$ and $X = {s}_{det}$.
+    This follows directly from lemma \ref{nfa_to_dfa_aux2} with $x = s$ and $X = {s}_{det}$.
 
     ``$\supseteq$''
-    From lemma \ref{nfa_to_dfa_sound} with $X = {s}_{det}$ we get 
+    From lemma \ref{nfa_to_dfa_aux1} with $X = {s}_{det}$ we get 
     $\acc{s_{det}}{A_{det}} \subseteq \acc{s}{A}$, which proves the claim.
 \end{proof}
 
 
 The formalization of this proof is straight-forward and follows the plan laid out above. 
 The corresponding Lemmas are:
-\code{powerset_complete}{}{automata_nfa_to_dfa_complete_head}
-\codeblock{powerset_sound}{}{automata_nfa_to_dfa_sound_head}
+\code{powerset_aux2}{}{automata_nfa_to_dfa_aux2_head}
+\codeblock{powerset_aux1}{}{automata_nfa_to_dfa_aux1_head}
 \codeblock{powerset_correct}{}{automata_nfa_to_dfa_correct_head}
 
 
@@ -326,8 +326,8 @@ Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain
 %The formalization of lemma \ref{dfa_lang_empty} is split in two parts to facilitate its application. 
 
 \code{}{}{automata_dfa_lang_empty}
-%\codeblock{dfa_lang_empty_complete}{}{automata_dfa_lang_empty_complete_head}
-%\codeblock{dfa_lang_empty_sound}{}{automata_dfa_lang_empty_sound_head}
+%\codeblock{dfa_lang_empty_aux2}{}{automata_dfa_lang_empty_aux2_head}
+%\codeblock{dfa_lang_empty_aux1}{}{automata_dfa_lang_empty_aux1_head}
 \codeblock{dfa_lang_empty_correct}{}{automata_dfa_lang_empty_correct_head}
 
 
@@ -691,7 +691,7 @@ Consequently, the accept the same words.
 The following lemma is one direction of the proof of correctness of $A_{Conc}$.
 
 \begin{lemma}
-    \label{nfa_conc_complete}
+    \label{nfa_conc_aux2}
     Let $x \in Q_1$, $w_1 \in \acc{x}{A_1}$, and $w_2 \in \lang{A_2}$. Then $w_1 w_2 \in \acc{x}{A_{Conc}}$.
 \end{lemma}
 \begin{proof}
@@ -702,24 +702,24 @@ The following lemma is one direction of the proof of correctness of $A_{Conc}$.
     \end{enumerate}
 \end{proof}
 
-\code{}{}{automata_nfa_conc_complete_head}
+\code{}{}{automata_nfa_conc_aux2_head}
 
 The next lemma constitutes the other direction. 
 Its statement is very general, even though we will only need one of the two cases for the proof of correctness of $A_{Conc}$.
 However, with the second case, there is no straight-forward inductive proof.
 
 \begin{lemma}
-    \label{nfa_conc_sound}
+    \label{nfa_conc_aux1}
     Let $x \in Q_{Conc}$. Let $w \in \acc{x}{A_{Conc}}$. Then, either
     \begin{equation}
         \tag{*}
-        \label{nfa_conc_sound1}
+        \label{nfa_conc_aux11}
         x \in Q_1 \; \wedge \; \exists w_1. \; \exists w_2. \; w = w_1 w_2 \; \wedge \; w_1 \in \acc{x}{A_1} \; \wedge \; w_2 \in \lang{A_2},
     \end{equation}
     or
     \begin{equation}
         \tag{**}
-        \label{nfa_conc_sound2}
+        \label{nfa_conc_aux12}
         x \in Q_2 \; \wedge \; w \in \acc{x}{A_2}.
     \end{equation}
 \end{lemma}
@@ -727,27 +727,27 @@ However, with the second case, there is no straight-forward inductive proof.
     By induction on $w$. 
     \begin{enumerate}
         \item For $w = \varepsilon$ we get either $x \in F_1$ and $s_2 \in F_2$ or $x \in F_2$.
-            In the first case, we need to prove (\ref{nfa_conc_sound1}), which we do by choosing $w_1 := \varepsilon$ and $w_2 := \varepsilon$.
+            In the first case, we need to prove (\ref{nfa_conc_aux11}), which we do by choosing $w_1 := \varepsilon$ and $w_2 := \varepsilon$.
             In the second case, we need to prove $\varepsilon \in \acc{x}{A_2}$ and thus $x \in F_2$ which we have by assumption.
         \item For $w = aw'$ we get $y$ such that $(x,a,y) \in \delta_{Conc}$ and $w' \in \acc{y}{A_{Conc}}$. 
             We are left with four cases, depending on the origin of $x$ and $y$.
             \begin{enumerate}
-                \item For $x,y \in Q_2$ we have $(x,a,y) \in Q_2$ and claim (\ref{nfa_conc_sound2}) follows.
-                \item For $x,y \in Q_1$ we prove (\ref{nfa_conc_sound1}). 
-                    By inductive hypothesis we get $w_1$ and $w_2$ such that (\ref{nfa_conc_sound1}) holds for $y$.
+                \item For $x,y \in Q_2$ we have $(x,a,y) \in Q_2$ and claim (\ref{nfa_conc_aux12}) follows.
+                \item For $x,y \in Q_1$ we prove (\ref{nfa_conc_aux11}). 
+                    By inductive hypothesis we get $w_1$ and $w_2$ such that (\ref{nfa_conc_aux11}) holds for $y$.
                 \item For $x \in Q_1$ and $y \in Q_2$ the claim follows with $w_1 := \varepsilon$ and $w_2 := aw'$ by inductive hypothesis.
                 \item For $x \in Q_2$ and $y \in Q_1$ we have $(x, a, y) \in \delta_{Conc}$, which is a contradiction.
             \end{enumerate}
     \end{enumerate}
 \end{proof}
 
-\code{}{}{automata_nfa_conc_sound_head}
+\code{}{}{automata_nfa_conc_aux1_head}
 
 \begin{corollary}
     The language of $A_{Conc}$ is the concatenation of the languages of $A_1$ and $A_2$, i.e. $\lang{A_{Conc}} = \lang{A_1} \cdot \lang{A_2}$.
 \end{corollary}
 \begin{proof}
-    Follows directly from lemma \ref{nfa_conc_complete} and lemma \ref{nfa_conc_sound}. 
+    Follows directly from lemma \ref{nfa_conc_aux2} and lemma \ref{nfa_conc_aux1}. 
 \end{proof}
 
 \code{}{}{automata_nfa_conc_correct_head}
@@ -911,7 +911,7 @@ Note that, mathematically, runs include the starting state.
 In our formaliziation, this is not the case.
 Thus, we do not need to remove the first state from a run to retrieve all states the run passes through.
 
-\code{}{}{transitive_closure_belast}
+%\code{}{}{transitive_closure_belast}
 \codeblock{}{}{transitive_closure_allbutlast}
 \codeblock{}{}{transitive_closure_L}
 

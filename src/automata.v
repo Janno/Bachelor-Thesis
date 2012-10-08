@@ -42,7 +42,7 @@ match w with
   | a::w => (dfa_step A x a) ::dfa_run' (dfa_step A x a) w
 end.
 
-(** A simplifying function for a "complete" run
+(** A simplifying function for a "aux2" run
    (i.e. starting at s). **)
 Definition dfa_run := [fun w => dfa_run' (dfa_s A) w].
 
@@ -231,7 +231,7 @@ Definition nfa_to_dfa :=
 (** We prove that for every state x, the new automaton
    accepts at least the language of the given automaton
    when starting in a set containing x. **)
-Lemma nfa_to_dfa_complete (x: A) w (X: nfa_to_dfa):
+Lemma nfa_to_dfa_aux2 (x: A) w (X: nfa_to_dfa):
   x \in X -> nfa_accept A x w -> dfa_accept nfa_to_dfa X w.
 Proof. move => H0.
   elim: w X x H0 => [|a w IHw] X x H0.
@@ -250,7 +250,7 @@ Qed.
    if the powerset automaton accepts w in X, there exists one
    representative state of that set in which the given automaton
    accepts w. **)
-Lemma nfa_to_dfa_sound (X: nfa_to_dfa) w:
+Lemma nfa_to_dfa_aux1 (X: nfa_to_dfa) w:
   dfa_accept nfa_to_dfa X w -> [ exists x, (x \in X) && nfa_accept A x w ].
 Proof. elim: w X => [|a w IHw] X => //.
   move/IHw => /existsP [] y /andP [].
@@ -266,8 +266,8 @@ Qed.
    automaton. **)
 Lemma nfa_to_dfa_correct : nfa_lang A =i dfa_lang nfa_to_dfa.
 Proof. move => w. apply/idP/idP => /=.
-  apply: nfa_to_dfa_complete. by apply/set1P.
-by move/nfa_to_dfa_sound => /existsP [] x /andP [] /set1P ->.
+  apply: nfa_to_dfa_aux2. by apply/set1P.
+by move/nfa_to_dfa_aux1 => /existsP [] x /andP [] /set1P ->.
 Qed.
   
 
@@ -518,7 +518,7 @@ Section Reachability.
   Qed.
 
   Definition reachable1_connected := [ fun x y => [ exists a, dfa_step dfa_connected x a == y ] ].
-  Lemma reachable1_connected_complete x y (Hx: x \in reachable) (Hy: y \in reachable) : connect reachable1 x y -> connect reachable1_connected (SeqSub Hx) (SeqSub Hy).
+  Lemma reachable1_connected_aux2 x y (Hx: x \in reachable) (Hy: y \in reachable) : connect reachable1 x y -> connect reachable1_connected (SeqSub Hx) (SeqSub Hy).
   Proof.
     move/connectP => [p].
     elim: p x Hx y Hy => [|z p IHp] x Hx y Hy //=.
@@ -563,7 +563,7 @@ Section Reachability.
   Proof.
     apply dfa_connected_repr'.
     destruct x as [x Hx].
-    apply (reachable1_connected_complete (dfa_s A1) x reachable0).
+    apply (reachable1_connected_aux2 (dfa_s A1) x reachable0).
     by rewrite mem_enum -topredE /= in Hx.
   Qed.
   
@@ -602,7 +602,7 @@ Section Emptiness.
 
   Definition dfa_lang_empty := #|dfa_fin dfa_connected| == 0.
 
-  Lemma dfa_lang_empty_complete: dfa_lang dfa_connected =i pred0 -> dfa_lang_empty.
+  Lemma dfa_lang_empty_aux2: dfa_lang dfa_connected =i pred0 -> dfa_lang_empty.
   Proof.
     rewrite /dfa_lang_empty.
     move => H.
@@ -617,7 +617,7 @@ Section Emptiness.
     by move/negP.
   Qed. 
   
-  Lemma dfa_lang_empty_sound: dfa_lang_empty -> dfa_lang dfa_connected =i pred0.
+  Lemma dfa_lang_empty_aux1: dfa_lang_empty -> dfa_lang dfa_connected =i pred0.
   Proof.
     rewrite /dfa_lang_empty.
     move => H w.
@@ -634,9 +634,9 @@ Section Emptiness.
     apply/iffP.
     eexact (@idP dfa_lang_empty ).
       move => H w. rewrite -dfa_connected_correct.
-      exact: dfa_lang_empty_sound.
+      exact: dfa_lang_empty_aux1.
     move => H.
-    apply: dfa_lang_empty_complete.
+    apply: dfa_lang_empty_aux2.
     move => w.
     by rewrite dfa_connected_correct.
   Qed.
@@ -729,7 +729,7 @@ Qed.
    some state x and for every word w2 in the language of A2
    w1 ++ w2 will be accepted by the corresponding state in
    nfa_conc. **)
-Lemma nfa_conc_complete x w1 w2:
+Lemma nfa_conc_aux2 x w1 w2:
   nfa_accept A1 x w1 ->
   nfa_lang A2 w2 ->
   nfa_accept nfa_conc (inl _ x) (w1 ++ w2).
@@ -754,7 +754,7 @@ Qed.
    by A1, A2 (resp.) if X corresponds to one of A1's states
    - OR accepted by A2 in the state corresponding to X if X
    corresponds to one of A2's states. **)
-Lemma nfa_conc_sound X w :
+Lemma nfa_conc_aux1 X w :
   nfa_accept nfa_conc X w ->
   match X with
   | inl x => exists w1, exists w2, (w == w1 ++ w2) && (nfa_accept A1 x w1) && nfa_lang A2 w2
@@ -791,12 +791,12 @@ Lemma nfa_conc_correct: nfa_lang nfa_conc =i conc (nfa_lang A1) (nfa_lang A2).
 Proof.
   move => w.
   apply/idP/concP.
-    move/nfa_conc_sound.
+    move/nfa_conc_aux1.
     rewrite /nfa_conc /nfa_s.
     move => [] w1 [] w2 /andP [] /andP [] /eqP H0 H1 H2.
     by eauto.
   move => [] w1 H0 [] w2 H2 ->.
-  by apply/nfa_conc_complete.
+  by apply/nfa_conc_aux2.
   Qed.  
 
 (** Plus operator for non-deterministic automata. **)
@@ -882,7 +882,7 @@ Proof. exact: nfa_plus_correct0'. Qed.
    by a suffix accepted by nfa_plus is again accepted
    by nfa_plus. This is the first part of the proof of
    language correctness for nfa_plus. **)
-Lemma nfa_plus_complete w1 w2:
+Lemma nfa_plus_aux2 w1 w2:
   nfa_lang A1 w1 ->
   nfa_lang nfa_plus w2 ->
   nfa_lang nfa_plus (w1 ++ w2).
@@ -904,7 +904,7 @@ Qed.
 (** We prove that every word accepted by some state x in nfa_plus
    is a concatenation of two words w1, w2 which are accpeted by
    A1 in x and nfa_plus (resp.). **) 
-Lemma nfa_plus_sound' x w :
+Lemma nfa_plus_aux1' x w :
   nfa_accept nfa_plus x w ->
   ((exists w1, exists w2, (w == w1 ++ w2) && (w1 != [::]) && (nfa_accept A1 x w1) && nfa_lang nfa_plus w2
     ) \/ nfa_accept A1 x w ).
@@ -937,11 +937,11 @@ Qed.
 
 (** We prove the second part of language correctness
    for nfa_plus. **)
-Lemma nfa_plus_sound w:
+Lemma nfa_plus_aux1 w:
   nfa_lang nfa_plus w ->
   ((exists w1, exists w2, (w == w1 ++ w2) && (w1 != [::]) && (nfa_lang A1 w1) && nfa_lang nfa_plus w2
     ) \/ nfa_lang A1 w ).
-Proof. exact: nfa_plus_sound'. Qed.
+Proof. exact: nfa_plus_aux1'. Qed.
 
 
 (* Star operator *)
@@ -953,7 +953,7 @@ Definition nfa_star :=
         )
     ).
 
-Lemma nfa_star_sound w: w \in dfa_lang nfa_star -> w \in star (nfa_lang A1).
+Lemma nfa_star_aux1 w: w \in dfa_lang nfa_star -> w \in star (nfa_lang A1).
 Proof.
   rewrite /nfa_star -dfa_disj_correct -topredE /=.
     rewrite dfa_eps_correct => /orP [].
@@ -963,7 +963,7 @@ Proof.
     move: w.
     apply: (size_induction size).
     move => w IHw.
-    move/nfa_plus_sound' => [].
+    move/nfa_plus_aux1' => [].
       move => [] w1 [] w2 [/andP [/andP [/andP [/eqP H1 H2] H3] H4]].
       have H5: (size w2 < size w).
         rewrite H1 size_cat addnC -{1}(addn0 (size w2)).
@@ -983,7 +983,7 @@ Proof.
       by rewrite cats0.
 Qed.  
       
-Lemma nfa_star_complete w: w \in star (nfa_lang A1) -> w \in dfa_lang nfa_star.
+Lemma nfa_star_aux2 w: w \in star (nfa_lang A1) -> w \in dfa_lang nfa_star.
     rewrite /nfa_star -dfa_disj_correct -2!topredE /= -nfa_to_dfa_correct.
     move/starP => [] vv. elim: vv w => [|v vv IHvv] w.
       rewrite /= => _ ->. move: (dfa_eps_correct [::]).
@@ -999,15 +999,15 @@ Lemma nfa_star_complete w: w \in star (nfa_lang A1) -> w \in dfa_lang nfa_star.
       by apply nfa_plus_correct0.
     move => H4.
     apply/orP. right.
-    by apply: nfa_plus_complete.
+    by apply: nfa_plus_aux2.
 Qed.
 
 Lemma nfa_star_correct: dfa_lang nfa_star =i star (nfa_lang A1).
 Proof.
   move => w.
   apply/idP/idP.
-    by move/nfa_star_sound.
-  by move/nfa_star_complete.
+    by move/nfa_star_aux1.
+  by move/nfa_star_aux2.
 Qed.
 
 End NFAOps.

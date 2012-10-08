@@ -80,14 +80,14 @@ Section RE_FA.
     exists (nfa_to_dfa (nfa_conc (dfa_to_nfa As) (dfa_to_nfa At))).
     move => w. rewrite -nfa_to_dfa_correct. 
     apply/idP/idP.
-    move/nfa_conc_sound => [] w1 [] w2 /andP [] /andP [] /eqP H0 H1 H2.
+    move/nfa_conc_aux1 => [] w1 [] w2 /andP [] /andP [] /eqP H0 H1 H2.
     rewrite -topredE /=.
     apply/concP.
     exists w1. by rewrite -Hs -topredE /= dfa_to_nfa_correct' /nfa_lang /= H1.
     exists w2. rewrite /= in H2. by rewrite -Ht dfa_to_nfa_correct in_simpl H2.
     exact H0.
     move/concP => [] w1. rewrite -Hs => H1 [] w2. rewrite -Ht => H2 ->.
-    apply/nfa_conc_complete.
+    apply/nfa_conc_aux2.
       move: H1. by rewrite  dfa_to_nfa_correct /nfa_lang /=.
     move: H2. by rewrite dfa_to_nfa_correct /nfa_lang /=.
 
