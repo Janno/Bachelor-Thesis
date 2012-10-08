@@ -543,6 +543,7 @@ Section Reachability.
       by move => ->.
     assumption.
   Qed.
+
                    
   Lemma dfa_connected_repr' (x y: dfa_connected):
     connect reachable1_connected y x ->
@@ -564,7 +565,36 @@ Section Reachability.
     destruct x as [x Hx].
     apply (reachable1_connected_complete (dfa_s A1) x reachable0).
     by rewrite mem_enum -topredE /= in Hx.
+  Qed.
+  
+  Lemma dfa_connected_repr_pred x :
+    exists w, last (dfa_s dfa_connected) (dfa_run dfa_connected w) == x.
+  Proof.
+    move: (dfa_connected_repr x) => [w /eqP].
+    by eauto.
   Defined.
+  
+  Lemma dfa_connected_repr_fun (x: dfa_connected):
+    word.
+  Proof.
+    move: (dfa_connected_repr_pred x).
+    apply (xchoose).
+  Defined.
+
+  Lemma dfa_connected_repr_fun_correct x: last (dfa_s dfa_connected) (dfa_run dfa_connected (dfa_connected_repr_fun x)) = x.
+  Proof.
+    rewrite /dfa_connected_repr_fun. 
+    by move: (xchooseP (dfa_connected_repr_pred x)) => /eqP.
+  Qed.
+    
+  Lemma dfa_connected_repr_fun_injective: injective dfa_connected_repr_fun.
+  Proof.
+    move => x y.
+    rewrite /dfa_connected_repr_fun => H.
+    move: (xchooseP (dfa_connected_repr_pred x)) => /eqP.
+    move: (xchooseP (dfa_connected_repr_pred y)) => /eqP.
+    rewrite H. by move => -> ->.
+  Qed.
     
 End Reachability.
 
