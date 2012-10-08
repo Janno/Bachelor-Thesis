@@ -3,8 +3,9 @@
 \label{chap:FA}
 
 Another way of characterizing regular languages are finite automata (FA)\cite{DBLP:books/daglib/0011126}. 
-We will show that the languages of finite automata are exactly the regular languages. 
-Furthermore, we will also derive a decision procedure for equivalence of regular expressions.
+We will show that the languages of finite automata are exactly the regular languages.
+Furthermore, we will also derive a decision procedure for emptiness of an automaton's language.
+Based on that, we will give a decision procedure for equivalence of regular expressions.
 
 \section{Definition}
 A finite automaton consists of
@@ -20,15 +21,14 @@ A finite automaton consists of
 \end{enumerate}
 
 We define a \textbf{run} of a word $w \in \Sigma^*$ on an automaton $A = (Q, s, F, \delta)$ as a sequence of states $\sigma$ such that 
-for every two consecutive positions $i,i+1$ in $\sigma$ there is 
+for every two consecutive positions $i,i+1$ in $\sigma$ we have 
 $(\sigma_i, w_i, \sigma_{i+1}) \in \delta$.
 A word $w$ is \textbf{accepted} by $A$ in state $x$ if and only if there exists a run $\sigma$ of $w$ on $A$ such that $\sigma_0 = x \, \wedge \, \sigma_{\vert\sigma\vert-1} \in F$.
 The resulting set of accepted words is denoted by $\acc{x}{A}$.
 The \textbf{language} of $A$ is exactly $\acc{s}{A}$ and is denoted $\lang{A}$. 
 
 \subsection{Non-Deterministic Finite Automata}
-Finite automata can be \textbf{non-deterministic} (NFA) in the sense that there exist multiple distinct runs for a word. 
-This is the case if and only if $\delta$ is not functional.
+Finite automata can be \textbf{non-deterministic} (NFA) in the sense that there may exist multiple distinct runs for a word. 
 
 \code{nfa}{Non-Deterministic Finite Automata}{automata_nfa}
 \codeblock{nfa_accept}{}{automata_nfa_accept}
@@ -39,7 +39,7 @@ The acceptance criterion given here avoids the matter of runs.
 In many cases, this will help us with proofs by in induction on the accepted word.
 However, we will need runs in some of the proofs.
 Due to the fact that runs are not unique on NFAs, 
-we give a predicate that decides if a run on $A$ is valid for a word $w$.
+we give a predicate that decides if a sequence of states is a run on $A$ for a word $w$.
 We then show that the acceptance criterion given above corresponds to the mathematical definition in terms of runs.
 
 \code{nfa_run}{}{automata_nfa_run}
@@ -80,23 +80,25 @@ We also prove that both criteria are equivalent.
 Deterministic and non-deterministic finite automata are equally expressive. 
 One direction is trivial since every DFA can be seen as a NFA. 
 We prove the other direction using the powerset construction. 
-Given NFA $A$, we construct an equivalent DFA $A_{det}$ in the following way:
 %The new set of states is the powerset of the given NFA's set of states. 
 %The new starting state is the singleton set containing the original starting state. 
 %A state is final if and only if it contains an original final state. 
 %The transition function on powerset states is defined as follows:
 
+\begin{definition}
+Given NFA $A$, we construct an equivalent DFA $A_{det}$ in the following way:
 \begin{eqnarray*}
-    Q_{det} & := & 2^Q \\ %\{P \; | \; P \subseteq Q\} \\
+    Q_{det} & := & \{P \; | \; P \subseteq Q\} \\
     {s}_{det} & := & \{ s \} \\
-    F_{det} & := & \{ P \; | \; P \in Q_{det} \wedge P \cap F \neq \emptyset \} \\
-    \delta_{det} & := & \{ (P,a,\bigcup \limits _{p \in P} \{ q \; | \; q \in Q, (p,a,q) \in \delta \}) \; | \; P \in Q_{det}, a \in \Sigma \}.     \\
+    F_{det} & := & \{ P \in Q_{det} \; | \; P \cap F \neq \emptyset \} \\
+    \delta_{det} & := & \{ (P,a,\bigcup \limits _{p \in P} \{ q \in Q \; | \; (p,a,q) \in \delta \}) \; | \; P \in Q_{det}, a \in \Sigma \}.     \\
     A_{det} &:=&  (Q_{det}, s_{det}, F_{det}, \delta_{det}).
 \end{eqnarray*}
-
+\end{definition}
 
 The formalization of $A_{det}$ is straight-forward. 
-We leave the set of states \lstinline_{set A}_ implicit.
+%We leave the set of states \lstinline_{set A}_ implicit.
+The set of states is an implicit argument of the DFA constructor and thus not shown.
 
 \code{}{}{automata_nfa_to_dfa}
 

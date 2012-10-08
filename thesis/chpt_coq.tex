@@ -71,7 +71,8 @@ which are functions that take predicates as arguments and return predicates.
 \subsection{Miscellaneous}
 We can use \lstinline{f =1 g} to express that the functions \lstinline{f} and \lstinline{g} agree in all arguments.
 If we regard \lstinline{f} and \lstinline{g} as sets, we can write \lstinline{f =i g}, which is defined as \lstinline{forall x, x \in f = x \in g}.
-
+\coq's equality \lstinline{=} is intensional, which means that even if we have \lstinline{f =1 g}, we will not, in general, be able to proof \lstinline{f = g}.
+Thus, we will use \lstinline{=1} and \lstinline{=i} in \coq, when we write $=$ mathematically. 
 
 
 
