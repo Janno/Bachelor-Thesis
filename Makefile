@@ -13,7 +13,7 @@ src: src/Makefile
 	cd src; make -j 8
 
 thesis/chapters/%.pdf: definitions thesis/%.tex
-	j=$(shell basename $@ .pdf); cd thesis; pdflatex -jobname=chapters/$$j "\includeonly{$$j,includes.tex}\input{thesis}"
+	j=$(shell basename $@ .pdf); cd thesis; pdflatex -jobname=chapters/$$j "\includeonly{$$j,includes.tex,macros.tex}\input{thesis}"
 
 tex_doc: src
 	mkdir -p docs/tex

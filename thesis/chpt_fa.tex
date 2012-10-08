@@ -267,7 +267,6 @@ We will need this property of $A_c$ in Chapter \ref{chap:MN}.
 \begin{lemma}
     \label{dfa_connected_repr}
     There is a representative for every state $x \in Q_c$.
-    %\todo{Sigma?}
 \end{lemma}
 
 \begin{proof}
@@ -596,6 +595,9 @@ to form the star automaton.
 \code{}{}{automata_nfa_star}
 \codeblock{}{}{automata_nfa_star_correct_head}
 
+
+
+
 \subsection{Deciding Equivalence of Regular Expressions}
 
  
@@ -757,7 +759,7 @@ We now prove properties of $L$ that we will need for our proof of Theorem \ref{d
 
 \begin{lemma}
     \label{L_monotone}
-    L is monotone \todo{is this word correct?} in $X$, i.e.
+    L is monotone in $X$, i.e.
     \begin{equation*}
         \forall X \subseteq Q, z \in X, x,y \in Q. \; L^X_{x,y} \subseteq L^{X\cup\{z\}} x y.
     \end{equation*}

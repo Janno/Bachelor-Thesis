@@ -342,7 +342,7 @@ Section Primitive.
       dfa_fin := pred1 (Some true);
       dfa_step := [fun x b => if x == None then if b == a then Some true else Some false else Some false ]
     |}.
-            
+  
   Lemma dfa_char_correct'' a w: ~~ dfa_accept (dfa_char a) (Some false) w.
   Proof. by elim: w => [|b v IHv] //=. Qed.
   Lemma dfa_char_correct' a w: dfa_accept (dfa_char a) (Some true) w = (w == [::]).

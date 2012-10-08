@@ -18,11 +18,13 @@ by proving them equivalent to the existence of a (deterministic) finite automato
 \section{Definitions}
 Before we can state the Myhill-Nerode theorem, we need a number of auxiliary definitions. We roughly follow \cite{DBLP:books/daglib/0088160}.
 \begin{definition}
+    Let $\equiv$ be an equivalence relation.
     The \textbf{equivalence class} of $u \in \Sigma^*$ w.r.t. $\equiv$ is the set of all $v$ such that $u \equiv v$.
     It is denoted by $[u]_\equiv$.
 \end{definition}
 
 \begin{definition}
+    Let $\equiv$ be an equivalence relation.
     $\equiv$ is of \textbf{finite index} if and only if the set of $\{[u]_\equiv \; | \; u \in \Sigma^* \}$ is finite.
 \end{definition}
 
@@ -32,18 +34,13 @@ we formalize equivalence relations of finite index
 as surjective functions from $\Sigma^*$ to a finite type $X$.
 
 \begin{definition}
-    \label{equiv_f}
+    Let $X$ be finite.
     Let $f: \Sigma^* \mapsto X$ be surjective.
-    The relation $\equiv_f$ is defined such that for all $u,v \in \Sigma^*$ 
-    \begin{equation*}
-        u \equiv_f v \iff f(u) = f(v).
-    \end{equation*}
+    Let $u, v \in \Sigma^*$.
+    $f$ is an \textbf{equivalence relation of finite index}. 
+    $u$ and $v$ are equivalent w.r.t. $f$ if and only if $f(u) = f(v)$.
+    $f(u)$ is the equivalence class of $u$ w.r.t $f$.
 \end{definition}
-
-For all $w \in \Sigma^*$, $f(w)$ can be seen as an equivalence class of $\equiv_f$.
-It is easy to see that $\equiv_f$ is the equivalence relation. 
-Furthermore, from the finiteness of $X$, it follows that $\equiv_f$ is of finite index.
-%For our purposes, only surjective functions are relevant.
 
 \code{}{}{myhill_nerode_Fin_Eq_Cls}
 
@@ -96,9 +93,10 @@ weak Nerode relations that have no direction connection to Myhill relations.
 %Additionally, Myhill relations and both kind of Nerode relations inhabit different types in our formalization.
 Thus, we strictly separate the characterizations.
 
-
-Building on our formalization of equivalence relations of finite index, 
-we only need to give formalizations of \ref{right_congruent} and \ref{refinement}.
+Mathematically, Myhill relations are required to be of finite index. 
+We only formalize equivalence relations of finite index.
+Thus, proving that a Myhill relation is of finite index mathematically corresponds 
+to constructing a Myhill relation in our formalization.
 
 \code{}{}{myhill_nerode_right_congruent}
 \codeblock{}{}{myhill_nerode_refines}
@@ -126,7 +124,7 @@ The Nerode relation given above is a propositional statement in \coq.
 To proof that the Nerode relation is of finite index, 
 we require an equivalence relation, 
 i.e. a function $f$ from words to a finite type,
-such that $=_f$ is equivalent to $\doteq_L$.
+such that $f$ is equivalent to $\doteq_L$.
 
 \code{}{}{myhill_nerode_equiv_suffix}
 \codeblock{}{}{myhill_nerode_Nerode_Rel}
@@ -258,8 +256,8 @@ In order to show that $f_M$ is a Myhill relation, we prove that it fulfills Defi
     $f_M$ is right congruent.
 \end{lemma}
 \begin{proof}
-    Let $u,v \in \Sigma^*$ such that $u =_{f_M} v$.
-    Let $a \in \Sigma$. Since $A$ is deterministic, we get $ua =_{f_M} va$.
+    Let $u,v \in \Sigma^*$ such that ${f_M}(u) = {f_M}(v)$.
+    Let $a \in \Sigma$. Since $A$ is deterministic, we get ${f_M}(ua) = {f_M}(va)$.
 \end{proof}
 
 \begin{lemma}
@@ -267,7 +265,7 @@ In order to show that $f_M$ is a Myhill relation, we prove that it fulfills Defi
     $f_M$ refines $\lang{A_c}$.
 \end{lemma}
 \begin{proof}
-    Let $u,v \in \Sigma^*$ such that $u =_{f_M} v$.
+    Let $u,v \in \Sigma^*$ such that ${f_M}(u) = {f_M}(v)$.
     By definition of $f_M$, the runs $u$ and $v$ on $A$ end in the same state.
     Thus, either $u$ and $v$ are both accepted, or both not accepted.
 \end{proof}
@@ -502,25 +500,25 @@ since the two directions require different strategies.
 \begin{lemma}
     \label{equiv_final}
     Let $u,v \in \Sigma^*$. 
-    $u \cong_{f_0} v \implies u \doteq_L v$.
+    ${f_0}(u) \cong {f_0}(v) \implies u \doteq_L v$.
 \end{lemma}
 \begin{proof}
     Let $w \in \Sigma^*$. We then show the contraposition of the claim: 
     \begin{equation*}
-        uw \in L \not\Leftrightarrow vw \in L \implies u \not\cong_{f_0} v.
+        uw \in L \not\Leftrightarrow vw \in L \implies {f_0}(u) \not\cong {f_0}(v).
     \end{equation*}    
     By induction on $w$.
     \begin{enumerate}
         \item For $w = \varepsilon$ we have $u \in L \not\Leftrightarrow v \in L$ which gives us $({f_0}(u),{f_0}(v)) \in dist_0$.
-            Thus, $u \not\cong_{f_0} v$.
+            Thus, ${f_0}(u) \not\cong {f_0}(v)$.
         \item For $w = aw'$ we have $uaw \in L \not\Leftrightarrow vaw \in L$.
-            We have to show $u \not\cong_{f_0} v$, i.e. $({f_0}(u), {f_0}(v)) \in \mathit{distinct}$.
+            We have to show ${f_0}(u) \not\cong {f_0}(v)$, i.e. $({f_0}(u), {f_0}(v)) \in \mathit{distinct}$.
             By definition of $\mathit{distinct}$, it suffices to show $({f_0}(u), {f_0}(v)) \in \mathit{one\mhyphen step\mhyphen dist}(\mathit{distinct})$.
 
              For this, we prove $({f_0}(u), {f_0}(v)) \in \mathit{distinct_S}(\mathit{distinct})$. 
              By $uaw \in L \not\Leftrightarrow vaw \in L$ we have $({f_0}(\crep{u}a), {f_0}(\crep{v}a)) \in dist_0$.
 
-             It remains to show that $\crep{u}a \not\cong_{f_0} \crep{v}a$ which we get by inductive hypothesis.
+             It remains to show that ${f_0}(\crep{u}a) \not\cong {f_0}(\crep{v}a)$ which we get by inductive hypothesis.
              For this, we need to show that $\crep{u}aw \in L \not\Leftrightarrow \crep{v}aw \in L$.
 
              By the properties of $f$, we get $\crep{u}aw \in L \Leftrightarrow uaw \in L$ and $\crep{v}aw \in L \Leftrightarrow vaw \in L$.
@@ -533,7 +531,7 @@ since the two directions require different strategies.
 \begin{lemma}
     \label{distinct_final}
     Let $u,v \in \Sigma^*$. 
-    If $u \not\cong_{f_0} v$, then $u$ and $v$ are \textbf{not} equivalent wr.t. the Merode relation, i.e. $u \not\cong_{f_0} v \implies u \not\doteq_L v$.
+    If ${f_0}(u) \not\cong {f_0}(v)$, then $u$ and $v$ are \textbf{not} equivalent wr.t. the Merode relation, i.e. ${f_0}(u) \not\cong {f_0}(v) \implies u \not\doteq_L v$.
 \end{lemma}
 \begin{proof}
     We do a fixed-point induction.
@@ -564,7 +562,7 @@ since the two directions require different strategies.
     \label{equivP}
     Let $u, v \in \Sigma^*$. We have that
     \begin{equation*}
-        u \cong_{f_0} v \iff u \doteq_L v.
+        {f_0}(u) \cong {f_0}(v) \iff u \doteq_L v.
     \end{equation*}
 \end{corollary}
 \begin{proof}
@@ -593,7 +591,7 @@ since the two directions require different strategies.
     Let $s \in range(\mathit{f_{min}})$. 
     Since $s \neq \emptyset$, 
     there exists $x \in X$ such that $x \in s$.
-    We have ${f_0}(x) = {f_0}(\crep{x}$) and therefore $x \cong_{f_0} \crep{x}$ by reflexivity of $\cong$.
+    We have ${f_0}(x) = {f_0}(\crep{x}$) and therefore ${f_0}(x) \cong {f_0}(\crep{x})$ by reflexivity of $\cong$.
     Thus, ${f_0}(\crep{x}) = s$ since  $\mathit{f_{min}}(x) = \mathit{f_{min}}(\crep{x}) = s$.
 \end{proof}
 
@@ -601,16 +599,16 @@ since the two directions require different strategies.
     \label{f_minP}
     For all $u,v \in \Sigma^*$ we we have 
     \begin{equation*}
-        \mathit{f_{min}}(u) = \mathit{f_{min}}(v) \iff u \cong_{f_0} v.
+        \mathit{f_{min}}(u) = \mathit{f_{min}}(v) \iff {f_0}(u) \cong {f_0}(v).
     \end{equation*}
 \end{lemma}
 
 \begin{proof}
     ``$\Rightarrow$''
-    We have $\mathit{f_{min}}(u) = \mathit{f_{min}}(v)$ and thus $u \cong_{f_0} v$.
+    We have $\mathit{f_{min}}(u) = \mathit{f_{min}}(v)$ and thus ${f_0}(u) \cong {f_0}(v)$.
 
     ``$\Leftarrow$''
-    We have $u \cong_{f_0} v$. 
+    We have ${f_0}(u) \cong {f_0}(v)$. 
     Let $x \in X$.
     It suffices to show that ${f_0}(u) \cong x$ if and only if ${f_0}(v) \cong x$.
     This follows with symmetry and transitivity of $\cong$.
@@ -626,8 +624,8 @@ since the two directions require different strategies.
 
 \begin{proof}
     We have proven surjectivity in Lemma \ref{f_min_surjective}. 
-    By Lemma \ref{f_minP} we have $\mathit{f_{min}}(u) = \mathit{f_{min}}(v)$ if and only if $u \cong_{f_0} v$.
-    By corollary \ref{equivP} we have $u \cong_{f_0} v$ if and only if $u \doteq_L v$.
+    By Lemma \ref{f_minP} we have $\mathit{f_{min}}(u) = \mathit{f_{min}}(v)$ if and only if ${f_0}(u) \cong {f_0}(v)$.
+    By corollary \ref{equivP} we have ${f_0}(u) \cong {f_0}(v)$ if and only if $u \doteq_L v$.
     Thus, $\mathit{f_{min}}(u) = \mathit{f_{min}}(v)$ if and only if $u \doteq_L v$.
 \end{proof}
 

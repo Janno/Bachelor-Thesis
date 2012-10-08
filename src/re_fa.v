@@ -3,25 +3,12 @@ Require Import automata regexp misc.
 
 Set Implicit Arguments.
 
-Lemma sizeNnil char (w: word char): w != [::] -> size w > 0.
-Proof. case: w => //. Qed.
-
-Lemma size_induction (X : Type) (f : X -> nat) (p: X ->Prop) (x : X) :
-(forall x, (forall y, f y  < f x -> p y)  -> p x) -> p x.
-
-Proof. intros A. apply A. 
-induction (f x) ; move => y B => //=.
-apply A. move => z C. apply: IHn. apply: leq_trans. eassumption.
-apply: leq_trans.
-eassumption. by [].
-Qed.
-
 Section RE_FA.
   Variable char: finType.
   Definition word:= misc.word char.
   Variable r: regular_expression char.
 
-  Lemma RE_FA: exists A: dfa char,
+  Lemma re_to_dfa: exists A: dfa char,
     forall w: word, w \in (dfa_lang A: pred word) = (w \in r).
   Proof.
     elim: r => [].
@@ -90,8 +77,6 @@ Section RE_FA.
     apply/nfa_conc_aux2.
       move: H1. by rewrite  dfa_to_nfa_correct /nfa_lang /=.
     move: H2. by rewrite dfa_to_nfa_correct /nfa_lang /=.
-
-
                  
     move => s [] A H.
     exists (dfa_compl A).

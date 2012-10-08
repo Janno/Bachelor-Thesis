@@ -22,6 +22,14 @@ Coq also provides an interactive proof assistant to build proofs using specific 
 
 \todo{Description, citation}
 
+\subsection{Non-structurally Recursive Functions}
+\coq\ allows us to define functions that do not recurse in a structural manner.
+We make use of \coq's \lstinline{Function} syntax to define functions whose termination is proven by 
+showing that a specified measure decreases in every recursive call.
+In our case, we will use the size of a finite set as the decreasing measure.
+When defining such a recursive functions, we have to prove that every recursive call reduces the size of the finite set.
+
+
 \section{\ssreflect}
 
 
@@ -76,11 +84,12 @@ which can be written as \lstinline{[preim f of p]}.
 There are also applicative (functional) versions of of \lstinline{predC}, \lstinline{predU}, \lstinline{predI}, \lstinline{predD}, 
 which are functions that take predicates as arguments and return predicates.
 
-\subsection{Miscellaneous}
+\subsection{Equality}
 We can use \lstinline{f =1 g} to express that the functions \lstinline{f} and \lstinline{g} agree in all arguments.
 If we regard \lstinline{f} and \lstinline{g} as sets, we can write \lstinline{f =i g}, which is defined as \lstinline{forall x, x \in f = x \in g}.
 \coq's equality \lstinline{=} is intensional, which means that even if we have \lstinline{f =1 g}, we will not, in general, be able to proof \lstinline{f = g}.
 Thus, we will use \lstinline{=1} and \lstinline{=i} in \coq, when we write $=$ mathematically. 
+This expresses the notion of extensional equality that is usually assumed mathematically.
 
 
 
