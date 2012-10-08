@@ -372,6 +372,9 @@ The structure of this proof is given by the inductive nature of regular expressi
 Depending on the constructor of the regular expression, we will construct a corresponding operation on DFAs or NFAs.
 \lstinline{Void}, \lstinline{Eps}, \lstinline{Dot}, \lstinline{Atom}, \lstinline{Plus}, \lstinline{And} and \lstinline{Not} are very easy to implement on DFAs, whereas \lstinline{Star} and \lstinline{Conc} lend themselves well to NFAs.
 
+We show our implementation for \lstinline{Void}, \lstinline{Not}, and \lstinline{Conc}.
+We also give a short overview of the automaton corresponding to \lstinline{Star}. 
+
 \subsubsection{Void}
 \begin{definition}
     We define an empty DFA with a single, non-accepting state, i.e.
@@ -396,96 +399,6 @@ Depending on the constructor of the regular expression, we will construct a corr
 \code{}{}{automata_dfa_void}
 \codeblock{}{}{automata_dfa_void_correct_head}
 
-
-\subsubsection{Eps}
-\begin{definition}
-    We define an automaton that accepts only the empty word, i.e.
-    \begin{equation*}
-        A_\varepsilon := (\{t, f\}, t, \{t\}, \{(x, a, f) \; | \; x \in \{t, f\}, a \in \Sigma\}).
-    \end{equation*}
-\end{definition}
-
-\begin{lemma}
-    \label{dfa_eps_correct'}
-    $A_\varepsilon$ accepts no word in state $f$, i.e. for all w,
-    \begin{equation*}
-        w \notin \acc{f}{A_\varepsilon}.
-    \end{equation*}
-\end{lemma}
-\begin{proof}
-    Let $w \in \Sigma^*$.
-    We do an induction on $w$. 
-    For $w = \varepsilon$ we get $\varepsilon \notin \acc{f}{A_\varepsilon}$ by $f \notin F_\varepsilon$. 
-    For $w = aw'$ we have $w' \notin \acc{f}{A_\varepsilon}$. 
-    Furthermore, $(f, a, f) \in \delta_\varepsilon$.
-    Therefore, $aw' \notin \acc{f}{A_\varepsilon}$.
-\end{proof}
-
-\begin{lemma}
-    \label{dfa_eps_correct}
-    The language of $A_\varepsilon$ is exactly the singleton set containing the empty word, i.e.
-    \begin{equation*}
-        \lang{A_\varepsilon} = \{\varepsilon\}.
-    \end{equation*}
-\end{lemma}
-
-\begin{proof}
-    Let $w \in \Sigma^*$.
-    We do an induction on $w$. 
-    For $w = \varepsilon$ we have $\varepsilon \in \lang{A_\varepsilon}$ and $\varepsilon \in \{\varepsilon\}$.
-    Therefore, both directions are trivial.
-    For $w = aw'$ we consider both directions independently. \\
-    ``$\Rightarrow$'' We have $(t, a, f) \in \delta_\varepsilon$ and $w' \in \acc{f}{A_\varepsilon}$. By Lemma \ref{dfa_eps_correct'}, this is a contradiction. \\
-    ``$\Leftarrow$'' We get a straight-forward contradiction from $aw' \in \{\varepsilon\}$.
-\end{proof}
-
-\code{}{}{automata_dfa_eps}
-\codeblock{}{}{automata_dfa_eps_correct_head}
-\todo{reflect?}
-
-
-\subsubsection{Dot}
-\begin{definition}
-    We define an automaton that accepts the set of all singleton words, i.e.
-    \begin{equation*}
-        A_{Dot} := (\{s, t, f\}, s, \{t\}, 
-        \{(s, a, t) \; | \; a \in \Sigma\}
-        \; \cup \;
-        \{(x, a, f) \; | \; x \in \{t, f\}, a \in \Sigma\}
-        ).
-    \end{equation*}
-\end{definition}
-
-\begin{lemma}
-    \label{dfa_dot_correct''}
-    $A_{Dot}$ does not accept any word in state $f$, i.e. $\acc{f}{A_{Dot}} = \emptyset$.
-\end{lemma}
-\begin{proof}
-    We prove this by induction on $w \in \Sigma^*$. 
-    For $w = \varepsilon$ we have $\varepsilon \notin \acc{f}{A_{Dot}}$ by $f \notin F_{Dot}$.
-    For $w = aw'$ we have $(f, a, f) \in \delta_{Dot}$ and $w' \notin \acc{f}{A_{Dot}}$ by inductive hypothesis.
-    Thus, $aw' \notin \acc{f}{A_{Dot}}$.
-\end{proof}
-
-\begin{lemma}
-    \label{dfa_dot_correct'}
-    $A_{Dot}$ accepts exactly the empty word in state $t$, i.e. $\acc{t}{A_{Dot}} = \{\varepsilon\}$.
-\end{lemma}
-\begin{proof}
-    Let $w \in \Sigma^*$. 
-    We do a case distinction on $w$.
-    For $w = \varepsilon$ we have $\varepsilon in \acc{t}{A_{Dot}}$ by $t \in F_{Dot}$. We also have $\varepsilon \in \{\varepsilon\}$.
-    For $w = aw'$ we get $(t, a, f) \in \delta_{Dot}$. 
-    Since $aw' \notin \{\varepsilon\}$ it suffices to show that 
-    $w' \notin \acc{f}{A_{Dot}}$,
-    which we have by Lemma \ref{dfa_dot_correct''}.
-\end{proof}
-
-\code{}{}{automata_dfa_dot}
-\codeblock{}{}{automata_dfa_dot_correct''_head}
-\codeblock{}{}{automata_dfa_dot_correct'_head}
-\codeblock{}{}{automata_dfa_dot_correct_head}
-\todo{reflect?}
 
 \subsubsection{Not}
 \begin{definition}
@@ -515,106 +428,19 @@ Depending on the constructor of the regular expression, we will construct a corr
     This follows directly from Lemma \ref{dfa_compl_correct'} with $x = s$.
 \end{proof}
 
-\subsubsection{Plus}
-\begin{definition}
-    Given DFAs $A_1=(Q_1, s_1, F_1, \delta_1)$ and $A_2=(Q_2, s_2, F_2, \delta_2)$ we construct the disjunction automaton  in the following way:
-    \begin{eqnarray*}
-        Q_\vee &:=& Q_1 \times Q_2 \\
-        s_\vee &:=& (s_1, s_2) \\
-        F_\vee &:=& \{(x_1,x_2) \; | \; x_1 \in F_1 \vee x_2 \in F_2\} \\
-        \delta_\vee &:=& \{( (x_1, x_2),a,(y_1, y_2)) \; | \; a \in \Sigma, (x_1, a, y_1) \in \delta_1, (x_2, a, y_2) \in \delta_2 \} \\
-        A_\vee &:=& (Q_\vee, s_\vee, F_\vee, \delta_\vee).
-    \end{eqnarray*}
-\end{definition}
-
-\begin{lemma}
-    \label{dfa_disj_correct'}
-    For every state $(x_1, x_2) \in Q_\vee$, we have that
-    \begin{equation*}
-        \acc{(x_1, x_2)}{A_\vee} = \acc{x_1}{A_1} \cup \acc{x_2}{A_2}.
-    \end{equation*}
-\end{lemma}
-\begin{proof}
-    We do a proof by induction on $w \in \Sigma^*$.
-    For $w = \varepsilon$ we have, by definition of $F_\vee$, 
-    $%\begin{equation*}
-    \varepsilon \in \acc{(x_1, x_2)}{A_\vee} 
-    \iff \varepsilon \in \acc{x_1}{A_1} \vee \varepsilon \in \acc{x_2}{A_2}.
-    $%\end{equation*} 
-    \\
-    For $w = aw'$ we get $(x_1, a, y_1) \in \delta_1$ and $(x_2, a, y_2) \in \delta_2$.
-    By inductive hypothesis, we also have $w' \in \acc{x_1}{A_1} \vee w' \in \acc{x_2}{A_2}$.
-    Thus, we get $aw' \in \acc{y_1}{A_1} \vee aw' \in \acc{x_2}{A_2}$.
-\end{proof}
-
-\begin{lemma}
-    $\lang{A_\vee} = \lang{A_1} \cup \lang{A_2}$.
-    \label{dfa_disj_correct}
-\end{lemma}
-\begin{proof}
-    This follows directly from Lemma \ref{dfa_disj_correct'} with $x = (s_1, s_2)$.
-\end{proof}
-
-
-\code{}{}{automata_dfa_disj}
-\codeblock{}{}{automata_dfa_disj_correct'_head}
-\codeblock{}{}{automata_dfa_disj_correct_head}
-
-
-\subsubsection{And}
-\begin{definition}
-    Given DFAs 
-    $A_1=(Q_1, s_1, F_1, \delta_1)$ and $A_2=(Q_2, s_2, F_2, \delta_2)$ 
-    we construct the conjunction automaton  in the following way:
-    \begin{eqnarray*}
-        Q_\wedge &:=& Q_1 \times Q_2 \\
-        s_\wedge &:=& (s_1, s_2) \\
-        F_\wedge &:=& \{(x_1,x_2) \; | \; x_1 \in F_1 \wedge x_2 \in F_2\} \\
-        \delta_\wedge &:=& \{( (x_1, x_2),a,(y_1, y_2)) \; | \; a \in \Sigma, (x_1, a, y_1) \in \delta_1, (x_2, a, y_2) \in \delta_2 \} \\
-        A_\wedge &:=& (Q_\wedge, s_\wedge, F_\wedge, \delta_\wedge).
-    \end{eqnarray*}
-\end{definition}
-
-\begin{lemma}
-    \label{dfa_conj_correct'}
-    For every state $(x_1, x_2) \in Q_\wedge$, we have that
-    \begin{equation*}
-        \acc{(x_1, x_2)}{A_\wedge} = \acc{x_1}{A_1} \cup \acc{x_2}{A_2}.
-    \end{equation*}
-\end{lemma}
-\begin{proof}
-    This proof is very similar to Lemma \ref{dfa_disj_correct'}.
-    We do a proof by induction on $w \in \Sigma^*$.
-    For $w = \varepsilon$ we have, by definition of $F_\wedge$, 
-    $%\begin{equation*}
-    \varepsilon \in \acc{(x_1, x_2)}{A_\wedge} 
-    \iff \varepsilon \in \acc{x_1}{A_1} \wedge \varepsilon \in \acc{x_2}{A_2}.
-    $%\end{equation*} 
-    \\
-    For $w = aw'$ we get $(x_1, a, y_1) \in \delta_1$ and $(x_2, a, y_2) \in \delta_2$.
-    By inductive hypothesis, we also have $w' \in \acc{x_1}{A_1} \wedge w' \in \acc{x_2}{A_2}$.
-    Thus, we get $aw' \in \acc{y_1}{A_1} \wedge aw' \in \acc{x_2}{A_2}$.
-\end{proof}
-
-\begin{lemma}
-    $\lang{A_\wedge} = \lang{A_1} \cap \lang{A_2}$.
-    \label{dfa_conj_correct}
-\end{lemma}
-\begin{proof}
-    This follows directly from Lemma \ref{dfa_conj_correct'} with $x = (s_1, s_2)$.
-\end{proof}
-
-
-\code{}{}{automata_dfa_conj}
-\codeblock{}{}{automata_dfa_conj_correct'_head}
-\codeblock{}{}{automata_dfa_conj_correct_head}
-
 
 \subsubsection{Conc}
+The most common approach to build the concatenation automaton is to connect
+the final states of the first automaton to the starting state of the second automaton
+by an $\varepsilon$-translation. 
 We do not allow $\varepsilon$-transitions in our automata. 
-In order to build the concatenation automaton, we duplicate edges from
+The reason for this is that we do not want to lose the direct correspondence 
+of the length of word to the length of its run on an automaton.
+Thus, in order to build the concatenation automaton, we duplicate all edges from
 the starting state of the second automaton and add them to all final states 
 of the first automaton.
+Since the final states may already have edges with the same labels, 
+we chose to implement this operation on NFAs.
 
 \begin{definition}
    Given two NFAs
@@ -752,12 +578,23 @@ However, with the second case, there is no straight-forward inductive proof.
 
 
 \subsubsection{Star}
+The most common construction for the star automaton works by adding the starting state
+to the set of final states and connecting all final states to the starting state by $\varepsilon$-transitions.
 
+Again, our construction differs from this.
+First, we construct an automaton that accepts the Kleene closure of the language
+of the given automaton, excluding the empty word, which we call \lstinline{nfa_repeat}.
+The reason for this is that we can easily construct this automaton much in the same way
+we constructed the concatenation automaton.
 
+We duplicate all edges from the starting state and add them to the final states.
+The resulting automaton accepts the Kleene closure of the language of the given automaton, but not the empty word.
+Since we have already constructed an automaton that accepts the empty word, 
+and a disjunction operation on automata, we simply combine those with our newly constructed automaton 
+to form the star automaton.
 
-
-
-\todo{Include all proofs}
+\code{}{}{automata_nfa_star}
+\codeblock{}{}{automata_nfa_star_correct_head}
 
 \subsection{Deciding Equivalence of Regular Expressions}
 

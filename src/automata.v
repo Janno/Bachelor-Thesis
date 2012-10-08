@@ -812,7 +812,7 @@ nfa_step A1 x a y || (
                     ).
 
 (** **)
-Definition nfa_plus : nfa :=
+Definition nfa_repeat : nfa :=
   {|
     nfa_s := nfa_s A1;
     nfa_fin := nfa_fin A1;
@@ -825,22 +825,22 @@ Definition nfa_plus : nfa :=
 
 
 (** We prove that every path of A1 can be mapped to a path
-   of nfa_plus. **)
-Lemma nfa_plus_cont x xs w:
+   of nfa_repeat. **)
+Lemma nfa_repeat_cont x xs w:
   nfa_run A1 x xs w
-  -> nfa_run nfa_plus x xs w.
+  -> nfa_run nfa_repeat x xs w.
 Proof. elim: xs x w => [|y xs IHxs] x w; case: w => [|a w] => //.
 move/andP => [] H0 /= /IHxs ->.
 by rewrite /step_plus H0 orTb.
 Qed.
 
 (** We prove that every accepting path labeled (a::w) in A1
-   exists in nfa_plus with only the last state changed to
+   exists in nfa_repeat with only the last state changed to
    A1's starting state. This new path need not be accepting. **)
-Lemma nfa_plus_lpath x y xs a w:
-  nfa_fin nfa_plus (last x (y::xs)) ->
-  nfa_run nfa_plus x (y::xs) (a::w) ->
-  nfa_run nfa_plus x (rcons (belast y xs) (nfa_s A1)) (a::w).
+Lemma nfa_repeat_lpath x y xs a w:
+  nfa_fin nfa_repeat (last x (y::xs)) ->
+  nfa_run nfa_repeat x (y::xs) (a::w) ->
+  nfa_run nfa_repeat x (rcons (belast y xs) (nfa_s A1)) (a::w).
 Proof. elim: xs x y a w => [|z xs IHxs] x y a [|b w] //=.
       rewrite 2!andbT.
       move => H0 /orP [|/andP [] /eqP].
@@ -859,54 +859,54 @@ simpl. by rewrite H3 H4.
 Qed.
   
 (** We prove that every word accepted by A1 in
-   some state x is also accepted by nfa_plus in
+   some state x is also accepted by nfa_repeat in
    that state. **)
-Lemma nfa_plus_correct0' x w1 :
+Lemma nfa_repeat_correct0' x w1 :
   nfa_accept A1 x w1 ->
-  nfa_accept nfa_plus x w1.
+  nfa_accept nfa_repeat x w1.
 Proof.
   move/nfa_run_accept => [] xs [].
-  move/nfa_plus_cont => H0 H1.
+  move/nfa_repeat_cont => H0 H1.
   apply/nfa_run_accept.
   by exists xs. 
 Qed.
 
 (** We prove that every word accepted by A1 is also
-   accepted by nfa_plus. **)
-Lemma nfa_plus_correct0 w :
+   accepted by nfa_repeat. **)
+Lemma nfa_repeat_correct0 w :
   nfa_lang A1 w ->
-  nfa_lang nfa_plus w.
-Proof. exact: nfa_plus_correct0'. Qed.
+  nfa_lang nfa_repeat w.
+Proof. exact: nfa_repeat_correct0'. Qed.
 
 (** We prove that every prefix accpeted by A1 followed
-   by a suffix accepted by nfa_plus is again accepted
-   by nfa_plus. This is the first part of the proof of
-   language correctness for nfa_plus. **)
-Lemma nfa_plus_aux2 w1 w2:
+   by a suffix accepted by nfa_repeat is again accepted
+   by nfa_repeat. This is the first part of the proof of
+   language correctness for nfa_repeat. **)
+Lemma nfa_repeat_aux2 w1 w2:
   nfa_lang A1 w1 ->
-  nfa_lang nfa_plus w2 ->
-  nfa_lang nfa_plus (w1 ++ w2).
+  nfa_lang nfa_repeat w2 ->
+  nfa_lang nfa_repeat (w1 ++ w2).
 Proof.
 move => /nfa_run_accept [] [|x xs] []; case: w1 => [|a w1] => //.
 move => H0 H1 H2.
 apply/(nfa_accept_cat).
 exists (rcons (belast x xs) (nfa_s A1)).
 apply/andP. split.
-  apply: nfa_plus_lpath.
+  apply: nfa_repeat_lpath.
     exact: H1.
-  apply: nfa_plus_cont.
+  apply: nfa_repeat_cont.
   exact: H0.
 rewrite last_rcons.
 exact H2.
 Qed.
 
 
-(** We prove that every word accepted by some state x in nfa_plus
+(** We prove that every word accepted by some state x in nfa_repeat
    is a concatenation of two words w1, w2 which are accpeted by
-   A1 in x and nfa_plus (resp.). **) 
-Lemma nfa_plus_aux1' x w :
-  nfa_accept nfa_plus x w ->
-  ((exists w1, exists w2, (w == w1 ++ w2) && (w1 != [::]) && (nfa_accept A1 x w1) && nfa_lang nfa_plus w2
+   A1 in x and nfa_repeat (resp.). **) 
+Lemma nfa_repeat_aux1' x w :
+  nfa_accept nfa_repeat x w ->
+  ((exists w1, exists w2, (w == w1 ++ w2) && (w1 != [::]) && (nfa_accept A1 x w1) && nfa_lang nfa_repeat w2
     ) \/ nfa_accept A1 x w ).
 Proof. elim: w x => [|a w IHw] x.
   move => H0. right.
@@ -936,22 +936,16 @@ exact H1.
 Qed.
 
 (** We prove the second part of language correctness
-   for nfa_plus. **)
-Lemma nfa_plus_aux1 w:
-  nfa_lang nfa_plus w ->
-  ((exists w1, exists w2, (w == w1 ++ w2) && (w1 != [::]) && (nfa_lang A1 w1) && nfa_lang nfa_plus w2
+   for nfa_repeat. **)
+Lemma nfa_repeat_aux1 w:
+  nfa_lang nfa_repeat w ->
+  ((exists w1, exists w2, (w == w1 ++ w2) && (w1 != [::]) && (nfa_lang A1 w1) && nfa_lang nfa_repeat w2
     ) \/ nfa_lang A1 w ).
-Proof. exact: nfa_plus_aux1'. Qed.
+Proof. exact: nfa_repeat_aux1'. Qed.
 
 
 (* Star operator *)
-Definition nfa_star :=
-  (dfa_disj
-        (dfa_eps)
-        (nfa_to_dfa
-           (nfa_plus)
-        )
-    ).
+Definition nfa_star := (dfa_disj dfa_eps (nfa_to_dfa nfa_repeat)).
 
 Lemma nfa_star_aux1 w: w \in dfa_lang nfa_star -> w \in star (nfa_lang A1).
 Proof.
@@ -963,7 +957,7 @@ Proof.
     move: w.
     apply: (size_induction size).
     move => w IHw.
-    move/nfa_plus_aux1' => [].
+    move/nfa_repeat_aux1' => [].
       move => [] w1 [] w2 [/andP [/andP [/andP [/eqP H1 H2] H3] H4]].
       have H5: (size w2 < size w).
         rewrite H1 size_cat addnC -{1}(addn0 (size w2)).
@@ -984,6 +978,7 @@ Proof.
 Qed.  
       
 Lemma nfa_star_aux2 w: w \in star (nfa_lang A1) -> w \in dfa_lang nfa_star.
+Proof.
     rewrite /nfa_star -dfa_disj_correct -2!topredE /= -nfa_to_dfa_correct.
     move/starP => [] vv. elim: vv w => [|v vv IHvv] w.
       rewrite /= => _ ->. move: (dfa_eps_correct [::]).
@@ -996,10 +991,10 @@ Lemma nfa_star_aux2 w: w \in star (nfa_lang A1) -> w \in dfa_lang nfa_star.
       move: H3. rewrite [flatten _]/= H4 cats0.
       move => H5. subst. apply/orP. right.
       rewrite H4 in IHvv.
-      by apply nfa_plus_correct0.
+      by apply nfa_repeat_correct0.
     move => H4.
     apply/orP. right.
-    by apply: nfa_plus_aux2.
+    by apply: nfa_repeat_aux2.
 Qed.
 
 Lemma nfa_star_correct: dfa_lang nfa_star =i star (nfa_lang A1).
