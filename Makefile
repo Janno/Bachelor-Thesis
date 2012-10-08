@@ -10,7 +10,7 @@ src/Makefile:
 	cd src; coq_makefile -I . automata.v base.v glue.v misc.v myhill_nerode.v re_fa.v     regexp.v re_standard.v tactics.v transitive_closure.v  > Makefile
 
 src: src/Makefile
-	cd src; make
+	cd src; make -j 8
 
 thesis/chapters/%.pdf: definitions thesis/%.tex
 	j=$(shell basename $@ .pdf); cd thesis; pdflatex -jobname=chapters/$$j "\includeonly{$$j,includes.tex}\input{thesis}"
