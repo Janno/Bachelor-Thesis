@@ -256,7 +256,7 @@ The formalization of Lemma \ref{dfa_connected_correct'} and Theorem \ref{dfa_con
 \codeblock{automata_dfa_connected_correct}{}{automata_dfa_connected_correct_head}
 
 
-To make use of the fact that $A_c$ is fully connected, we will proof a characteristic property of $A_c$. 
+To make use of the fact that $A_c$ is fully connected, we will prove a characteristic property of $A_c$. 
 We will need this property of $A_c$ in Chapter \ref{chap:MN}.
 
 
@@ -266,7 +266,7 @@ We will need this property of $A_c$ in Chapter \ref{chap:MN}.
 
 \begin{lemma}
     \label{dfa_connected_repr}
-    We can compute give a representative for every state $x \in Q_c$.
+    There is a representative for every state $x \in Q_c$.
     %\todo{Sigma?}
 \end{lemma}
 
@@ -274,7 +274,6 @@ We will need this property of $A_c$ in Chapter \ref{chap:MN}.
     $x$ carries a proof of reachability.
     From this, we get a path through the graph of $\mathrm{reachable1}$ that ends ind $x$.
     We build the representative by extracting the edges of the path and building a word from those.
-    \todo{Choice?}
 \end{proof}
 
 
@@ -303,7 +302,7 @@ Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain
     \begin{equation*}
         \lang{A_c} = \emptyset \iff F_c = \emptyset.
     \end{equation*}
-    ``$\Leftarrow$''
+    ``$\Rightarrow$''
     We have $\lang{A_c} = \emptyset$ and have to show that for all $x \in Q_c$, $x \notin F_c$.
     Let $x \in Q_c$. 
     By Lemma \ref{dfa_connected_repr} we get $w$ such that the unique run of $w$ on $A_c$
@@ -311,14 +310,15 @@ Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain
     We use $\lang{A_c} = \emptyset$ to get $w \notin \lang{A_c}$, 
     which implies that the run of $w$ on $A_c$ ends in a non-final state.
     By substituting the last state of the run by $x$ we get $x \notin F_c$.
-    ``$\Rightarrow$''
+
+    ``$\Leftarrow$''
     We have $F_c = \emptyset$ and have to show that for all words $w$, $w \notin \lang{A_c}$.
     We use $F_c = \emptyset$ to show that the last state of the run of $w$ on $A_c$ is non-final.
     Thus, $w \notin \lang{A_c}$.
 
-    Thus, emptiness is decidable.
 \end{proof}
 
+    Thus, emptiness is decidable.
 
 
 %The formalization of Lemma \ref{dfa_lang_empty} is split in two parts to facilitate its application. 
@@ -369,7 +369,7 @@ The structure of this proof is given by the inductive nature of regular expressi
 %For every constructor, we provide an equivalent automaton.
 
 
-Depending on the constructor of the regular expression, we will construct an equivalent DFA or NFA.
+Depending on the constructor of the regular expression, we will construct a corresponding operation on DFAs or NFAs.
 \lstinline{Void}, \lstinline{Eps}, \lstinline{Dot}, \lstinline{Atom}, \lstinline{Plus}, \lstinline{And} and \lstinline{Not} are very easy to implement on DFAs, whereas \lstinline{Star} and \lstinline{Conc} lend themselves well to NFAs.
 
 \subsubsection{Void}
@@ -401,7 +401,7 @@ Depending on the constructor of the regular expression, we will construct an equ
 \begin{definition}
     We define an automaton that accepts only the empty word, i.e.
     \begin{equation*}
-        A_\varepsilon := (\{t, f\}, t, \{f\}, \{(x, a, f) \; | \; x \in \{t, f\}, a \in \Sigma\}).
+        A_\varepsilon := (\{t, f\}, t, \{t\}, \{(x, a, f) \; | \; x \in \{t, f\}, a \in \Sigma\}).
     \end{equation*}
 \end{definition}
 
@@ -787,7 +787,6 @@ The regular expressions associated with the starting state recognizes the langua
 The third method, which we chose for our development, is due to Kleene \cite{KleeneNets}.
 It is known as the ``\textbf{transitive closure method}''.
 This method recursively constructs a regular expression that is equivalent to the given automaton.
-We now give a detailed 
 For the remainder of the chapter, we assume that we are given a DFA $A=(Q,s,F,\delta)$.
 
 
@@ -804,9 +803,9 @@ First, if $x \neq y$, every transition from $x$ to $y$ constitutes one (singleto
 Conversely, if there is a word which does not pass through a state and whose run on $A$ starts in $x$ and ends in $y$, 
 it can only be a singleton word consisting of one of the transitions from $x$ to $y$.
 Therefore, the corresponding regular expression is the disjunction of all transitions from $x$ to $y$. 
-These transitions constitutes all possible words that lead from $x$ to $y$ without passing through any state.
+These transitions constitute all possible words that lead from $x$ to $y$ without passing through any state.
 
-Otherwise, if $x = y$, we also have to consider the empty word, since its run on $A$ starts in $x$ and ends in $y$.
+If $x = y$, we also have to consider the empty word, since its run on $A$ starts in $x$ and ends in $y$.
 Thus, the corresponding regular expression is the disjunction of all transitions from $x$ to $y$ \textit{and} $\varepsilon$.
 
 
@@ -828,11 +827,14 @@ Thus, part \ref{R_zz} can also be expressed in terms of $X\backslash\{z\}$ with 
 
 If $\sigma$ does not pass through $z$, it is covered by the regular expression for paths from $x$ to $y$ restricted to $X\backslash\{z\}$.
 
+In order to define $R$ recursively, we need to pick an element $z \in X$ if $X \neq \emptyset$. 
+For this purpose, we assume an ordering on $Q$.
+We will then pick $z \in X$ such that $z$ is the smallest element in $X$ w.r.t to the ordering. 
 
 \begin{definition}
     \label{R}
     Let $X \subseteq Q$. Let $x, y \in Q$.
-    We define R recursively on \todo{correct?}$|X|$:
+    We define R recursively on $|X|$:
     \begin{equation*}
         R^X_{x,y} := \left\{  
                 \begin{array}{ll}
@@ -853,7 +855,7 @@ If $\sigma$ does not pass through $z$, it is covered by the regular expression f
                     } a + \varepsilon 
                     & \mbox{if } X = \emptyset \wedge x = y; \\
                      R^{X\backslash\{z\}}_{x,z} (R^{X\backslash\{z\}}_{z,z})^* R^{X\backslash\{z\}}_{z,y} + R^{X\backslash\{z\}}_{x,y}
-                     & \mbox{if } \exists z \in X.
+                     & \mbox{if } X \neq \emptyset \wedge z \mbox{ minimal in } X.
                 \end{array}
             \right.
     \end{equation*}
@@ -872,7 +874,8 @@ We give some auxiliary definitions to keep the definition of $R$ as compact and 
 \codeblock{}{}{transitive_closure_R0}
 \codeblock{}{}{transitive_closure_R}
 
-Following the intuition given above, we try to express $\lang{A}$ by $R$.
+%Following the intuition given above, we try to express $\lang{A}$ by $R$.
+We now express $\lang{A}$ using $R$.
 Based on the observation that every accepted word has a run from $s$ to some state $f \in F$, 
 we only have to combine the corresponding regular expressions $R^Q_{s,f}$ to form a regular expression for $\lang{A}$.
 The goal of this chapter is to prove the following theorem. 
@@ -887,10 +890,10 @@ The goal of this chapter is to prove the following theorem.
 In order to prove this theorem, we will first define a predicate on words that corresponds to $\lang{R^X_{x,y}}$.
 We call this predicate $L^X_{x,y}$ and define it such that it includes those words 
 whose runs on $A$ starting in $x$ only pass through states in $X$ and end in $y$.
-This is a direct implementation of the idea behind $R^X_{x,y}$.
-Then, we show that $L^{X \cup \{z\}}$ can be expressed in terms of $L^X$.
-We prove that we can express $\lang{A}$ by $\bigcup_{f\in F} L^Q_{s,f}$.
-Finally, we show that $R^X_{x,y} = L^X_{x,y}$, thus proving Theorem \ref{dfa_to_regex}.
+%This is a direct implementation of the idea behind $R^X_{x,y}$.
+%Then, we show that $L^{X \cup \{z\}}$ can be expressed in terms of $L^X$.
+%We prove that we can express $\lang{A}$ by $\bigcup_{f\in F} L^Q_{s,f}$.
+%Finally, we show that $R^X_{x,y} = L^X_{x,y}$, thus proving Theorem \ref{dfa_to_regex}.
 
 \begin{definition}
     Let $w \in \Sigma^*$.
@@ -919,7 +922,7 @@ We now prove properties of $L$ that we will need for our proof of Theorem \ref{d
     \label{L_monotone}
     L is monotone \todo{is this word correct?} in $X$, i.e.
     \begin{equation*}
-        \forall X \subseteq Q, z \in X, x,y \in Q. \; L^X x y \subseteq L^{X\cup\{z\}} x y.
+        \forall X \subseteq Q, z \in X, x,y \in Q. \; L^X_{x,y} \subseteq L^{X\cup\{z\}} x y.
     \end{equation*}
 \end{lemma}
 \begin{proof}
@@ -945,7 +948,6 @@ The run of the first word will end in $z$, i.e. not pass through $z$.
     \label{run_split}
     Let $w \in \Sigma^*$. Let $x,z \in Q$. 
     Let $\sigma$ be the run of $w$ on $A$ starting in $x$.
-    \todo{notation for membership in runs?}
     Let $z \in \sigma_1 \ldots \last{\sigma}$.
     Then there exist $w_1, w_2 \in \Sigma^*$ such that
     \begin{equation*}
@@ -973,7 +975,7 @@ that correspond to the recursive definition of $R^X$.
     Let $w \in L^{X\cup\{z\}}_{x,y}$.
     We have that either    
     \begin{equation*}
-        w \in L^{X}_{x,y}, 
+        w \in L^{X}_{x,y} 
     \end{equation*}
     or there exist $w_1$ and $w_2$ such that
     \begin{equation*}
@@ -1016,9 +1018,6 @@ We prove a general concatenation lemma for $L^X$.
 
 \code{}{}{transitive_closure_L_cat_head}
 
-With this, we can prove that a sequence of $n$ words $w_0, \ldots, w_{n-1} \in L^{X}_{z,z}$ 
-forms a word $w = w_1 \ldots w_{n-1}$ with $w \in L^{X\cup\{z\}}_{z,z}$.
-
 \begin{lemma}
     \label{L_flatten}
     Let $n \in \mathbb{N}$. Let $w_0, \ldots, w_{n-1} \in L^{X}_{z,z}$.
@@ -1038,16 +1037,18 @@ forms a word $w = w_1 \ldots w_{n-1}$ with $w \in L^{X\cup\{z\}}_{z,z}$.
 \end{proof}
 \code{}{}{transitive_closure_L_flatten_head}
 
-Finally, we can show that $L^X$ respects the defining equation of $R^X$.
-This lemma is quite involved as it is a combination of many different results.
-There is, however, a very clear intuition behind the strategy to prove it.
-Lemma \ref{L_split} allows us to cut off a non-empty prefix from a word $w \in L^{X}_{x,y}$.
-This prefix is in $L^{X}_{x,z}$. 
-By size induction, the remainder of $w$ can be cut into three parts, 
-one in $L^{X}_{z,z}$, one in $(L^{X}_{z,z})^*$ and one in $L^{X}_{z,y}$. 
-We only have to merge the first two parts to prove this direction of the lemma.
+%This lemma is quite involved as it is a combination of many different results.
+%There is, however, a very clear intuition behind the strategy to prove it.
+%Lemma \ref{L_split} allows us to cut off a non-empty prefix from a word $w \in L^{X}_{x,y}$.
+%This prefix is in $L^{X}_{x,z}$. 
+%By size induction, the remainder of $w$ can be cut into three parts, 
+%one in $L^{X}_{z,z}$, one in $(L^{X}_{z,z})^*$ and one in $L^{X}_{z,y}$. 
+%We only have to merge the first two parts to prove this direction of the lemma.
 
-The other direction is easily solved by Lemma \ref{L_cat}.
+%The other direction is easily solved by Lemma \ref{L_cat}.
+
+Finally, we can show that $L^X$ respects the defining equation of $R^X$.
+With all the lemmas we have in place now, this can now be shown with relative ease.
 
 
 \begin{lemma}
@@ -1073,7 +1074,7 @@ The other direction is easily solved by Lemma \ref{L_cat}.
             With the former, we have $w_3$, $w_4$, and $w_4$ such that $w_2 = w_3 w_4 w_5$, $w_3 \in L^{X}_{z,z}$,
             $w_4 \in (L^X_{z,z})*$ and $w_5 \in L^X_{z,y}$.
             We merge $w_3$ and $w_4$ such that $w_3 w_4 \in (L^{X}_{z,z})^*$.
-            This gives us with $w_2  \in (L^{X}_{z,z})^* L^X_{z,y}$.
+            This gives us $w_2  \in (L^{X}_{z,z})^* L^X_{z,y}$.
             Thus, $w_1 w_2 \in L^X_{x,z} (L^X_{z,z})^* L^X_{z,y}$.
         \end{enumerate}
 
