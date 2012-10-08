@@ -129,7 +129,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
                 $w = \varepsilon$. Then $w \in L^*$ by definition.
             \item
                 $a_2 \cdots a_k \in res_{a_1}(L) \cdot L^*$. 
-                By lemma \ref{concP} we have $n$ such that $a_2 \cdots a_{n-1} \in res_{a_1}(L)$ and $a_n \cdots a_k \in L^*$.
+                By Lemma \ref{concP} we have $n$ such that $a_2 \cdots a_{n-1} \in res_{a_1}(L)$ and $a_n \cdots a_k \in L^*$.
                 By definition of $res$, we have $a_1 \cdots a_{n-1} \in L$.
                 Furthermore, we also have $a_n \cdots a_k = w_1 \cdots w_l$ such that $w_1 \ldots w_l$ are in $L$.
                 We choose $w_0 := a_1 \cdots a_{n-1}$.
@@ -139,16 +139,16 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     \end{proof}
 
     
-    The formalization of lemma \ref{starP} connects the formalization of \lstinline{star} to the mathematical definition. The propositional formula given here appears slightly more restrictive than our mathemitcal definition as it requires all words from $L$ to be nonempty. 
+    The formalization of Lemma \ref{starP} connects the formalization of \lstinline{star} to the mathematical definition. The propositional formula given here appears slightly more restrictive than our mathemitcal definition as it requires all words from $L$ to be nonempty. 
     Mathematically, however, this is no restriction. 
     
     %The advantage of this formalization is can be seen in later proofs, where induction over the length of a word $w \in L^*$ is necessary. 
-    %In such places, we will use lemma \ref{starP} to get $w_1 \ldots w_k \in L$ such that $w = w_1 \cdots w_k$ 
+    %In such places, we will use Lemma \ref{starP} to get $w_1 \ldots w_k \in L$ such that $w = w_1 \cdots w_k$ 
     %and proceed by induction over the list of words $w_1 \ldots w_k$. 
     %Since every word $w_i$ has a length of at least one, we shorten $w$ by at least one character. 
     %Thus, we can use the inductive hypothesis of the induction over $|w|$ to prove the claim.
 
-    \code{regexp_starP}{Formalization of lemma \ref{starP}}{regexp_starP_head}
+    \code{regexp_starP}{Formalization of Lemma \ref{starP}}{regexp_starP_head}
 
     \begin{theorem}{}
         \label{DecLangClosed}
@@ -157,7 +157,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     \begin{proof}
         We have already give algorithms for all operators. 
         It remains to show that they are correct.
-        For concatenation and the Kleene star, we have shown in lemma \ref{concP} and lemma \ref{starP} that the formalizations are equivalent to the mathematical definitions. 
+        For concatenation and the Kleene star, we have shown in Lemma \ref{concP} and Lemma \ref{starP} that the formalizations are equivalent to the mathematical definitions. 
         The remaining operators (union, intersection, complement) can be applied directly to the result of the languages' boolean decision functions.
     \end{proof}
 
@@ -225,7 +225,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     
     
     We take the implementation of regular expressions from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
-    The semantics defined in definition \ref{extregex} can be given as a boolean function.
+    The semantics defined in Definition \ref{extregex} can be given as a boolean function.
     %They also give a decision function the language associated with a regular expression.
     
 

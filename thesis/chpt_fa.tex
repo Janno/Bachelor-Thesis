@@ -158,10 +158,10 @@ The set of states is an implicit argument of the DFA constructor and thus not sh
 \end{theorem}
 \begin{proof}
     ``$\subseteq$'' 
-    This follows directly from lemma \ref{nfa_to_dfa_aux2} with $x = s$ and $X = {s}_{det}$.
+    This follows directly from Lemma \ref{nfa_to_dfa_aux2} with $x = s$ and $X = {s}_{det}$.
 
     ``$\supseteq$''
-    From lemma \ref{nfa_to_dfa_aux1} with $X = {s}_{det}$ we get 
+    From Lemma \ref{nfa_to_dfa_aux1} with $X = {s}_{det}$ we get 
     $\acc{s_{det}}{A_{det}} \subseteq \acc{s}{A}$, which proves the claim.
 \end{proof}
 
@@ -245,19 +245,19 @@ We also have to give a transition function that ensures transitions always end i
 
 \begin{proof}
     By reflexivity, we have $s \in \mathrm{reachable}$. 
-    We use lemma \ref{dfa_connected_correct'} with $x = s$ to prove the claim.
+    We use Lemma \ref{dfa_connected_correct'} with $x = s$ to prove the claim.
         %Unreachable states have no influence on the language of an automaton because there is no run from the starting state that contains such a state.
 \end{proof}
 
 
-The formalization of lemma \ref{dfa_connected_correct'} and theorem \ref{dfa_connected_correct} is straight-forward.
+The formalization of Lemma \ref{dfa_connected_correct'} and Theorem \ref{dfa_connected_correct} is straight-forward.
 
 \code{automata_dfa_connected_correct'}{}{automata_dfa_connected_correct'_head}
 \codeblock{automata_dfa_connected_correct}{}{automata_dfa_connected_correct_head}
 
 
 To make use of the fact that $A_c$ is fully connected, we will proof a characteristic property of $A_c$. 
-We will need this property of $A_c$ in chapter \ref{chap:MN}.
+We will need this property of $A_c$ in Chapter \ref{chap:MN}.
 
 
 \begin{definition}
@@ -278,7 +278,7 @@ We will need this property of $A_c$ in chapter \ref{chap:MN}.
 \end{proof}
 
 
-%The formalization of theorem \ref{dfa_connected_repr} includes a more general version of the theorem, 
+%The formalization of Theorem \ref{dfa_connected_repr} includes a more general version of the theorem, 
 %which facilitates the proof by induction over the path.
 
 %\code{dfa_connected_repr'}{}{automata_dfa_connected_repr'_head}
@@ -298,7 +298,7 @@ Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain
 \end{theorem}
 
 \begin{proof}
-    By theorem \ref{dfa_connected_correct} we have $\lang{A} = \lang{A_c}$.
+    By Theorem \ref{dfa_connected_correct} we have $\lang{A} = \lang{A_c}$.
     Therefore, it suffices to show
     \begin{equation*}
         \lang{A_c} = \emptyset \iff F_c = \emptyset.
@@ -306,7 +306,7 @@ Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain
     ``$\Leftarrow$''
     We have $\lang{A_c} = \emptyset$ and have to show that for all $x \in Q_c$, $x \notin F_c$.
     Let $x \in Q_c$. 
-    By lemma \ref{dfa_connected_repr} we get $w$ such that the unique run of $w$ on $A_c$
+    By Lemma \ref{dfa_connected_repr} we get $w$ such that the unique run of $w$ on $A_c$
     ends in $x$. 
     We use $\lang{A_c} = \emptyset$ to get $w \notin \lang{A_c}$, 
     which implies that the run of $w$ on $A_c$ ends in a non-final state.
@@ -321,7 +321,7 @@ Given an automaton $A$, we can check if $\lang{A} = \emptyset$. We simply obtain
 
 
 
-%The formalization of lemma \ref{dfa_lang_empty} is split in two parts to facilitate its application. 
+%The formalization of Lemma \ref{dfa_lang_empty} is split in two parts to facilitate its application. 
 
 \code{}{}{automata_dfa_lang_empty}
 %\codeblock{dfa_lang_empty_aux2}{}{automata_dfa_lang_empty_aux2_head}
@@ -435,7 +435,7 @@ Depending on the constructor of the regular expression, we will construct an equ
     For $w = \varepsilon$ we have $\varepsilon \in \lang{A_\varepsilon}$ and $\varepsilon \in \{\varepsilon\}$.
     Therefore, both directions are trivial.
     For $w = aw'$ we consider both directions independently. \\
-    ``$\Rightarrow$'' We have $(t, a, f) \in \delta_\varepsilon$ and $w' \in \acc{f}{A_\varepsilon}$. By lemma \ref{dfa_eps_correct'}, this is a contradiction. \\
+    ``$\Rightarrow$'' We have $(t, a, f) \in \delta_\varepsilon$ and $w' \in \acc{f}{A_\varepsilon}$. By Lemma \ref{dfa_eps_correct'}, this is a contradiction. \\
     ``$\Leftarrow$'' We get a straight-forward contradiction from $aw' \in \{\varepsilon\}$.
 \end{proof}
 
@@ -478,7 +478,7 @@ Depending on the constructor of the regular expression, we will construct an equ
     For $w = aw'$ we get $(t, a, f) \in \delta_{Dot}$. 
     Since $aw' \notin \{\varepsilon\}$ it suffices to show that 
     $w' \notin \acc{f}{A_{Dot}}$,
-    which we have by lemma \ref{dfa_dot_correct''}.
+    which we have by Lemma \ref{dfa_dot_correct''}.
 \end{proof}
 
 \code{}{}{automata_dfa_dot}
@@ -512,7 +512,7 @@ Depending on the constructor of the regular expression, we will construct an equ
     \label{dfa_compl_correct}
 \end{lemma}
 \begin{proof}
-    This follows directly from lemma \ref{dfa_compl_correct'} with $x = s$.
+    This follows directly from Lemma \ref{dfa_compl_correct'} with $x = s$.
 \end{proof}
 
 \subsubsection{Plus}
@@ -552,7 +552,7 @@ Depending on the constructor of the regular expression, we will construct an equ
     \label{dfa_disj_correct}
 \end{lemma}
 \begin{proof}
-    This follows directly from lemma \ref{dfa_disj_correct'} with $x = (s_1, s_2)$.
+    This follows directly from Lemma \ref{dfa_disj_correct'} with $x = (s_1, s_2)$.
 \end{proof}
 
 
@@ -583,7 +583,7 @@ Depending on the constructor of the regular expression, we will construct an equ
     \end{equation*}
 \end{lemma}
 \begin{proof}
-    This proof is very similar to lemma \ref{dfa_disj_correct'}.
+    This proof is very similar to Lemma \ref{dfa_disj_correct'}.
     We do a proof by induction on $w \in \Sigma^*$.
     For $w = \varepsilon$ we have, by definition of $F_\wedge$, 
     $%\begin{equation*}
@@ -601,7 +601,7 @@ Depending on the constructor of the regular expression, we will construct an equ
     \label{dfa_conj_correct}
 \end{lemma}
 \begin{proof}
-    This follows directly from lemma \ref{dfa_conj_correct'} with $x = (s_1, s_2)$.
+    This follows directly from Lemma \ref{dfa_conj_correct'} with $x = (s_1, s_2)$.
 \end{proof}
 
 
@@ -679,7 +679,7 @@ Consequently, the accept the same words.
         \item For $w = \varepsilon$ we have get $s \in F_2$ by $\varepsilon \in \lang{A_2}$ and, thus, $x \in F_{Conc}$ by definition.
         \item For $w = aw'$ we have $y \in Q_2$ such that $(s,a,y) \in \delta_2$ and thus $(x,a,y) \in \delta_{Conc}$.
             %By inductive hypothesis we have $w \in \acc{y}{A_{Conc}}$.
-            We also have $w' \in \acc{y}{A_2}$ and thus, by lemma \ref{nfa_conc_cont}, $w' \in \acc{y}{A_{Conc}}$.
+            We also have $w' \in \acc{y}{A_2}$ and thus, by Lemma \ref{nfa_conc_cont}, $w' \in \acc{y}{A_{Conc}}$.
             Thus, $aw' \in \acc{x}{A_{Conc}}$.
     \end{enumerate}
 \end{proof}
@@ -695,7 +695,7 @@ The following lemma is one direction of the proof of correctness of $A_{Conc}$.
 \begin{proof}
     By induction on $w_1$.
     \begin{enumerate}
-        \item For $w_1 = \varepsilon$ we get $x \in F_1$ and thus, by lemma \ref{nfa_conc_fin1}, the claim follows.
+        \item For $w_1 = \varepsilon$ we get $x \in F_1$ and thus, by Lemma \ref{nfa_conc_fin1}, the claim follows.
         \item For $w_1 = aw_1'$ we get $(x,a,y) \in \delta_1$ and thus $(x,a,y) \in \delta_{Conc}$. By inductive hypothesis, the claim follows.
     \end{enumerate}
 \end{proof}
@@ -745,7 +745,7 @@ However, with the second case, there is no straight-forward inductive proof.
     The language of $A_{Conc}$ is the concatenation of the languages of $A_1$ and $A_2$, i.e. $\lang{A_{Conc}} = \lang{A_1} \cdot \lang{A_2}$.
 \end{corollary}
 \begin{proof}
-    Follows directly from lemma \ref{nfa_conc_aux2} and lemma \ref{nfa_conc_aux1}. 
+    Follows directly from Lemma \ref{nfa_conc_aux2} and Lemma \ref{nfa_conc_aux1}. 
 \end{proof}
 
 \code{}{}{automata_nfa_conc_correct_head}
@@ -890,7 +890,7 @@ whose runs on $A$ starting in $x$ only pass through states in $X$ and end in $y$
 This is a direct implementation of the idea behind $R^X_{x,y}$.
 Then, we show that $L^{X \cup \{z\}}$ can be expressed in terms of $L^X$.
 We prove that we can express $\lang{A}$ by $\bigcup_{f\in F} L^Q_{s,f}$.
-Finally, we show that $R^X_{x,y} = L^X_{x,y}$, thus proving theorem \ref{dfa_to_regex}.
+Finally, we show that $R^X_{x,y} = L^X_{x,y}$, thus proving Theorem \ref{dfa_to_regex}.
 
 \begin{definition}
     Let $w \in \Sigma^*$.
@@ -913,7 +913,7 @@ Thus, we do not need to remove the first state from a run to retrieve all states
 \codeblock{}{}{transitive_closure_allbutlast}
 \codeblock{}{}{transitive_closure_L}
 
-We now prove properties of $L$ that we will need for our proof of theorem \ref{dfa_to_regex}.
+We now prove properties of $L$ that we will need for our proof of Theorem \ref{dfa_to_regex}.
 
 \begin{lemma}
     \label{L_monotone}
@@ -988,11 +988,11 @@ that correspond to the recursive definition of $R^X$.
     \begin{enumerate}
         \item For $z \notin \sigma_1 \ldots \last{\sigma}$ we can easily show $w \in L^X_{x,y}$.
         \item 
-            For $z \in \sigma_1 \ldots \last{\sigma}$ we use lemma \ref{run_split} to split $w$ in $w_1$ and $w_2$.
+            For $z \in \sigma_1 \ldots \last{\sigma}$ we use Lemma \ref{run_split} to split $w$ in $w_1$ and $w_2$.
             From $w \in L^{X\cup\{z\}}_{x,y}$ and $\sigma_{|w_1|} = z$ we immediately get $w_2 \in L^{X\cup\{z\}}_{z,y}$.
             We have $z \notin \sigma_1 \ldots \last{\sigma}$.
             We also have that $X = (X \cup \{z\})\backslash\{z\}$ from $z \notin X$.
-            Thus, we get $w_1 \in L^{X}_{x,z}$. The remainder of the claim follows directly from lemma \ref{run_split}.
+            Thus, we get $w_1 \in L^{X}_{x,z}$. The remainder of the claim follows directly from Lemma \ref{run_split}.
     \end{enumerate}
 \end{proof}
 
@@ -1030,10 +1030,10 @@ forms a word $w = w_1 \ldots w_{n-1}$ with $w \in L^{X\cup\{z\}}_{z,z}$.
 \begin{proof}
     By induction on $n$.
     \begin{enumerate}
-        \item For $n = 0$ we have to prove $\varepsilon \in L^{X\cup\{z\}}_{z,z}$ which holds by lemma \ref{L_nil}.
+        \item For $n = 0$ we have to prove $\varepsilon \in L^{X\cup\{z\}}_{z,z}$ which holds by Lemma \ref{L_nil}.
         \item For $n = n'+1$ we have $w_0 \ldots w_{n-2} \in L^{X\cup\{z\}}_{z,z}$ by inductive hypothesis.
             We also have $w_0, \ldots, w_{n-1} \in L^{X}_{z,z}$ by assumption, and, thus, $w_{n-1} \in L^{X}_{z,z}$.
-            By lemma \ref{L_cat} we get $w_0 \ldots w_{n-1} \in L^{X\cup\{z\}}_{z,z}$.
+            By Lemma \ref{L_cat} we get $w_0 \ldots w_{n-1} \in L^{X\cup\{z\}}_{z,z}$.
     \end{enumerate}
 \end{proof}
 \code{}{}{transitive_closure_L_flatten_head}
@@ -1047,7 +1047,7 @@ By size induction, the remainder of $w$ can be cut into three parts,
 one in $L^{X}_{z,z}$, one in $(L^{X}_{z,z})^*$ and one in $L^{X}_{z,y}$. 
 We only have to merge the first two parts to prove this direction of the lemma.
 
-The other direction is easily solved by lemma \ref{L_cat}.
+The other direction is easily solved by Lemma \ref{L_cat}.
 
 
 \begin{lemma}
@@ -1062,14 +1062,14 @@ The other direction is easily solved by lemma \ref{L_cat}.
     ``$\Rightarrow$''
     By induction on $|w|$.
     \begin{enumerate}
-        \item For $|w| = 0$ we get $w \in L^X_{x,y}$ by lemma \ref{L_nil}. 
+        \item For $|w| = 0$ we get $w \in L^X_{x,y}$ by Lemma \ref{L_nil}. 
         \item For $|w| > 0$ we get $w_1$ and $w_2$ such that $w = w_1 w_2$, $w_1 \in L^X_{x,z}$ and $w_2 \in L^{X\cup\{z\}}_{z,y}$.
             By inductive hypothesis we get 
             \begin{equation*}
              w_2 \in
                L^X_{z,z} (L^X_{z,z})^* L^X_{z,y} \; \vee \; w_2 \in L^X_{z,y}
             \end{equation*}
-            The latter gives us $w \in L^{X\cup\{z\}}_{x,y}$ by lemma \ref{L_cat}.
+            The latter gives us $w \in L^{X\cup\{z\}}_{x,y}$ by Lemma \ref{L_cat}.
             With the former, we have $w_3$, $w_4$, and $w_4$ such that $w_2 = w_3 w_4 w_5$, $w_3 \in L^{X}_{z,z}$,
             $w_4 \in (L^X_{z,z})*$ and $w_5 \in L^X_{z,y}$.
             We merge $w_3$ and $w_4$ such that $w_3 w_4 \in (L^{X}_{z,z})^*$.
@@ -1079,12 +1079,12 @@ The other direction is easily solved by lemma \ref{L_cat}.
 
     ``$\Leftarrow$''
     We have $w_1 \in L^X_{x,z}$, $w_2 \in (L^X_{z,z})^*$, and $w_3 \in L^X_{z,y}$.
-    By lemma \ref{L_flatten} we get $w_2 \in L^{X\cup\{z\}}_{z,z}$.
-    Thus, $w_1 w_2 w_3 \in L^{X\cup\{z\}}_{x,y}$ by lemma \ref{L_cat}.
+    By Lemma \ref{L_flatten} we get $w_2 \in L^{X\cup\{z\}}_{z,z}$.
+    Thus, $w_1 w_2 w_3 \in L^{X\cup\{z\}}_{x,y}$ by Lemma \ref{L_cat}.
 \end{proof}
 \code{}{}{transitive_closure_L_rec_head}
 
-All that remains to complete the proof of lemma \ref{dfa_to_regex} is a proof of $L^X_{x,y} = \lang{R^X_{x,y}}$.
+All that remains to complete the proof of Lemma \ref{dfa_to_regex} is a proof of $L^X_{x,y} = \lang{R^X_{x,y}}$.
 
 \begin{lemma}
     \label{L_R}
@@ -1102,7 +1102,7 @@ All that remains to complete the proof of lemma \ref{dfa_to_regex} is a proof of
                 R^X_{x,y} = R^{X\backslash\{z\}}_{x,z} (R^{X\backslash\{z\}}_{z,z})^* R^{X\backslash\{z\}}_{z,y} 
                 + R^{X\backslash\{z\}}_{x,y}.
             \end{equation*}
-            By lemma \ref{L_rec} we also know that 
+            By Lemma \ref{L_rec} we also know that 
             \begin{equation*}
                 L^X_{x,y} = L^{X\backslash\{z\}}_{x,z} (L^{X\backslash\{z\}}_{z,z})^* L^{X\backslash\{z\}}_{z,y}
                 + L^{X\backslash\{z\}}_{x,y}.
@@ -1113,6 +1113,6 @@ All that remains to complete the proof of lemma \ref{dfa_to_regex} is a proof of
 
 \code{}{}{transitive_closure_L_R_head}
 
-This concludes the proof of theorem \ref{dfa_to_regex}.
+This concludes the proof of Theorem \ref{dfa_to_regex}.
 
 \code{}{}{transitive_closure_dfa_to_regex_head}

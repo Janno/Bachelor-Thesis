@@ -231,7 +231,7 @@ We assume we are given a DFA $A$.
 We will be using the states of $A$ as equivalence classes.
 Our goal is to construct a Myhill relation, for which we will need an equivalence relation of finite index.
 Therefore, we first need to ensure that the mapping from words to equivalence classes is surjective.
-Thus, we consider the equivalent, connected automaton $A_c=(Q_c, s_c, F_c, \delta_c)$ (definition \ref{A_c}), which has only reachable states.
+Thus, we consider the equivalent, connected automaton $A_c=(Q_c, s_c, F_c, \delta_c)$ (Definition \ref{A_c}), which has only reachable states.
 This enables us to construct a surjective function from words to the states of $A_c$.
 
 \begin{definition}
@@ -242,7 +242,7 @@ This enables us to construct a surjective function from words to the states of $
     \begin{equation*}
         f_M(u) := \sigma_{|\sigma|-1}.
     \end{equation*}
-    Note that $f_M$ is surjective (follows directly from lemma \ref{dfa_connected_repr}) 
+    Note that $f_M$ is surjective (follows directly from Lemma \ref{dfa_connected_repr}) 
     and, thus, an equivalence relation of finite index.
 \end{definition}
 
@@ -251,7 +251,7 @@ This enables us to construct a surjective function from words to the states of $
 \codeblock{}{}{myhill_nerode_f_fin}
 
 
-In order to show that $f_M$ is a Myhill relation, we prove that it fulfills definition \ref{Myhill}.
+In order to show that $f_M$ is a Myhill relation, we prove that it fulfills Definition \ref{Myhill}.
 
 \begin{lemma}
     \label{f_M_right_congruent}
@@ -277,9 +277,9 @@ In order to show that $f_M$ is a Myhill relation, we prove that it fulfills defi
     $f_M$ is a Myhill relation on $\lang{A}$.
 \end{theorem}
 \begin{proof}
-    By lemma \ref{dfa_connected_correct}, we have $\lang{A_c} = \lang{A}$.
+    By Lemma \ref{dfa_connected_correct}, we have $\lang{A_c} = \lang{A}$.
     Thus, it suffices to show that $f_M$ is a Myhill relation on $\lang{A_c}$.
-    This follows with lemma \ref{f_M_right_congruent} and lemma \ref{f_M_refines}.
+    This follows with Lemma \ref{f_M_right_congruent} and Lemma \ref{f_M_refines}.
 \end{proof}
 
 
@@ -316,10 +316,10 @@ In fact, we will prove that any Myhill relation \textit{is} a weak Nerode relati
 \codeblock{}{}{myhill_nerode_myhill_to_weak_nerode}
 
 
-This concludes step \tcircled{b} of theorem \ref{Myhill-Nerode}.
+This concludes step \tcircled{b} of Theorem \ref{Myhill-Nerode}.
 
 \subsection{Nerode relations to Finite Automata}
-We prove step \tcircled{d} of theorem \ref{Myhill-Nerode}. 
+We prove step \tcircled{d} of Theorem \ref{Myhill-Nerode}. 
 If the Nerode relation on a language $L$ is of finite index, we can construct a DFA that accepts $L$.
 The construction is very straight-forward and uses the equivalence classes of the Nerode relation as the set of states for the automaton.
 
@@ -372,11 +372,11 @@ The following lemma gives a direct connection.
 
 The resulting automaton is minimal, i.e. there exists no other automaton that accepts the same language and has less states than $A$.
 
-This concludes step \tcircled{d} of theorem \ref{Myhill-Nerode}.
+This concludes step \tcircled{d} of Theorem \ref{Myhill-Nerode}.
 
 \section{Minimizing Equivalence Classes}
 Finally, we prove that if there is a weak Nerode relation on a language $L$, the Nerode relation is of finite index.
-This proves step \tcircled{c} of the theorem \ref{Myhill-Nerode} and thus complets its proof.
+This proves step \tcircled{c} of the Theorem \ref{Myhill-Nerode} and thus complets its proof.
 For this purpose, we employ a table-filling algorithm \cite{Huffman1954161} to find indistinguishable states under the Myhill-Nerode relation. 
 %However, we do not rely on an automaton, as is usually done. 
 This algorithm was originally intended to be used on automata. 
@@ -568,7 +568,7 @@ since the two directions require different strategies.
     \end{equation*}
 \end{corollary}
 \begin{proof}
-    Follows immediately with lemma \ref{equiv_final} and lemma \ref{distinct_final}. 
+    Follows immediately with Lemma \ref{equiv_final} and Lemma \ref{distinct_final}. 
 \end{proof}
 
 \code{}{}{myhill_nerode_equiv_suffix_equal_head}
@@ -625,8 +625,8 @@ since the two directions require different strategies.
 \end{lemma}
 
 \begin{proof}
-    We have proven surjectivity in lemma \ref{f_min_surjective}. 
-    By lemma \ref{f_minP} we have $\mathit{f_{min}}(u) = \mathit{f_{min}}(v)$ if and only if $u \cong_{f_0} v$.
+    We have proven surjectivity in Lemma \ref{f_min_surjective}. 
+    By Lemma \ref{f_minP} we have $\mathit{f_{min}}(u) = \mathit{f_{min}}(v)$ if and only if $u \cong_{f_0} v$.
     By corollary \ref{equivP} we have $u \cong_{f_0} v$ if and only if $u \doteq_L v$.
     Thus, $\mathit{f_{min}}(u) = \mathit{f_{min}}(v)$ if and only if $u \doteq_L v$.
 \end{proof}
@@ -641,7 +641,7 @@ which we do by enumerating all possible values of $\mathit{f_{min}}$.
 \codeblock{}{}{myhill_nerode_f_min}
 
 
-We then prove lemmas \ref{f_min_surjective}, \ref{f_minP} and theorem \ref{f_min_correct} which are consequential and straight-forward.
+We then prove lemmas \ref{f_min_surjective}, \ref{f_minP} and Theorem \ref{f_min_correct} which are consequential and straight-forward.
 
 \code{}{}{myhill_nerode_f_min_surjective_head}
 \codeblock{}{}{myhill_nerode_f_minP_head}
@@ -655,12 +655,12 @@ We can now state the result of this chapter.
     The Nerode relation is of finite index.
 \end{corollary}
 \begin{proof}
-    This follows directly from lemma \ref{equiv_equiv} and lemma \ref{f_min_correct}.
+    This follows directly from Lemma \ref{equiv_equiv} and Lemma \ref{f_min_correct}.
 \end{proof}
 
 \code{}{}{myhill_nerode_weak_nerode_to_nerode}
 
 
-This concludes step \tcircled{c} of theorem \ref{Myhill-Nerode}. 
+This concludes step \tcircled{c} of Theorem \ref{Myhill-Nerode}. 
 
 
