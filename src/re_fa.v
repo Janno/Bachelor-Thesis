@@ -6,30 +6,37 @@ Set Implicit Arguments.
 Section RE_FA.
   Variable char: finType.
   Definition word:= misc.word char.
-  Variable r: regular_expression char.
 
-  Lemma re_to_dfa: exists A: dfa char,
-    forall w: word, w \in (dfa_lang A: pred word) = (w \in r).
+  Fixpoint re_to_dfa (r: regular_expression char): dfa char :=
+    match r with
+    | Void => dfa_void char
+    | Eps => dfa_eps char
+    | Dot => dfa_dot char
+    | Atom a => dfa_char char a
+    | Star s => nfa_star (dfa_to_nfa (re_to_dfa s))
+    | Plus s t => dfa_disj (re_to_dfa s) (re_to_dfa t)
+    | And s t => dfa_conj (re_to_dfa s) (re_to_dfa t)
+    | Conc s t => nfa_to_dfa (nfa_conc (dfa_to_nfa (re_to_dfa s)) (dfa_to_nfa (re_to_dfa t)))
+    | Not s => dfa_compl (re_to_dfa s)
+    end.
+
+  Lemma re_to_dfa_correct r: dfa_lang (re_to_dfa r) =i r.
   Proof.
     elim: r => [].
 
-    exists (dfa_void char).
     move => w. apply/idP/idP. exact: dfa_void_correct.
 
-    exists (dfa_eps char).
     exact: dfa_eps_correct.
     
-    exists (dfa_dot char).
     move => w.
     rewrite -topredE /= /dot.
     exact: dfa_dot_correct.
 
-    move => a. exists (dfa_char char a).
+    move => a. 
     move => w. exact: dfa_char_correct.
 
     (* Star *)
-    move => s [] A H.
-    exists (nfa_star (dfa_to_nfa A)).
+    move => s IHs.
     move => w.
     rewrite nfa_star_correct.
     apply/starP/starP.
@@ -41,30 +48,27 @@ Section RE_FA.
         move => x /=.
         apply/andP/andP; move => [] H2 H3; split => //.
           rewrite -dfa_to_nfa_correct.
-          move: H3. by rewrite -H.
+          move: H3. by rewrite -IHs.
         move: H3. 
         rewrite -dfa_to_nfa_correct.
-        by rewrite -H.
+        by rewrite -IHs.
       exact H1.
     move => [] vv H1 H2. exists vv => //.
     erewrite eq_all. eexact H1.
     move => x /=.
     apply/andb_id2l => H3.
-    by rewrite -H -dfa_to_nfa_correct.
+    by rewrite -IHs -dfa_to_nfa_correct.
      
         
-    move => s [] As Hs t [] At Ht.
-    exists (dfa_disj As At).
+    move => s Hs t Ht.
     move => w. rewrite -dfa_disj_correct in_simpl /=.
     by rewrite Ht Hs /=.
 
-    move => s [] As Hs t [] At Ht.
-    exists (dfa_conj As At).
+    move => s Hs t Ht.
     move => w. rewrite -dfa_conj_correct in_simpl /=.
     by rewrite Hs Ht /=.
 
-    move => s [] As Hs t [] At Ht.
-    exists (nfa_to_dfa (nfa_conc (dfa_to_nfa As) (dfa_to_nfa At))).
+    move => s Hs t Ht.
     move => w. rewrite -nfa_to_dfa_correct. 
     apply/idP/idP.
     move/nfa_conc_aux1 => [] w1 [] w2 /andP [] /andP [] /eqP H0 H1 H2.
@@ -78,8 +82,7 @@ Section RE_FA.
       move: H1. by rewrite  dfa_to_nfa_correct /nfa_lang /=.
     move: H2. by rewrite dfa_to_nfa_correct /nfa_lang /=.
                  
-    move => s [] A H.
-    exists (dfa_compl A).
+    move => s H.
     move => w. by rewrite -dfa_compl_correct -topredE /= H.
   Qed.
     
