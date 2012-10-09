@@ -16,7 +16,7 @@ It provides a specification language named Gallina.
 Terms of Gallina can represent programs as well as properties of these programs and proofs of these properties. 
 Using the so-called Curry-Howard isomorphism, programs, properties and proofs are formalized in the same language called Calculus of Inductive Constructions, that is a $\lambda$-calculus with a rich type system. 
 All logical judgments in Coq are typing judgments. 
-The very heart of the Coq system is the type-checking algorithm that checks the correctness of proofs, in other words that checks that a program complies to its specification. 
+The very heart of the Coq system is the type-checking algorithm that checks the correctness of proofs, i.e that a program complies to its specification. 
 Coq also provides an interactive proof assistant to build proofs using specific programs called tactics \cite{Coq:manual}.
 
 
@@ -44,7 +44,7 @@ The most important feature of \ssreflect\ for our purpose are finite types.
 Finite types are types that have a finite number of inhabitants.
 Their implementation is based on lists.
 Every element of a finite type is contained in the associated (de-duplicated) list and vice versa.
-\ssreflect's support for finite types is based on canonical structures, instances of which come predefined for basic finite types and type constructors. 
+\ssreflect's support for finite types is based on canonical structures, instances of which come predefined for basic types and type constructors. 
 This allows us to easily combine basic finite types such as \lstinline{bool} with type constructors such as \lstinline{option} and \lstinline{sum}. 
 
 \ssreflect\ provides boolean versions of the universal and existential quantifiers on finite types, \lstinline{forallb} and \lstinline{existsb}.
@@ -52,8 +52,8 @@ We can compute the number of elements in a finite type F with \lstinline{#|F|}.
 \lstinline{enum} gives a list of all items of a finite type. 
 
 We can also create finite types from lists.
-Instances of these finite types can be specified with the \lstinline{SeqSub} constructor, 
-which takes as argument an element of the list and a proof that this element is contained in the list.
+Instances of these can be specified with the \lstinline{SeqSub} constructor, 
+which takes as arguments an element of the list and a proof that this element is contained in the list.
 
 %Finite types also come with enumeration functions which provide a consistent ordering. 
 %The corresponding functions are \lstinline{enum_rank} and \lstinline{enum_val}. 
@@ -88,7 +88,7 @@ which are functions that take predicates as arguments and return predicates.
 We can use \lstinline{f =1 g} to express that the functions \lstinline{f} and \lstinline{g} agree in all arguments.
 If we regard \lstinline{f} and \lstinline{g} as sets, we can write \lstinline{f =i g}, which is defined as \lstinline{forall x, x \in f = x \in g}.
 \coq's equality \lstinline{=} is intensional, which means that even if we have \lstinline{f =1 g}, we will not, in general, be able to proof \lstinline{f = g}.
-Thus, we will use \lstinline{=1} and \lstinline{=i} in \coq, when we write $=$ mathematically. 
+Thus, we will use \lstinline{=1} or \lstinline{=i} in \coq, when we write $=$ mathematically. 
 This expresses the notion of extensional equality that is usually assumed mathematically.
 
 

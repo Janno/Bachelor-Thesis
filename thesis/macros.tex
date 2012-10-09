@@ -8,13 +8,26 @@
 \newcommand{\last}[1]{ {#1}_{|{#1}|-1} }
 \newcommand{\belast}[1]{ {#1}_1 \ldots {#1}_{|{#1}|-2} } 
 
+\newcommand{\coderaw}[3]{
+        \lstinputlisting[label=#1,caption=#2,language=coq]{../docs/definitions/#3}
+    }
 \newcommand{\code}[3]{
-    \lstinputlisting[label=#1,caption=#2,language=coq]{../docs/definitions/#3}
+
+       \noindent
+          \minipage{\linewidth} 
+             \vspace{0.5\baselineskip}
+
+        \coderaw{#1}{#2}{#3}
+        \endminipage
 }
 
 \newcommand{\codeblock}[3]{
+       \noindent
+          \minipage{\linewidth} 
     \vspace{-0.8em}
-    \code{#1}{#2}{#3}
+        \coderaw{#1}{#2}{#3}
+             %\vspace{0.5\baselineskip}
+        \endminipage
 }
 
 \mathchardef\mhyphen="2D

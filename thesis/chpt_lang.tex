@@ -139,7 +139,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     \end{proof}
 
     
-    The formalization of Lemma \ref{starP} connects the formalization of \lstinline{star} to the mathematical definition. The propositional formula given here appears slightly more restrictive than our mathemitcal definition as it requires all words from $L$ to be nonempty. 
+    The formalization of Lemma \ref{starP} connects the formalization of \lstinline{star} to the mathematical definition. The propositional formula given here appears slightly more restrictive than our mathematical definition as it requires all words from $L$ to be nonempty. 
     Mathematically, however, this is no restriction. 
     
     %The advantage of this formalization is can be seen in later proofs, where induction over the length of a word $w \in L^*$ is necessary. 
@@ -148,14 +148,14 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     %Since every word $w_i$ has a length of at least one, we shorten $w$ by at least one character. 
     %Thus, we can use the inductive hypothesis of the induction over $|w|$ to prove the claim.
 
-    \code{regexp_starP}{Formalization of Lemma \ref{starP}}{regexp_starP_head}
+    \code{}{}{regexp_starP_head}
 
     \begin{theorem}{}
         \label{DecLangClosed}
         The decidable languages are closed under concatenation, Kleene star, union, intersection and complement. 
     \end{theorem}
     \begin{proof}
-        We have already give algorithms for all operators. 
+        We have already given algorithms for all operators. 
         It remains to show that they are correct.
         For concatenation and the Kleene star, we have shown in Lemma \ref{concP} and Lemma \ref{starP} that the formalizations are equivalent to the mathematical definitions. 
         The remaining operators (union, intersection, complement) can be applied directly to the result of the languages' boolean decision functions.
@@ -220,17 +220,14 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
             \lang{r} = \lang{s}.
         \end{equation*}
     \end{definition}
-    We will later show that equivalence of regular expressions is decidable.
-
-    
-    
-    We take the implementation of regular expressions from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
-    The semantics defined in Definition \ref{extregex} can be given as a boolean function.
-    %They also give a decision function the language associated with a regular expression.
+We will later show that equivalence of regular expressions is decidable.
+We take the implementation of regular expressions from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
+The semantics defined in Definition \ref{extregex} can be given as a boolean function.
+%They also give a decision function the language associated with a regular expression.
     
 
-    \code{regexp}{Regular Expressions}{regexp_regular_expression}
-    \codeblock{regexp_mem_reg}{}{regexp_mem_reg}
+    \code{}{}{regexp_regular_expression}
+    \codeblock{}{}{regexp_mem_reg}
 
     
     We will later prove that extended regular expressions are equivalent to the inductive definition of regular languages in \ref{REG}.

@@ -30,13 +30,13 @@ The \textbf{language} of $A$ is exactly $\acc{s}{A}$ and is denoted $\lang{A}$.
 \subsection{Non-Deterministic Finite Automata}
 Finite automata can be \textbf{non-deterministic} (NFA) in the sense that there may exist multiple distinct runs for a word. 
 
-\code{nfa}{Non-Deterministic Finite Automata}{automata_nfa}
-\codeblock{nfa_accept}{}{automata_nfa_accept}
-\codeblock{nfa_lang}{}{automata_nfa_lang}
+\code{}{}{automata_nfa}
+\codeblock{}{}{automata_nfa_accept}
+\codeblock{}{}{automata_nfa_lang}
 
 
 The acceptance criterion given here avoids the matter of runs.
-In many cases, this will help us with proofs by in induction on the accepted word.
+In many cases, this will help us with proofs by induction on the accepted word.
 However, we will need runs in some of the proofs.
 Due to the fact that runs are not unique on NFAs, 
 we give a predicate that decides if a sequence of states is a run on $A$ for a word $w$.
@@ -55,7 +55,7 @@ In this case, we write $\delta$ as a function in our \coq\ development.
 \codeblock{dfa_lang}{}{automata_dfa_lang}
 
 
-Again, we avoid runs in our formalization of the acceptance criterion in favor of a acceptance criterion that is easier to work with in proofs.
+Again, we avoid runs in our formalization of the acceptance criterion in favor of an acceptance criterion that is easier to work with in proofs.
 In this case, however, we can give a function that computes the unique run of a word on $A$.
 This allows us to give an alternative acceptance criterion that is closer to the mathematical definition.
 We also prove that both criteria are equivalent.
@@ -78,7 +78,7 @@ We also prove that both criteria are equivalent.
 \subsubsection{Equivalence between DFA and NFA}
  
 Deterministic and non-deterministic finite automata are equally expressive. 
-One direction is trivial since every DFA can be seen as a NFA. 
+One direction is trivial since every DFA can be seen as an NFA. 
 We prove the other direction using the powerset construction. 
 %The new set of states is the powerset of the given NFA's set of states. 
 %The new starting state is the singleton set containing the original starting state. 
@@ -111,7 +111,7 @@ The set of states is an implicit argument of the DFA constructor and thus not sh
 \end{lemma}
 
 \begin{proof}
-    Let $w \in \acc{x}{A}$. We proof by induction on $w$ that $w \in \acc{X}{A_{det}}$. 
+    Let $w \in \acc{x}{A}$. We prove by induction on $w$ that $w \in \acc{X}{A_{det}}$. 
     \begin{itemize}
         \item
             For $w = \varepsilon$ and $\varepsilon \in \acc{x}{A}$ we get $x \in F$ from $\varepsilon \in \acc{x}{A}$. 
@@ -119,8 +119,7 @@ The set of states is an implicit argument of the DFA constructor and thus not sh
         \item
             For $w = a w'$ and $a w' \in \acc{x}{A}$ we get $y$ such that $w' \in \acc{y}{A}$ and $(x,a,y) \in \delta$.
             The latter gives us $y \in Y$ where $Y$ is such that $(X, a, Y) \in \delta_{det}$.
-            With $y \in Y$ and $w' \in \acc{y}{A}$ we get 
-            which gives us $w' \in \acc{Y}{A_{det}}$ by inductive hypothesis.
+            With $y \in Y$ and $w' \in \acc{y}{A}$ we get $w' \in \acc{Y}{A_{det}}$ by inductive hypothesis.
             With $(X, a, Y) \in \delta_{det}$ we get $a w' \in \acc{X}{A_{det}}$.
     \end{itemize}
 \end{proof}
@@ -220,7 +219,7 @@ We also have to give a transition function that ensures transitions always end i
 \begin{proof}
     ``$\subseteq$'' Trivial.
     ``$\supseteq$''
-    We do an induction on $w$.
+    By induction on $w$.
     \begin{itemize}
         \item
             For $w = \varepsilon$ we have $\varepsilon \in \acc{x}{A}$ and therefore $x \in F$. 
@@ -412,7 +411,7 @@ We also give a short overview of the automaton corresponding to \lstinline{Star}
     For every state $x \in Q$, we have that $w \in \Sigma^*$ is accepted in $x$ by $A_\neg$ if and only if it is not accepted in $x$ by $A$, i.e. $\acc{x}{A_\neg} = \Sigma^* \backslash \acc{x}{A}$ 
 \end{lemma}
 \begin{proof}
-    We do an induction on $w$.
+    By induction on $w$.
     For $w = \varepsilon$ we have $\varepsilon \in \acc{x}{A_\neg} \iff \varepsilon \in \acc{x}{A}$ from
     $x \in F \iff x \notin Q\backslash F$.
     For $w = aw'$ we get $(y,a,x) \in \delta$. 
@@ -475,7 +474,7 @@ Before we prove the correctness of $A_{Conc}$, we need a number of auxiliary lem
 \end{lemma}
 \begin{proof}
     Let $\sigma$ be a run starting in $x$ for $w \in \Sigma^*$ on $A_2$.
-    We do an induction on $\sigma$.
+    By induction on $\sigma$.
     \begin{enumerate}
         \item 
             For $\sigma = x$
