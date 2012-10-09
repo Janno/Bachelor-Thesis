@@ -34,7 +34,7 @@ move => H0. rewrite leq_eqVlt => /orP [].
 move/leqW. apply: ltn_trans_tight. by apply: leqW.
 Qed.
 
-Lemma size_induction (X : Type) (f : X -> nat) (p: X ->Prop) :
+Lemma size_induction {X : Type} (f : X -> nat) (p: X ->Prop) :
 ( forall x, ( forall y, f y < f x -> p y) -> p x) -> forall x, p x.
 Proof. intros A x. apply A. induction (f x). by [].
 intros y B. apply A. intros z C. apply IHn.

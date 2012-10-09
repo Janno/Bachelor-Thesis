@@ -75,7 +75,7 @@ We also prove that both criteria are equivalent.
     We say that two automata are \textbf{equivalent} if and only if their languages are equal.
 \end{definition}
 
-\subsubsection{Equivalence between DFA and NFA}
+\subsection{Equivalence between DFA and NFA}
  
 Deterministic and non-deterministic finite automata are equally expressive. 
 One direction is trivial since every DFA can be seen as an NFA. 
@@ -157,7 +157,7 @@ The set of states is an implicit argument of the DFA constructor and thus not sh
 \end{theorem}
 \begin{proof}
     ``$\subseteq$'' 
-    This follows directly from Lemma \ref{nfa_to_dfa_aux2} with $x = s$ and $X = {s}_{det}$.
+    This follows directly from Lemma \ref{nfa_to_dfa_aux2} with $x := s$ and $X := {s}_{det}$.
 
     ``$\supseteq$''
     From Lemma \ref{nfa_to_dfa_aux1} with $X = {s}_{det}$ we get 
@@ -244,7 +244,7 @@ We also have to give a transition function that ensures transitions always end i
 
 \begin{proof}
     By reflexivity, we have $s \in \mathrm{reachable}$. 
-    We use Lemma \ref{dfa_connected_correct'} with $x = s$ to prove the claim.
+    We use Lemma \ref{dfa_connected_correct'} with $x := s$ to prove the claim.
         %Unreachable states have no influence on the language of an automaton because there is no run from the starting state that contains such a state.
 \end{proof}
 
@@ -334,7 +334,7 @@ Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the langua
     \lang{A} := \lang{A_1} \ominus \lang{A_2} = \lang{A_1} \cap \neg \lang{A_2} \cup \lang{A_2} \cap \neg \lang{A_1}.      
 \end{equation*}
 \begin{theorem} The equivalence of $A_1$ and $A_2$ is decidable, i.e.
-    \label{dfa_sym_diff_correct}
+    \label{dfa_equiv_correct}
     \begin{equation*}                
         \lang{A_1} = \lang{A_2} \mbox{ if and only if } \lang{A} \mbox{ is empty. }                
     \end{equation*}
@@ -344,28 +344,35 @@ Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the langua
     \begin{equation*}                  
         \lang{A_1} \ominus \lang{A_2} = \emptyset \Leftrightarrow \lang{A_1} = \lang{A_2}.                  
     \end{equation*}
-    Thus, equivalence is decidable.    
 \end{proof}
 
+    Thus, equivalence is decidable.    
+
 \code{}{}{automata_dfa_sym_diff}
-\codeblock{}{}{automata_dfa_sym_diff_correct_head}
+\code{}{}{automata_dfa_equiv}
+\codeblock{}{}{automata_dfa_equiv_correct_head}
 
-\section{Regular Expressions and Finite Automata}
-
- 
-We prove that there is a finite automaton for every extended regular expression and vice versa. 
-In fact, we can give a standard regular expression for every finite automaton.
-With this, we will prove that extended regular expressions are equivalent to standard regular expressions, 
-thereby proving closure under intersection and negation.
-
-
-\subsection{Regular Expressions to Finite Automata}
+%\section{Regular Expressions and Finite Automata}
 
  
+%We prove that there is a finite automaton for every extended regular expression and vice versa. 
+%In fact, we can give a standard regular expression for every finite automaton.
+%With this, we will prove that extended regular expressions are equivalent to standard regular expressions, 
+%thereby proving closure under intersection and negation.
+
+
+\section{Regular Expressions to Finite Automata}
 We prove that there exists an equivalent automaton for every extended regular expression.
 The structure of this proof is given by the inductive nature of regular expressions.
 %For every constructor, we provide an equivalent automaton.
 
+\begin{theorem}
+    \label{re_to_dfa}
+    Let $r$ be an extended regular expression on $\Sigma$. Then we can give DFA $A$ such that
+    \begin{equation*}
+        \lang{r} = \lang{A}.
+    \end{equation*}
+\end{theorem}
 
 Depending on the constructor of the regular expression, we will construct a corresponding operation on DFAs or NFAs.
 \lstinline{Void}, \lstinline{Eps}, \lstinline{Dot}, \lstinline{Atom}, \lstinline{Plus}, \lstinline{And} and \lstinline{Not} are very easy to implement on DFAs, whereas \lstinline{Star} and \lstinline{Conc} lend themselves well to NFAs.
@@ -373,7 +380,8 @@ Depending on the constructor of the regular expression, we will construct a corr
 We show our implementation for \lstinline{Void}, \lstinline{Not}, and \lstinline{Conc}.
 We also give a short overview of the automaton corresponding to \lstinline{Star}. 
 
-\subsubsection{Void}
+
+\subsection{Void}
 \begin{definition}
     We define an empty DFA with a single, non-accepting state, i.e.
     \begin{equation*}
@@ -398,7 +406,7 @@ We also give a short overview of the automaton corresponding to \lstinline{Star}
 \codeblock{}{}{automata_dfa_void_correct_head}
 
 
-\subsubsection{Not}
+\subsection{Not}
 \begin{definition}
     Given DFA $A=(Q,s,F,\delta)$, the complement automaton $A_\neg$ is constructed by switching accepting and non-accepting states, i.e.
     \begin{equation*}
@@ -415,7 +423,7 @@ We also give a short overview of the automaton corresponding to \lstinline{Star}
     For $w = \varepsilon$ we have $\varepsilon \in \acc{x}{A_\neg} \iff \varepsilon \in \acc{x}{A}$ from
     $x \in F \iff x \notin Q\backslash F$.
     For $w = aw'$ we get $(y,a,x) \in \delta$. 
-    By inductive hypothesis, $w' \in \acc{x}{A_\neg} \iff w' \notin \acc{x}{A}$
+    By inductive hypothesis, $w' \in \acc{x}{A_\neg} \iff w' \notin \acc{x}{A}$.
     Thus, $aw' \in \acc{y}{A_\neg} \iff aw' \notin \acc{y}{A}$.
 \end{proof}
 \begin{lemma}
@@ -423,11 +431,11 @@ We also give a short overview of the automaton corresponding to \lstinline{Star}
     \label{dfa_compl_correct}
 \end{lemma}
 \begin{proof}
-    This follows directly from Lemma \ref{dfa_compl_correct'} with $x = s$.
+    This follows directly from Lemma \ref{dfa_compl_correct'} with $x := s$.
 \end{proof}
 
 
-\subsubsection{Conc}
+\subsection{Conc}
 The most common approach to build the concatenation automaton is to connect
 the final states of the first automaton to the starting state of the second automaton
 by an $\varepsilon$-translation. 
@@ -575,7 +583,7 @@ However, with the second case, there is no straight-forward inductive proof.
 \code{}{}{automata_nfa_conc_correct_head}
 
 
-\subsubsection{Star}
+\subsection{Star}
 The most common construction for the star automaton works by adding the starting state
 to the set of final states and connecting all final states to the starting state by $\varepsilon$-transitions.
 
@@ -595,15 +603,35 @@ to form the star automaton.
 \codeblock{}{}{automata_nfa_star_correct_head}
 
 
+We give a procedure to build an equivalent DFA for every extended regular expression and prove it correct.
+Note that the operations are named after the type of arguments they take, 
+i.e. \lstinline{nfa_star} takes an NFA but returns a DFA,
+whereas \lstinline{nfa_conc} expects \textit{and} returns NFAs. 
+
+\code{}{}{re_fa_re_to_dfa}
+\codeblock{}{}{re_fa_re_to_dfa_correct_head}
 
 
-\subsection{Deciding Equivalence of Regular Expressions}
+\section{Deciding Equivalence of Regular Expressions}
 
  
 Based on our procedure to construct an equivalent automaton from a regular expression, we can decide equivalence of regular expressions. Given $r_1$ and $r_2$, we construct equivalent DFA $A_1$ and $A_2$ as above.
+Based on our decision procedure for the equivalence of DFAs, we only need check if $A_1$ and $A_2$ are equivalent.
 
+\begin{corollary} Let $r, s$ be regular expressions on $\Sigma$ and $A_1, A_2$ their corresponding, equivalent automata. 
+    We then have that
+    \begin{equation*}
+        \lang{r} = \lang{s} \iff \lang{A_1} = \lang{A_2}.
+    \end{equation*}
+\end{corollary}
+\begin{proof}
+    Follows directly from \ref{re_to_dfa} and \ref{dfa_equiv_correct}.
+\end{proof}
 
-\subsection{Finite Automata to Regular Expressions}
+\code{}{}{re_fa_re_equiv}
+\codeblock{}{}{re_fa_re_equiv_correct_head}
+
+\section{Finite Automata to Regular Expressions}
 We prove that there is an equivalent standard regular expression for every finite automaton.
 There are three ways to prove this. 
 
@@ -954,4 +982,14 @@ All that remains to complete the proof of Lemma \ref{dfa_to_regex} is a proof of
 
 This concludes the proof of Theorem \ref{dfa_to_regex}.
 
-\code{}{}{transitive_closure_dfa_to_regex_head}
+\code{}{}{transitive_closure_dfa_to_regex}
+\codeblock{}{}{transitive_closure_dfa_to_regex_correct_head}
+
+
+This proof was by far the most technical proof presented in this thesis. 
+The mathematical content is rather straight-forward and intuitive.
+However, especially due to the need for the \lstinline{allbutlast} predicate,
+the implementation contains a lot of quite general infrastructure.
+In fact, a little more than one third of the implementation (200 out of 600 lines) is taken up by \lstinline{allbutlast}.
+
+

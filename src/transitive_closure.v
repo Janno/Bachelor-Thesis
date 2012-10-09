@@ -7,21 +7,6 @@ Unset Strict Implicit.
 Import Prenex Implicits.
 
 
-(* Size induction. We need this for induction over split lists *)
-Lemma size_induction (X : Type) (f : X -> nat) (p: X ->Prop) :
-( forall x, ( forall y, f y < f x -> p y) -> p x) -> forall x, p x.
-Proof.
-  move => H0 x. apply H0.
-  assert (L : forall n y, f y < n -> p y).
-    elim => [|n IHn] // y H1.
-    apply H0 => z H2.
-    apply IHn.
-    apply: leq_trans.
-      by eassumption.
-    by rewrite -ltnS.
-  apply: (L (f x)).
-Qed.    
-
 Lemma set1UrP (T: finType) (X: {set T}) x: reflect (x |: X = X) (x \in X). 
 Proof.
   apply/iffP. by apply idP.
@@ -215,18 +200,6 @@ Section AllButLast.
   Qed.
   
 End AllButLast.   
-
-Section EqTypes.
-  Variable X: eqType.
-  
-  Lemma mem_belast (x: X) xs: x \in belast xs -> x \in xs.
-  Proof.
-    case/lastP: xs => [|xs y IHxs] //.
-    rewrite belast_rcons in IHxs.                                   
-    by rewrite mem_rcons in_cons IHxs orbT.
-  Qed.
-
-End EqTypes.
   
 Section TransitiveClosure.
 
@@ -473,7 +446,7 @@ Section TransitiveClosure.
   Proof.
     move => w.
     apply/idP/idP.
-      apply/(size_induction (f:=size)): w x y => w IHw x y.
+      apply/(size_induction size): w x y => w IHw x y.
       destruct w.
         move => Hw. apply/plusP. by right.
       move/L_split => [/LP [H1 H2]|[w1 [w2 [Hw' [H1 [Hw1 Hw2]]]]]].
@@ -588,13 +561,12 @@ Section TransitiveClosure.
     move => z. by rewrite /setT !inE.
   Qed.
                  
+  Definition dfa_to_regex: regular_expression char :=
+    nPlus (map  (R^setT (dfa_s A)) (enum (dfa_fin A))).
+    
   
-  Lemma dfa_to_regex: exists r: regular_expression char, dfa_lang A =i r.
+  Lemma dfa_to_regex_correct: dfa_lang A =i dfa_to_regex.
   Proof.
-    exists (
-        nPlus
-          (map  (fun f => R^setT (dfa_s A) (f)) (enum (dfa_fin A)))
-       ).
     move => w.
     apply/idP/idP.
       rewrite /= -dfa_run_accept => H.

@@ -225,8 +225,7 @@ Definition nfa_to_dfa :=
   {| dfa_s := set1 (nfa_s A);
     dfa_fin := [ pred X: {set A} | [ exists x: A, (x \in X) && nfa_fin A x] ];
     dfa_step := [ fun X a => \bigcup_(x | x \in X) finset (nfa_step A x a) ]
-   |}
-.
+   |}.
 
 (** We prove that for every state x, the new automaton
    accepts at least the language of the given automaton
@@ -646,12 +645,13 @@ End Emptiness.
 End DFAOps.
 
 Section Equivalence.
-  Variable A1 A2: dfa.
-  Definition dfa_sym_diff :=
+  Definition dfa_sym_diff A1 A2 :=
     dfa_disj (dfa_conj A1 (dfa_compl A2)) (dfa_conj A2 (dfa_compl A1)).
 
-  Lemma dfa_sym_diff_correct:
-    dfa_lang_empty dfa_sym_diff <-> dfa_lang A1 =i dfa_lang A2.
+  Definition dfa_equiv A1 A2 := dfa_lang_empty (dfa_sym_diff A1 A2).
+
+  Lemma dfa_equiv_correct A1 A2:
+    dfa_equiv A1 A2 <-> dfa_lang A1 =i dfa_lang A2.
   Proof.
     split; rewrite /dfa_sym_diff.
       move/dfa_lang_empty_correct => H w.
