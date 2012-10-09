@@ -3,9 +3,9 @@
 
 
 We decided to employ the Small Scale Reflection Extension (\textbf{\ssreflect}%
-\footnote{http://www.msr-inria.inria.fr/Projects/math-components})
+\footnote{\url{http://www.msr-inria.inria.fr/Projects/math-components}})
 for the \textbf{\coq}%
-\footnote{http://coq.inria.fr/}
+\footnote{\url{http://coq.inria.fr/}}
 proof assistant. 
 The most important factors in this decision were \ssreflect's excellent support for finite types, list operations and graphs. \ssreflect{} also introduces an alternative scripting language that can often be used to shorten the bookkeeping overhead of proofs considerably.
 
@@ -20,7 +20,6 @@ The very heart of the Coq system is the type-checking algorithm that checks the 
 Coq also provides an interactive proof assistant to build proofs using specific programs called tactics \cite{Coq:manual}.
 
 
-\todo{Description, citation}
 
 \subsection{Non-structurally Recursive Functions}
 \coq\ allows us to define functions that do not recurse in a structural manner.
@@ -40,9 +39,10 @@ However, most of them are of quite general nature and improve the functionality 
 
 \subsection{Finite Types} %and Ordinals
 
-The most important feature of \ssreflect\ for our purpose are finite types. 
+The most important feature of \ssreflect\ for our purpose are finite types.  
 Finite types are types that have a finite number of inhabitants.
 Their implementation is based on lists.
+The type of finite types is \lstinline{finType}.
 Every element of a finite type is contained in the associated (de-duplicated) list and vice versa.
 \ssreflect's support for finite types is based on canonical structures, instances of which come predefined for basic types and type constructors. 
 This allows us to easily combine basic finite types such as \lstinline{bool} with type constructors such as \lstinline{option} and \lstinline{sum}. 
@@ -61,7 +61,14 @@ which takes as arguments an element of the list and a proof that this element is
 %The corresponding type can be written as \lstinline{I_#|F|}
 
 \subsection{Finite Sets}
-\ssreflect\ also supports finite sets, which are sets of finite types.
+\ssreflect\ also supports finite sets, which are sets on finite types.
+Finite sets themselves are finite types, which enables us to use them in the construction of finite automata.
+The type of a finite set is \lstinline!{set T}!, where \lstinline{T} is a finite type.
+The function \lstinline{set1} constructs a singleton set containing its first argument. 
+The type of the resulting finite set can be inferred from the argument. 
+The union over finite sets can be expressed by \lstinline{\bigcup_(x | P x) F}, 
+which corresponds to the mathematical notation $\bigcup_{x \in X, P x} F$, with $X$ being the (finite) type of $x$.
+
 
 \subsection{Boolean Reflection}
 \ssreflect\ offers boolean reflections for decidable propositions. 

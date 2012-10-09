@@ -1,18 +1,30 @@
 \chapter{Introduction}
 \label{chap:intro}
 
-Our goal is to give a concise formalization of the equivalence between regular expressions, finite automata and the Myhill-Nerode characterizations.
-We give procedures to convert between these characterizations and prove their correctness.
-Our development is done in the proof assistant \coq.
-We make use of the \ssreflect\ plugin which provides support for finite types and other useful infrastructure for our purpose.
-
+Our goal is to give a concise formalization of the theory of regular languages. 
+We include several different characterizations of regular languages and prove them equivalent.
+These include regular expressions, finite automata and the characterizations usually combined in the Myhill-Nerode theorem.
+All our proofs are constructive and, thus, constitute procedures to convert between these characterizations.
+Our formalization also includes decisions procedures for the equivalence of finite automata and regular expressions.
+%    In addition, we also consider an additional characterization derived from Nerode relations.
 
 Regular languages are a well-studied class of formal languages. 
 In their current form, they were first studied by Kleene \cite{KleeneNets}, who introduced regular expressions. 
 The concept of deterministic finite automata was introduced before Kleene's invention of regular expressions by Huffman \cite{Huffman1954161} and Moore \cite{Moore56}. 
 Rabin and Scott later introduced the concept of non-deterministic finite automata \cite{Rabin:1959:FAD:1661907.1661909}, for which they were given the Turing award \cite{Ashenhurst:1987:ATA:27609}.
 
-One of the challenges in the formalization was to find a suitable representation of quotient types in \coq, which has no notion of quotient types.
+Our formalization is done in the proof assistant \coq. 
+We make use of the \ssreflect\ plugin for \coq. 
+Most importantly, \ssreflect\ provides support for finite types which we need for finite automata. 
+It also comes with a lot of useful, general infrastructure for our purpose.
+The development does not use axioms.
+For every lemma and theorem proven in this thesis, we provide corresponding statements from the \coq\ development. 
+
+
+One of the most interesting parts of the formalization was to find a suitable representation of quotient types in \coq, which has no notion of quotient types.
+Our approach seems to work very well for our purpose.
+The algorithmic parts of the development proved to be challenging.
+The corresponding correctness proofs vary greatly in size and complexity depending on the implementation of the algorithm.
 
 
 \section{Related work}
@@ -21,7 +33,7 @@ There have been many publications on formalizations of the theory of regular lan
 Most of them investigate decidability of equivalence of regular expressions, often with a focus on automatically deciding Kleene algebras.
 
 
-Coquand and Siles develop a decision procedure for equivalence of regular expressions \cite{DBLP:conf/cpp/CoquandS11} on the basis of Brzozowski derivatives \cite{DBLP:journals/jacm/Brzozowski64} in \coq\ (using \ssreflect) with the goal of providing a potentially executable tactic on top of the decision procedure. 
+Coquand and Siles develop a decision procedure for equivalence of regular expressions \cite{DBLP:conf/cpp/CoquandS11} on the basis of Brzozowski derivatives \cite{DBLP:journals/jacm/Brzozowski64} in \coq\ (using \ssreflect) with the goal of providing a practically executable tactic on top of the decision procedure. 
 Their development weighs in at 7,500 lines of code, 700 of which serve as the basis of our formalization.
 
 
@@ -47,8 +59,13 @@ Their development consists of roughly 2,000 lines of code.
 
 
 \section{Contributions}
-Unlike recent publications in this area, we do not focus on executable decision procedures.
-    Instead, our formalization is very close to the mathematical definitions given in \cite{DBLP:books/daglib/0088160}.
+Our formalization is done in constructive type theory.
+Thus, all our proofs are algorithms that are executable in theory.
+However, our focus is solely on clarity and simplicity.
+As a result, the algorithms and procedures given in this thesis 
+are very close to the mathematical definitions in \cite{DBLP:books/daglib/0088160}, 
+but not executable in practice. 
+
 Our development shows that \coq\ (particularly with \ssreflect) is well suited for this kind of formalization.
 Furthermore, we have also developed a new characterization derived from the Nerode relation and proven it equivalent to all other characterizations.
 Our development weighs in at about 3,500 lines of code.

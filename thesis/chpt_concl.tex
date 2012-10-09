@@ -1,22 +1,101 @@
 \chapter{Conclusion}
-\label{chap:conclusion}
-We have shown that all characterizations presented in this thesis
-are equally expressive.
+We give a short overview of the theorems presented in this thesis and their corresponding statements in the \coq\ development.
+We then evaluate our choice of the \ssreflect\ plugin.
+Finally, we discuss opportunities for future work. 
 
+\section{Results}
+\label{chap:conclusion}
 Theorem \ref{dfa_to_nfa} and Theorem \ref{nfa_to_dfa} 
 show the equivalence of deterministic and non-deterministic finite automata.
-
 \code{}{}{automata_dfa_to_nfa_correct_head}
 \codeblock{}{}{automata_nfa_to_dfa_correct_head}
 
-We have shown that there is an equivalent DFA for every extended regular expression.
-
+We show in Theorem \ref{re_to_dfa} that there is an equivalent DFA for every extended regular expression. 
+%This is by far the most extensive proof of the entire development.
 \code{}{}{re_fa_re_to_dfa_correct_head}
 
-Building on that, we proved the decidability of equivalence of regular expressions in Theorem \ref{re_equiv_correct} with the help of decision procedure for equivalence of finite automata.
-
+Building on that, we prove the decidability of equivalence of regular expressions in Theorem \ref{re_equiv_correct} with the help of a decision procedure for equivalence of finite automata.
 \code{}{}{re_fa_re_equiv_correct_head}
 
-Theorem \ref{dfa_to_re} shows that we can give an equivalent regular expression for every automaton.
-
+Theorem \ref{dfa_to_re} shows that we can give an equivalent regular expression for every automaton. 
+Based on this and the results from previous chapters, we also show that extended and standard regular expressions are equivalent and, thus, that extended regular expressions are equivalent to regular languages.
+%The proof of this theorem is quite algorithmic. 
+%Still, it is small in size.
 \code{}{}{transitive_closure_dfa_to_re_correct_head}
+\codeblock{}{}{transitive_closure_ext_re_to_std_re_standard_head}
+\codeblock{}{}{transitive_closure_ext_re_to_std_re_correct_head}
+
+With Theorem \ref{dfa_to_myhill}, we prove that we can construct a Myhill relation on a language that is accepted by a DFA.
+\code{}{}{myhill_nerode_dfa_to_myhill_head}.
+
+We prove in Theorem \ref{myhill_to_weak_nerode} that every Myhill relations is also a weak Nerode relation.
+\code{}{}{myhill_nerode_myhill_to_weak_nerode_head}
+
+Theorem \ref{weak_nerode_to_nerode} shows that, if there is a weak Nerode relation, the Nerode relation is of finite index.
+\code{}{}{myhill_nerode_weak_nerode_to_nerode_head}
+
+Finally, we prove in Theorem \ref{nerode_to_dfa} that, if the Nerode relation on a language is of finite index, we can construct a DFA that accepts this language.
+\code{}{}{myhill_nerode_nerode_to_dfa_correct_head}
+
+\section{\ssreflect}
+We make extensive use of \ssreflect's features in our development.
+The formalization of finite automata depends crucially on finite types (and, to a lesser extend, finite sets).
+
+We also employ the \lstinline{reflect} paradigm whenever possible.
+It offers a very convenient way of working with propositional and boolean predicates at the same time.
+The built-in support for changing from propositional to boolean statements lets us choose the most appropriate representation for the task at hand.
+
+
+Furthermore, the very extensive library of general purpose lemmas in \ssreflect\ enables us to focus on high-level proofs. 
+The sole exception to this is the \lstinline{allbutlast} predicate we need for Theorem \ref{dfa_to_re}.
+However, even in this case, we can mostly rely on the lemmas for \lstinline{all} provided by \ssreflect.
+All we need to do is provide a thin layer between the two predicates.
+
+Additionally, the scripting language offered by \ssreflect\ leads to very concise proof scripts. 
+It succeeds in removing some of the bookkeeping overhead. % that is usually present in this kind of proofs.
+
+There are several disadvantages to \ssreflect. 
+One is that it not as widely used as \coq\ itself. 
+This means that the group of people who can understand the 
+proof scripts is small.
+However, in some cases, it might be sufficient to explain a small subset of
+\ssreflect\ in order to give an understandable presentation of the formalized statements. 
+
+We also lose practical executability. 
+Specifically, the implementation underlying finite types does not lend itself to computation. 
+Since executability is not always a requirement, this restriction may not be relevant to some projects, as is the case with our development.
+
+Based on this considerations, we believe that the use of \ssreflect\ is very beneficial to formalizations that do not require exectuability, especially if there is algorithmic content. 
+
+%In our formalization, we only needed a small subset of \ssreflect's library. 
+%The interested reader can find the full extent of the project online%
+%\footnote{\url{http://coqfinitgroup.gforge.inria.fr/}}.
+
+
+\section{Future Work}
+There a several possible extensions to our development.
+Additionally, there are some topics that are not so much extensions but rather candidates for future formalizations.
+
+\subsection{$\varepsilon$-Transitions}
+We have avoided $\varepsilon$-transitions in our formalization. 
+Non-deterministic finite automata with $\varepsilon$-transitions and regular expressions are equally expressive.
+They are, as we have shown, unnecessary to derive the results proven in this thesis.
+Nonetheless, it would be very interesting to add them to the list of formalized characterizations of regular languages.
+
+\subsection{Pumping Lemma}
+The Pumping Lemma \cite{BarHillelPerlesShamir61Formal} describe a sufficient condition for the non-regularity of a language. 
+It is a well-known part of the theory of regular languages and, thus, a good candidate for an extension to our development.
+
+\subsection{Regular Grammars}
+Another characterization of regular languages is given by regular grammars.
+Regular grammars seem to enjoy less popularity than other characterizations.
+A formalization of formal grammars in general would also be a good starting point to formalize other parts of the
+Chomsky Hierarchy \cite{Chomsky1956}. 
+The context-free languages could be a good candidate for a formalization.
+We speculate that pushdown automata could be formalized similarly to how we formalized finite automata.
+
+\subsection{$\omega$-regular languages}
+A possible next step after the formalization of regular languages is a formalization of $\omega$-regular languages.
+There does not seem much literature on formalizing this topic.
+Such a development could include all commonly used acceptance criteria on $\omega$-automata.
+This would also make for a good opportunity to study \coq's co-inductive definitions. 

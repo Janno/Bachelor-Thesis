@@ -1,6 +1,6 @@
 Require Import Recdef.
 Require Import ssreflect ssrbool ssrfun ssrnat eqtype seq fintype finset.
-Require Import automata misc regexp.
+Require Import automata misc regexp re_standard re_fa.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -585,5 +585,47 @@ Section TransitiveClosure.
       by rewrite dfa_L in_simpl -dfa_run_accept => /eqP ->.
     by rewrite cardsE.
   Qed.                                    
-   
+
+  Lemma nPlus_standard rs: all (standard char) rs -> standard char (nPlus rs).
+  Proof. by elim: rs => [|r rs IHrs]. Qed.
+
+  Lemma R_standard' n (X: {set A}) x y: #|X| = n ->  standard char (R^X x y).
+  Proof.
+    elim: n X x y => [|n IHn] X x y;
+      rewrite R_equation;
+      case: (pickP) => //;
+      rewrite /R0; case: (x == y) => //;
+      move => H0 H1;                                    
+      apply: nPlus_standard;
+      apply/allP => r;
+    by move/mapP => [a] _ ->. 
+  Qed.
+  
+  Lemma R_standard (X: {set A}) x y: standard char (R^X x y).
+  Proof. apply: R_standard'. by econstructor. Qed.
+  
+  Lemma dfa_to_re_standard: standard char dfa_to_re.
+  Proof.
+    apply: nPlus_standard.
+    apply/allP => r.
+    move/mapP => [x Fx] ->.
+    apply: R_standard.
+  Qed.
+  
+    
 End TransitiveClosure.
+
+Section Ext_Standard.
+  Variable char: finType.
+  Definition ext_re_to_std_re (r: regular_expression char) := dfa_to_re (re_to_dfa r).
+
+  Lemma ext_re_to_std_re_standard r: standard char (ext_re_to_std_re r).
+  Proof. by rewrite dfa_to_re_standard. Qed.
+  
+  Lemma ext_re_to_std_re_correct r: (ext_re_to_std_re r) =i r.
+  Proof.
+    move => w.
+    by rewrite /ext_re_to_std_re -dfa_to_re_correct re_to_dfa_correct.
+  Qed.
+    
+End Ext_Standard.

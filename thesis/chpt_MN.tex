@@ -287,7 +287,7 @@ Then, we show that we can get a Myhill relation on $\lang{A}$ from a Myhill rela
 
 \code{}{}{myhill_nerode_dfa_to_myhill'}
 \codeblock{}{}{myhill_nerode_myhill_lang_eq_head}
-\codeblock{}{}{myhill_nerode_dfa_to_myhill}
+\codeblock{}{}{myhill_nerode_dfa_to_myhill_head}
 
 
 This concludes the proof of step \tcircled{a}.
@@ -297,7 +297,7 @@ We show that, if there exists a Myhill relation, there also exists a weak Nerode
 In fact, we will prove that any Myhill relation \textit{is} a weak Nerode relation.
 
 \begin{theorem}
-    \label{myhill_suffix}
+    \label{myhill_to_weak_nerode}
     Let $f$ be a Myhill relation on a language $L$.
     Then $f$ is a weak Nerode relation on $L$.
 \end{theorem}
@@ -647,22 +647,25 @@ We then prove lemmas \ref{f_min_surjective}, \ref{f_minP} and Theorem \ref{f_min
 \codeblock{}{}{myhill_nerode_f_min_fin}
 
 
-We can now state the result of this section. 
+We can now state the result of this section.
 
-\begin{corollary}
+\begin{theorem}
+    \label{weak_nerode_to_nerode}
     The Nerode relation is of finite index.
-\end{corollary}
+\end{theorem}
 \begin{proof}
     This follows directly from Lemma \ref{equiv_equiv} and Lemma \ref{f_min_correct}.
 \end{proof}
 
-\code{}{}{myhill_nerode_weak_nerode_to_nerode}
+\code{}{}{myhill_nerode_weak_nerode_to_nerode_head}
 
 
 This concludes step \tcircled{c} of Theorem \ref{Myhill-Nerode} and, thus, this chapter. 
+
+\section*{Remarks}
 The characterizations presented in here are very compact, mathematically.
 Interestingly, they also lend themselves very well to formalization.
-Even with the fixed-point algorithm, this entire chapter is formalized in less than 650 lines.
+Even with the fixed-point algorithm, this entire chapter is formalized in less than 530 lines of code.
 This is a very reasonable size, considering that we introduce three different characterizations 
 and prove them all equally expressive to finite automata.
 

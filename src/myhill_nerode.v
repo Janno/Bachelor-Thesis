@@ -179,8 +179,8 @@ Section MyhillNerode.
       move => u v. rewrite -H. eauto.
     Qed.
 
-    Definition dfa_to_myhill : Myhill_Rel (dfa_lang A) :=
-      myhill_lang_eq (dfa_connected_correct A) dfa_to_myhill'.
+    Lemma dfa_to_myhill : Myhill_Rel (dfa_lang A).
+    Proof. exact: myhill_lang_eq (dfa_connected_correct A) dfa_to_myhill'. Defined.
 
   End DFA_To_Myhill.
   
@@ -200,11 +200,13 @@ Section MyhillNerode.
       exact: f.(myhill_congruent).
     Qed.
 
-    Definition myhill_to_weak_nerode: Weak_Nerode_Rel L :=
+    Lemma myhill_to_weak_nerode: Weak_Nerode_Rel L.
+    Proof. exact
       {|
         weak_nerode_func := f;
         weak_nerode_imply := myhill_suffix
       |}.
+    Defined.
     
   End Myhill_Weak_Nerode.
 
@@ -513,11 +515,13 @@ Section MyhillNerode.
     Definition f_min_fin: Fin_Eq_Cls :=
       {| fin_surjective := f_min_surjective |}.
 
-    Definition weak_nerode_to_nerode: Nerode_Rel L :=
+    Lemma weak_nerode_to_nerode: Nerode_Rel L.
+    Proof. exact
       {|
         nerode_func := f_min_fin; 
         nerode_equiv := f_min_correct
       |}.
+    Defined.
 
   End Minimalization.
 
