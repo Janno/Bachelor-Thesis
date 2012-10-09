@@ -86,7 +86,7 @@ Section RE_FA.
     move => w. by rewrite -dfa_compl_correct -topredE /= H.
   Qed.
 
-  Definition re_equiv r s:= dfa_equiv (re_to_dfa r) (re_to_dfa s).
+  Definition re_equiv r s := dfa_equiv (re_to_dfa r) (re_to_dfa s).
   
   Lemma re_equiv_correct r s: re_equiv r s <-> r =i s.
   Proof.

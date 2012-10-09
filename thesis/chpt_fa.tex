@@ -349,7 +349,7 @@ Given finite automata $A_1$ and $A_2$, we construct DFA $A$ such that the langua
     Thus, equivalence is decidable.    
 
 \code{}{}{automata_dfa_sym_diff}
-\code{}{}{automata_dfa_equiv}
+\codeblock{}{}{automata_dfa_equiv}
 \codeblock{}{}{automata_dfa_equiv_correct_head}
 
 %\section{Regular Expressions and Finite Automata}
@@ -628,6 +628,8 @@ Based on our decision procedure for the equivalence of DFAs, we only need check 
     Follows directly from \ref{re_to_dfa} and \ref{dfa_equiv_correct}.
 \end{proof}
 
+Thus, equivalence is decidable.
+
 \code{}{}{re_fa_re_equiv}
 \codeblock{}{}{re_fa_re_equiv_correct_head}
 
@@ -695,7 +697,7 @@ If $\sigma$ does not pass through $z$, it is covered by the regular expression f
 
 In order to define $R$ recursively, we need to pick an element $z \in X$ if $X \neq \emptyset$. 
 For this purpose, we assume an ordering on $Q$.
-We will then pick $z \in X$ such that $z$ is the smallest element in $X$ w.r.t to the ordering. 
+We will then pick $z \in X$ such that $z$ is the smallest element in $X$ w.r.t. to this ordering. 
 
 \begin{definition}
     \label{R}

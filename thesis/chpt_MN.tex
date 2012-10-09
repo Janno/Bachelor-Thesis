@@ -39,7 +39,7 @@ as surjective functions from $\Sigma^*$ to a finite type $X$.
     Let $u, v \in \Sigma^*$.
     $f$ is an \textbf{equivalence relation of finite index}. 
     $u$ and $v$ are equivalent w.r.t. $f$ if and only if $f(u) = f(v)$.
-    $f(u)$ is the equivalence class of $u$ w.r.t $f$.
+    $f(u)$ is the equivalence class of $u$ w.r.t. $f$.
 \end{definition}
 
 \code{}{}{myhill_nerode_Fin_Eq_Cls}
@@ -216,15 +216,15 @@ We will first show \tcircled{a}, \tcircled{b}, and \tcircled{d}.
 We will then give a proof of \tcircled{c}, which is the most challenging proof and formalization in this chapter.
 
 
-\section{Finite Automata, Myhill relations, and Nerode relations}
-First, we will show that, given a DFA $A$, we can construct a Myhill relation on $\lang{A}$.
-We will then show that this also enables us to construct a weak Nerode relation $\lang{A}$.
+%\section{Finite Automata, Myhill relations, and Nerode relations}
+%First, we will show that, given a DFA $A$, we can construct a Myhill relation on $\lang{A}$.
+%We will then show that this also enables us to construct a weak Nerode relation $\lang{A}$.
 %As we have already covered the minimization of equivalence classes in the previous chapter,
 %this proves that the Nerode relation is of finite index.
 
-Conversely, knowing that the Nerode relation on language $L$ is of finite index,  we will show that we can construct a DFA that accepts $L$.
+%Conversely, knowing that the Nerode relation on language $L$ is of finite index,  we will show that we can construct a DFA that accepts $L$.
 
-\subsection{Finite Automata to Myhill relations}
+\section{Finite Automata to Myhill relations}
 We assume we are given a DFA $A$. 
 We will be using the states of $A$ as equivalence classes.
 Our goal is to construct a Myhill relation, for which we will need an equivalence relation of finite index.
@@ -292,7 +292,7 @@ Then, we show that we can get a Myhill relation on $\lang{A}$ from a Myhill rela
 
 This concludes the proof of step \tcircled{a}.
 
-\subsection{Myhill relations to weak Nerode relations}
+\section{Myhill relations to weak Nerode relations}
 We show that, if there exists a Myhill relation, there also exists a weak Nerode relation.
 In fact, we will prove that any Myhill relation \textit{is} a weak Nerode relation.
 
@@ -316,7 +316,7 @@ In fact, we will prove that any Myhill relation \textit{is} a weak Nerode relati
 
 This concludes step \tcircled{b} of Theorem \ref{Myhill-Nerode}.
 
-\subsection{Nerode relations to Finite Automata}
+\section{Nerode relations to Finite Automata}
 We prove step \tcircled{d} of Theorem \ref{Myhill-Nerode}. 
 If the Nerode relation on a language $L$ is of finite index, we can construct a DFA that accepts $L$.
 The construction is very straight-forward and uses the equivalence classes of the Nerode relation as the set of states for the automaton.
@@ -647,7 +647,7 @@ We then prove lemmas \ref{f_min_surjective}, \ref{f_minP} and Theorem \ref{f_min
 \codeblock{}{}{myhill_nerode_f_min_fin}
 
 
-We can now state the result of this chapter. 
+We can now state the result of this section. 
 
 \begin{corollary}
     The Nerode relation is of finite index.
