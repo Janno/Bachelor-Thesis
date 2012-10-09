@@ -561,11 +561,11 @@ Section TransitiveClosure.
     move => z. by rewrite /setT !inE.
   Qed.
                  
-  Definition dfa_to_regex: regular_expression char :=
+  Definition dfa_to_re: regular_expression char :=
     nPlus (map  (R^setT (dfa_s A)) (enum (dfa_fin A))).
     
   
-  Lemma dfa_to_regex_correct: dfa_lang A =i dfa_to_regex.
+  Lemma dfa_to_re_correct: dfa_lang A =i dfa_to_re.
   Proof.
     move => w.
     apply/idP/idP.

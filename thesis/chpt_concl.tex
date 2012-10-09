@@ -1,2 +1,22 @@
 \chapter{Conclusion}
 \label{chap:conclusion}
+We have shown that all characterizations presented in this thesis
+are equally expressive.
+
+Theorem \ref{dfa_to_nfa} and Theorem \ref{nfa_to_dfa} 
+show the equivalence of deterministic and non-deterministic finite automata.
+
+\code{}{}{automata_dfa_to_nfa_correct_head}
+\codeblock{}{}{automata_nfa_to_dfa_correct_head}
+
+We have shown that there is an equivalent DFA for every extended regular expression.
+
+\code{}{}{re_fa_re_to_dfa_correct_head}
+
+Building on that, we proved the decidability of equivalence of regular expressions in Theorem \ref{re_equiv_correct} with the help of decision procedure for equivalence of finite automata.
+
+\code{}{}{re_fa_re_equiv_correct_head}
+
+Theorem \ref{dfa_to_re} shows that we can give an equivalent regular expression for every automaton.
+
+\code{}{}{transitive_closure_dfa_to_re_correct_head}

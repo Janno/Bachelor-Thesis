@@ -59,8 +59,8 @@ as surjective functions from $\Sigma^*$ to a finite type $X$.
 
 \begin{definition} 
     \label{Myhill}
-    Let $\equiv$ be an equivalence relation of finite index. $\equiv$ is a \textbf{Myhill}%
-    \textbf{relation} \cite{DBLP:books/daglib/0088160} on $L$ if and only if
+    Let $\equiv$ be an equivalence relation of finite index. 
+    $\equiv$ is a \textbf{Myhill relation} \cite{DBLP:books/daglib/0088160} on $L$ if and only if
 
 \begin{enumerate}[label=(\roman*)]
 
@@ -374,7 +374,7 @@ This concludes step \tcircled{d} of Theorem \ref{Myhill-Nerode}.
 
 \section{Minimizing Equivalence Classes}
 Finally, we prove that if there is a weak Nerode relation on a language $L$, the Nerode relation is of finite index.
-This proves step \tcircled{c} of the Theorem \ref{Myhill-Nerode} and thus complets its proof.
+%This proves step \tcircled{c} of the Theorem \ref{Myhill-Nerode} and thus completes its proof.
 For this purpose, we employ a table-filling algorithm \cite{Huffman1954161} to find indistinguishable states under the Myhill-Nerode relation. 
 %However, we do not rely on an automaton, as is usually done. 
 This algorithm was originally intended to be used on automata. 
@@ -386,7 +386,7 @@ For the remainder of this section, we assume we are given a language $L$ and a w
 
 
 We employ a fixed-point construction to find equivalence classes that are $\doteq_L$-equivalent.
-In each step, we add those equivalences classes that are distinguishable based on equivalence classes that were distinguishable in the previous step.
+In each step, we add those equivalence classes that are distinguishable based on equivalence classes that were distinguishable in the previous step.
 The initial set of distinguishable equivalence classes are distinguishable by the inclusion of their canonical representative in $L$. 
 We denote this initial set $\mathit{dist_0}$.
 \begin{equation*}
@@ -531,7 +531,7 @@ since the two directions require different strategies.
 \begin{lemma}
     \label{distinct_final}
     Let $u,v \in \Sigma^*$. 
-    If ${f_0}(u) \not\cong {f_0}(v)$, then $u$ and $v$ are \textbf{not} equivalent wr.t. the Merode relation, i.e. ${f_0}(u) \not\cong {f_0}(v) \implies u \not\doteq_L v$.
+    If ${f_0}(u) \not\cong {f_0}(v)$, then $u$ and $v$ are \textbf{not} equivalent wr.t. the Nerode relation, i.e. ${f_0}(u) \not\cong {f_0}(v) \implies u \not\doteq_L v$.
 \end{lemma}
 \begin{proof}
     We do a fixed-point induction.
@@ -660,7 +660,10 @@ We can now state the result of this section.
 
 
 This concludes step \tcircled{c} of Theorem \ref{Myhill-Nerode} and, thus, this chapter. 
-The characterizations presented in this chapter are very compact, mathematically.
-They also lend themselves very well to formalization.
+The characterizations presented in here are very compact, mathematically.
+Interestingly, they also lend themselves very well to formalization.
+Even with the fixed-point algorithm, this entire chapter is formalized in less than 650 lines.
+This is a very reasonable size, considering that we introduce three different characterizations 
+and prove them all equally expressive to finite automata.
 
 

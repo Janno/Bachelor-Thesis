@@ -75,15 +75,29 @@ We also prove that both criteria are equivalent.
     We say that two automata are \textbf{equivalent} if and only if their languages are equal.
 \end{definition}
 
-\subsection{Equivalence between DFA and NFA}
+\section{Equivalence between DFA and NFA}
  
 Deterministic and non-deterministic finite automata are equally expressive. 
 One direction is trivial since every DFA can be seen as an NFA. 
-We prove the other direction using the powerset construction. 
 %The new set of states is the powerset of the given NFA's set of states. 
 %The new starting state is the singleton set containing the original starting state. 
 %A state is final if and only if it contains an original final state. 
 %The transition function on powerset states is defined as follows:
+
+\begin{theorem}
+    \label{dfa_to_nfa}
+    Let $A=(Q,s,F,\delta)$ be a DFA. Then $A$ is also an NFA.
+\end{theorem}
+\begin{proof}
+    $(Q,s,F,\delta)$ fulfills the definition of an NFA. Thus, A \textit{is} an NFA.
+\end{proof}
+
+Formally, we have to construct an equivalent NFA, since DFAs and NFAs are different types.
+The construction is straight-forward.
+\code{}{}{automata_dfa_to_nfa}
+\codeblock{}{}{automata_dfa_to_nfa_correct_head}
+
+We prove the other direction using the powerset construction. 
 
 \begin{definition}
 Given NFA $A$, we construct an equivalent DFA $A_{det}$ in the following way:
@@ -150,6 +164,7 @@ The set of states is an implicit argument of the DFA constructor and thus not sh
 \end{proof}
 
 \begin{theorem}
+    \label{nfa_to_dfa}
     The powerset automaton $A_{det}$ accepts the same language as $A$, i.e.
     \begin{equation*}        
         \lang{A} = \lang{A_{det}}.        
@@ -201,7 +216,7 @@ Therefore, we define a procedure to extract the connected component containing t
 We make use of \ssreflect's $connect$ predicate to extract a sequence of all states reachable from $s$. 
 From this, we construct a finite type and use that as the new set of states. 
 These new states carry a proof of reachability. %(\lstinline{ssvalP}).
-We also have to give a transition function that ensures transitions always end in reachable states.
+We also have to give a transition function which ensures that transitions always end in reachable states.
 
 \code{automata_reachable1}{}{automata_reachable1}
 \codeblock{automata_reachable}{}{automata_reachable}
@@ -226,7 +241,7 @@ We also have to give a transition function that ensures transitions always end i
             With $x \in reachable$ we get $x \in F_c$. 
             Thus, $\varepsilon \in \acc{x}{A_c}$.
         \item
-            For $w = a w'$ we have have $y \in Q$ such that $(x, a, y) \in \delta$ and $w' \in \acc{y}{A}$.
+            For $w = a w'$ we have $y \in Q$ such that $(x, a, y) \in \delta$ and $w' \in \acc{y}{A}$.
             From $x \in \mathrm{reachable}$ we get $y \in \mathrm{reachable}$ by transitivity.
             Therefore, $(x,a,y) \in \delta_c$.
             The inductive hypothesis gives us $w' \in \acc{y}{A_c}$. 
@@ -270,7 +285,7 @@ We will need this property of $A_c$ in Chapter \ref{chap:MN}.
 
 \begin{proof}
     $x$ carries a proof of reachability.
-    From this, we get a path through the graph of $\mathrm{reachable1}$ that ends ind $x$.
+    From this, we get a path through the graph of $\mathrm{reachable1}$ that ends in $x$.
     We build the representative by extracting the edges of the path and building a word from those.
 \end{proof}
 
@@ -408,7 +423,7 @@ We also give a short overview of the automaton corresponding to \lstinline{Star}
 
 \subsection{Not}
 \begin{definition}
-    Given DFA $A=(Q,s,F,\delta)$, the complement automaton $A_\neg$ is constructed by switching accepting and non-accepting states, i.e.
+    Given DFA $A=(Q,s,F,\delta)$, the complement automaton $A_\neg$ is constructed by swapping accepting and non-accepting states, i.e.
     \begin{equation*}
        A_\neg := (Q,s,Q\backslash F,\delta). 
     \end{equation*}
@@ -441,7 +456,7 @@ the final states of the first automaton to the starting state of the second auto
 by an $\varepsilon$-translation. 
 We do not allow $\varepsilon$-transitions in our automata. 
 The reason for this is that we do not want to lose the direct correspondence 
-of the length of word to the length of its run on an automaton.
+of the length of the word to the length of its run on an automaton.
 Thus, in order to build the concatenation automaton, we duplicate all edges from
 the starting state of the second automaton and add them to all final states 
 of the first automaton.
@@ -499,7 +514,7 @@ Before we prove the correctness of $A_{Conc}$, we need a number of auxiliary lem
 \code{}{}{automata_nfa_conc_cont_head}
 
 The next lemma shows that, in $A_{Conc}$, the final states of $A_1$ have all transitions that the starting state of $A_2$ also has.
-Consequently, the accept the same words.
+Consequently, they accept the same words.
 
 \begin{lemma}
     \label{nfa_conc_fin1}
@@ -615,15 +630,17 @@ whereas \lstinline{nfa_conc} expects \textit{and} returns NFAs.
 \section{Deciding Equivalence of Regular Expressions}
 
  
-Based on our procedure to construct an equivalent automaton from a regular expression, we can decide equivalence of regular expressions. Given $r_1$ and $r_2$, we construct equivalent DFA $A_1$ and $A_2$ as above.
+Based on our procedure to construct an equivalent automaton from a regular expression, we can decide equivalence of regular expressions. Given $r_1$ and $r_2$, we construct equivalent DFAs $A_1$ and $A_2$ as above.
 Based on our decision procedure for the equivalence of DFAs, we only need check if $A_1$ and $A_2$ are equivalent.
 
-\begin{corollary} Let $r, s$ be regular expressions on $\Sigma$ and $A_1, A_2$ their corresponding, equivalent automata. 
+\begin{theorem} 
+    \label{re_equiv_correct}
+    Let $r, s$ be regular expressions on $\Sigma$ and $A_1, A_2$ their corresponding, equivalent automata. 
     We then have that
     \begin{equation*}
         \lang{r} = \lang{s} \iff \lang{A_1} = \lang{A_2}.
     \end{equation*}
-\end{corollary}
+\end{theorem}
 \begin{proof}
     Follows directly from \ref{re_to_dfa} and \ref{dfa_equiv_correct}.
 \end{proof}
@@ -652,17 +669,17 @@ The system is solved by substitution and Arden's lemma \cite{DBLP:conf/focs/Arde
 The regular expressions associated with the starting state recognizes the language of the automaton.
 
 
-The third method, which we chose for our development, is due to Kleene \cite{KleeneNets}.
+The third method, which we choose for our development, is due to Kleene \cite{KleeneNets}.
 It is known as the ``\textbf{transitive closure method}''.
 This method recursively constructs a regular expression that is equivalent to the given automaton.
-For the remainder of the chapter, we assume that we are given a DFA $A=(Q,s,F,\delta)$.
+For the remainder of this chapter, we assume that we are given a DFA $A=(Q,s,F,\delta)$.
 
 
 The idea of the transitive closure method is that we can give a regular expression to describe the path between any two states $x$ and $y$.
-This regular expression accepts every word whose run $\sigma$ on $A$ starts in $x$ ends in $y$.
+This regular expression accepts every word whose run $\sigma$ on $A$ starting in $x$ ends in $y$.
 In fact, we can even give such a regular expression if we limit the set of paths through which the run is allowed to pass. 
 We will call this set $X$.
-Passing through, here, means that the restriction applies only to states that are traversed, 
+Here, passing through means that the restriction applies only to states that are traversed, 
 i.e. not to the beginning or end of the run.
 
 
@@ -684,7 +701,7 @@ If it does, we can split it into three parts.
     \item  \label{R_xz}
         The first part contains the prefix of $\sigma$ which contains all states up to the first occurrence of $z$ that is not the starting state.
     \item  \label{R_zz}
-        The second part contains that part of the remainder of $\sigma$ which contains all further occurrences of $z$, though not the last state if that is $z$.
+        The second part contains that part of the remainder of $\sigma$ which contains all further occurrences of $z$ with the exception of the last state if that is $z$.
     \item  \label{R_zy}
         The third part contains the remainder.
 \end{enumerate}
@@ -713,7 +730,7 @@ We will then pick $z \in X$ such that $z$ is the smallest element in $X$ w.r.t. 
                             (x,a,y) \in \delta
                         }
                     } a 
-                    & \mbox{if } X = \emptyset \wedge x != y; \\
+                    & \mbox{if } X = \emptyset \wedge x \neq y; \\
                     \vphantom{ \sum\limits_{ \substack{ a \in \Sigma\\ (x,a,y) \in \delta \\ b \in \Sigma } } }
                     \sum\limits_{
                         \substack{
@@ -735,8 +752,6 @@ We give some auxiliary definitions to keep the definition of $R$ as compact and 
 \lstinline{dfa_step_any} is the list of transitions from $x$ to $y$.
 \lstinline{R0} covers the case of $X=\emptyset$.
 
-\todo{explain measure}
-
 \code{}{}{transitive_closure_nPlus}
 \codeblock{}{}{transitive_closure_dfa_step_any}
 \codeblock{}{}{transitive_closure_R0}
@@ -749,7 +764,7 @@ we only have to combine the corresponding regular expressions $R^Q_{s,f}$ to for
 The goal of this chapter is to prove the following theorem. 
 
 \begin{theorem}
-    \label{dfa_to_regex} $\lang{A}$ is recognizable by a regular expression, i.e.
+    \label{dfa_to_re} $\lang{A}$ is recognizable by a regular expression, i.e.
     \begin{equation*}
         \lang{\sum\limits_{f \in F} R^Q_{s,f}} = \lang{A}.
     \end{equation*}
@@ -761,7 +776,7 @@ whose runs on $A$ starting in $x$ only pass through states in $X$ and end in $y$
 %This is a direct implementation of the idea behind $R^X_{x,y}$.
 %Then, we show that $L^{X \cup \{z\}}$ can be expressed in terms of $L^X$.
 %We prove that we can express $\lang{A}$ by $\bigcup_{f\in F} L^Q_{s,f}$.
-%Finally, we show that $R^X_{x,y} = L^X_{x,y}$, thus proving Theorem \ref{dfa_to_regex}.
+%Finally, we show that $R^X_{x,y} = L^X_{x,y}$, thus proving Theorem \ref{dfa_to_re}.
 
 \begin{definition}
     Let $w \in \Sigma^*$.
@@ -781,10 +796,10 @@ In our formaliziation, this is not the case.
 Thus, we do not need to remove the first state from a run to retrieve all states the run passes through.
 
 %\code{}{}{transitive_closure_belast}
-\codeblock{}{}{transitive_closure_allbutlast}
+\code{}{}{transitive_closure_allbutlast}
 \codeblock{}{}{transitive_closure_L}
 
-We now prove properties of $L$ that we will need for our proof of Theorem \ref{dfa_to_regex}.
+We now prove properties of $L$ that we will need for our proof of Theorem \ref{dfa_to_re}.
 
 \begin{lemma}
     \label{L_monotone}
@@ -953,7 +968,7 @@ With all the lemmas we have in place now, this can now be shown with relative ea
 \end{proof}
 \code{}{}{transitive_closure_L_rec_head}
 
-All that remains to complete the proof of Lemma \ref{dfa_to_regex} is a proof of $L^X_{x,y} = \lang{R^X_{x,y}}$.
+All that remains to complete the proof of Lemma \ref{dfa_to_re} is a proof of $L^X_{x,y} = \lang{R^X_{x,y}}$.
 
 \begin{lemma}
     \label{L_R}
@@ -982,16 +997,21 @@ All that remains to complete the proof of Lemma \ref{dfa_to_regex} is a proof of
 
 \code{}{}{transitive_closure_L_R_head}
 
-This concludes the proof of Theorem \ref{dfa_to_regex}.
+This concludes the proof of Theorem \ref{dfa_to_re}.
 
-\code{}{}{transitive_closure_dfa_to_regex}
-\codeblock{}{}{transitive_closure_dfa_to_regex_correct_head}
+\code{}{}{transitive_closure_dfa_to_re}
+\codeblock{}{}{transitive_closure_dfa_to_re_correct_head}
 
 
-This proof was by far the most technical proof presented in this thesis. 
+This proof was by far the most technically involved proof presented in this thesis. 
 The mathematical content is rather straight-forward and intuitive.
 However, especially due to the need for the \lstinline{allbutlast} predicate,
 the implementation contains a lot of quite general infrastructure.
 In fact, a little more than one third of the implementation (200 out of 600 lines) is taken up by \lstinline{allbutlast}.
 
+All in all, our formalization of the results presented here add up to 1,700 lines of code.
+About one half of that is due to the construction of finite automata. 
+Although most of these constructions are straight-forward, proving them correct requires a lot of attention to detail.
+Additionally, we opted to give a corresponding automaton for every \textit{extended} regular expression, which, 
+of course, adds to the expected size of the development.
 

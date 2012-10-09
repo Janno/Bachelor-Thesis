@@ -63,59 +63,17 @@ Proof. by rewrite -simpl_predE /=. Qed.
    automaton, i.e. acceptance in the starting state. **)
 Definition dfa_lang := [pred w | dfa_accept (dfa_s A) w].
 
-(** A lemma that helps us avoid cumbersome unfolding of accept **)
-Lemma dfa_acceptS x a w : dfa_accept x (a::w) = dfa_accept (dfa_step A x a) w.
-Proof. elim: w x a => [|b w IHw] x a //=. Qed.
-(** Same for run' **)
-Lemma dfa_run'S x a w : dfa_run' x (a::w) = (dfa_step A x a) :: dfa_run' (dfa_step A x a) w.
-Proof. by []. Qed.
-  
-(** The size of a run is the size of the input word. **)
-Lemma dfa_run_size x w : size (dfa_run' x w) = size w.
-Proof. elim: w x => [|a w IHw] x //=.
-  by rewrite IHw.
-Qed.
-
 (** take lemma. **)
 Lemma dfa_run'_take x w n: take n (dfa_run' x w) = dfa_run' x (take n w).
 Proof. elim: w x n => [|a w IHw] x n //.
-rewrite dfa_run'S 2!take_cons. case: n => [|n] //.
-by rewrite IHw dfa_run'S.
+case: n => [|n] //=. by rewrite IHw.
 Qed.
-
-Lemma dfa_run'_drop x w n: drop n (dfa_run' x w) = dfa_run' (last x (dfa_run' x (take n w))) (drop n w).
-Proof. elim: w x n => [|a w IHw] x n //.
-rewrite dfa_run'S 2!drop_cons. case: n => [|n] //.
-by rewrite IHw /=.
-Qed.
-
-Lemma dfa_run'_drop' x w n: last x (dfa_run' x (take n w)) = x -> dfa_run' x (drop n w) = drop n (dfa_run' x w).
-Proof. move => {1}<-. by rewrite dfa_run'_drop. Qed.
 
 (** rcons and cat lemmas. **)
 Lemma dfa_run'_cat x w1 w2 :
   dfa_run' x (w1 ++ w2) = dfa_run' x w1 ++ dfa_run' (last x (dfa_run' x w1)) w2.
 Proof. elim: w1 w2 x => [|a w1 IHw1] w2 x //.
 simpl. by rewrite IHw1.
-Qed.
-
-Lemma dfa_run'_cat' x x1 x2 w:
-  dfa_run' x w = x1 ++ x2 -> exists w1, exists w2, w = w1 ++ w2 /\ dfa_run' x w1 = x1 /\ dfa_run' (last x x1) w2 = x2.
-Proof.
-  elim: x1 x x2 w => [|y x1 IHx1] x x2 w.
-    exists ([::]). by exists w.
-  case: w => [|a w] => //.
-  move => [] H0.
-  move/IHx1 => [] w1 [] w2 [] H1 [] H2 H3.
-  exists (a::w1). exists (w2).   
-  rewrite H1 -H0 H3 -H2 /=.
-  by auto.
-Qed.
-  
-Lemma dfa_run'_rcons x w a :
-  dfa_run' x (rcons w a) = rcons (dfa_run' x w) (dfa_step A (last x (dfa_run' x w)) a).
-Proof. move: w a x. apply: last_ind => [|w b IHw] a x //.
-rewrite -3!cats1. rewrite 2!dfa_run'_cat. by [].
 Qed.
 
 
@@ -126,8 +84,6 @@ Proof. elim: w x => [|a w IHw] x //. by rewrite /= IHw. Qed.
 End Acceptance.
 
 End DFA.
-
-Print dfa.
 
 Implicit Arguments Build_dfa [dfa_state]. 
 
@@ -282,7 +238,7 @@ Definition dfa_to_nfa : nfa :=
   {|
     nfa_s := dfa_s A;
     nfa_fin := dfa_fin A;
-    nfa_step := [fun x a => fun y => y == dfa_step A x a ]
+    nfa_step := fun x a y => y == dfa_step A x a 
   |}.
 
 (** We prove that dfa_to_nfa accepts the same language as
