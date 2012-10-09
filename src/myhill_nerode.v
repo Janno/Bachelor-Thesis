@@ -468,7 +468,7 @@ Section MyhillNerode.
     Lemma equiv_repr_mem x: equiv_repr x \in X_min.
     Proof. apply/mapP. exists x => //. by rewrite mem_enum. Qed.
 
-    Definition f_min w := SeqSub _ (equiv_repr_mem (f_0 w)).
+    Definition f_min w := SeqSub (equiv_repr_mem (f_0 w)).
       
     Lemma f_minP u v:
       reflect (f_min u = f_min v)
