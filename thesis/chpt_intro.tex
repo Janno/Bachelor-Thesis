@@ -15,16 +15,17 @@ Rabin and Scott later introduced the concept of non-deterministic finite automat
 
 Our formalization is done in the proof assistant \coq. 
 We make use of the \ssreflect\ plugin for \coq. 
-Most importantly, \ssreflect\ provides support for finite types which we need for finite automata. 
+The most important aspect of \ssreflect\ is the support for finite types which we need for finite automata. 
 It also comes with a lot of useful, general infrastructure for our purpose.
-The development does not use axioms.
-For every lemma and theorem proven in this thesis, we provide corresponding statements from the \coq\ development. 
 
-
+We take classical proofs from \cite{DBLP:books/daglib/0088160} and translate them to our constructive setting. 
 One of the most interesting parts of the formalization was to find a suitable representation of quotient types in \coq, which has no notion of quotient types.
 Our approach seems to work very well for our purpose.
-The algorithmic parts of the development proved to be challenging.
-The corresponding correctness proofs vary greatly in size and complexity depending on the implementation of the algorithm.
+For every lemma and theorem proven in this thesis, we provide corresponding statements from the \coq\ development. 
+Our development does not depend on axioms.
+
+%The algorithmic parts of the development proved to be challenging.
+%The corresponding correctness proofs vary greatly in size and complexity depending on the implementation of the algorithm.
 
 
 \section{Related work}

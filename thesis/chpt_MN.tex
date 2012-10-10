@@ -60,7 +60,7 @@ as surjective functions from $\Sigma^*$ to a finite type $X$.
 \begin{definition} 
     \label{Myhill}
     Let $\equiv$ be an equivalence relation of finite index. 
-    $\equiv$ is a \textbf{Myhill relation} \cite{DBLP:books/daglib/0088160} on $L$ if and only if
+    $\equiv$ is a \textbf{Myhill relation} \cite{DBLP:books/daglib/0088160} for $L$ if and only if
 
 \begin{enumerate}[label=(\roman*)]
 
@@ -112,7 +112,7 @@ We will later give a formal proof of this.
 
 \begin{definition}
     \label{suffix_equal}
-    Let $u, v \in \Sigma^*$. Let $L$ be a language. We define the \textbf{Nerode relation} $\doteq_L$ on $L$ such that 
+    Let $u, v \in \Sigma^*$. Let $L$ be a language. We define the \textbf{Nerode relation} $\doteq_L$ for $L$ such that 
     %We say that $u$ and $v$ are \textbf{invariant under concatenation} w.r.t. L if and only if
     \begin{equation*}
         u \doteq_L v \iff \forall w \in \Sigma^*. \; uw \in L \Leftrightarrow vw \in L. 
@@ -131,7 +131,7 @@ such that $f$ is equivalent to $\doteq_L$.
 
 \begin{definition}
     \label{Weak_Nerode_Rel}
-    Let $L$ be a language and let $\equiv$ be an equivalence relation. We say that $\equiv$ is a \textbf{weak Nerode relation} on $L$ if and only if
+    Let $L$ be a language and let $\equiv$ be an equivalence relation. We say that $\equiv$ is a \textbf{weak Nerode relation} for $L$ if and only if
     \begin{equation*}
         \forall u, v \in \Sigma^*. \; u \equiv v \implies u \doteq_L v.
     \end{equation*}
@@ -156,9 +156,9 @@ We can now move on to the statement of the Myhill-Nerode theorem \cite{DBLP:book
     Let $L$ be a language. The following four statements are equivalent:
     \begin{enumerate}
         \item there exists a deterministic finite automaton that accepts $L$;
-        \item there exists a Myhill relation on $L$;
-        \item there exists a weak Nerode relation on $L$;
-        \item the Nerode relation on $L$ is of finite index.
+        \item there exists a Myhill relation for $L$;
+        \item there exists a weak Nerode relation for $L$;
+        \item the Nerode relation for $L$ is of finite index.
     \end{enumerate}
 \end{theorem}
 
@@ -216,13 +216,6 @@ We will first show \tcircled{a}, \tcircled{b}, and \tcircled{d}.
 We will then give a proof of \tcircled{c}, which is the most challenging proof and formalization in this chapter.
 
 
-%\section{Finite Automata, Myhill relations, and Nerode relations}
-%First, we will show that, given a DFA $A$, we can construct a Myhill relation on $\lang{A}$.
-%We will then show that this also enables us to construct a weak Nerode relation $\lang{A}$.
-%As we have already covered the minimization of equivalence classes in the previous chapter,
-%this proves that the Nerode relation is of finite index.
-
-%Conversely, knowing that the Nerode relation on language $L$ is of finite index,  we will show that we can construct a DFA that accepts $L$.
 
 \section{Finite Automata to Myhill relations}
 We assume we are given a DFA $A$. 
@@ -272,18 +265,18 @@ In order to show that $f_M$ is a Myhill relation, we prove that it fulfills Defi
 
 \begin{theorem}
     \label{dfa_to_myhill}
-    $f_M$ is a Myhill relation on $\lang{A}$.
+    $f_M$ is a Myhill relation for $\lang{A}$.
 \end{theorem}
 \begin{proof}
     By Lemma \ref{dfa_connected_correct}, we have $\lang{A_c} = \lang{A}$.
-    Thus, it suffices to show that $f_M$ is a Myhill relation on $\lang{A_c}$.
+    Thus, it suffices to show that $f_M$ is a Myhill relation for $\lang{A_c}$.
     This follows with Lemma \ref{f_M_right_congruent} and Lemma \ref{f_M_refines}.
 \end{proof}
 
 
 We only have extensional equality on $\lang{A_c}$ and $\lang{A}$ in \coq.
-Thus, we first show that $f_M$ is a Myhill relation on $\lang{A_c}$.
-Then, we show that we can get a Myhill relation on $\lang{A}$ from a Myhill relation on $\lang{A_c}$.
+Thus, we first show that $f_M$ is a Myhill relation for $\lang{A_c}$.
+Then, we show that we can get a Myhill relation for $\lang{A}$ from a Myhill relation for $\lang{A_c}$.
 
 \code{}{}{myhill_nerode_dfa_to_myhill'}
 \codeblock{}{}{myhill_nerode_myhill_lang_eq_head}
@@ -298,8 +291,8 @@ In fact, we will prove that any Myhill relation \textit{is} a weak Nerode relati
 
 \begin{theorem}
     \label{myhill_to_weak_nerode}
-    Let $f$ be a Myhill relation on a language $L$.
-    Then $f$ is a weak Nerode relation on $L$.
+    Let $f$ be a Myhill relation for a language $L$.
+    Then $f$ is a weak Nerode relation for $L$.
 \end{theorem}
 \begin{proof}
     Let $u, v \in \Sigma^*$ such that $u =_f v$. We have to show that for all $w \in \Sigma^*$, $u w \in L \Leftrightarrow v w \in L$.
@@ -318,12 +311,12 @@ This concludes step \tcircled{b} of Theorem \ref{Myhill-Nerode}.
 
 \section{Nerode relations to Finite Automata}
 We prove step \tcircled{d} of Theorem \ref{Myhill-Nerode}. 
-If the Nerode relation on a language $L$ is of finite index, we can construct a DFA that accepts $L$.
+If the Nerode relation for a language $L$ is of finite index, we can construct a DFA that accepts $L$.
 The construction is very straight-forward and uses the equivalence classes of the Nerode relation as the set of states for the automaton.
 
 \begin{definition}
     \label{nerode_to_dfa} 
-    Let $L$ be a language. Let $X$ be a finite type. Let $f: \Sigma^* \mapsto X$ be the equivalence relation which proves that the Nerode relation on $L$ is of finite index.
+    Let $L$ be a language. Let $X$ be a finite type. Let $f: \Sigma^* \mapsto X$ be the equivalence relation which proves that the Nerode relation for $L$ is of finite index.
     We construct DFA $A$ such that
 \begin{eqnarray*}
     s & := & f(\varepsilon) \\
@@ -373,7 +366,7 @@ The resulting automaton is minimal, i.e. there exists no other automaton that ac
 This concludes step \tcircled{d} of Theorem \ref{Myhill-Nerode}.
 
 \section{Minimizing Equivalence Classes}
-Finally, we prove that if there is a weak Nerode relation on a language $L$, the Nerode relation is of finite index.
+Finally, we prove that if there is a weak Nerode relation for a language $L$, the Nerode relation is of finite index.
 %This proves step \tcircled{c} of the Theorem \ref{Myhill-Nerode} and thus completes its proof.
 For this purpose, we employ a table-filling algorithm \cite{Huffman1954161} to find indistinguishable states under the Myhill-Nerode relation. 
 %However, we do not rely on an automaton, as is usually done. 

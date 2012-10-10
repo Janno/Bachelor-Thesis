@@ -29,6 +29,27 @@
         \endminipage
 }
 
+\newcommand{\fcoderaw}[3]{
+        \lstinputlisting[label=#1,caption=#2,language=coq]{../docs/frozen/#3}
+    }
+\newcommand{\fcode}[3]{
+
+       \noindent
+          \minipage{\linewidth} 
+             %\vspace{0.5\baselineskip}
+        \fcoderaw{#1}{#2}{#3}
+        \endminipage
+}
+
+\newcommand{\fcodeblock}[3]{
+       \noindent
+          \minipage{\linewidth} 
+    \vspace{-0.8em}
+        \fcoderaw{#1}{#2}{#3}
+             %\vspace{0.5\baselineskip}
+        \endminipage
+}
+
 \mathchardef\mhyphen="2D
 \relpenalty=9999
 \binoppenalty=9999

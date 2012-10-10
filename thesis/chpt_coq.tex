@@ -2,31 +2,33 @@
 \label{chap:coq}
 
 
-We decided to employ the Small Scale Reflection Extension (\textbf{\ssreflect}%
+We decided to employ the Small Scale Reflection Extension \cite{gonthier:inria-00258384} (\textbf{\ssreflect}%
 \footnote{\url{http://www.msr-inria.inria.fr/Projects/math-components}})
 for the \textbf{\coq}%
 \footnote{\url{http://coq.inria.fr/}}
-proof assistant. 
+proof assistant \cite{Coq:manual}. 
 The most important factors in this decision were \ssreflect's excellent support for finite types, list operations and graphs. \ssreflect{} also introduces an alternative scripting language that can often be used to shorten the bookkeeping overhead of proofs considerably.
 
 \section{\coq}
 
-The Coq system is designed to develop mathematical proofs, and especially to write formal specifications, programs and to verify that programs are correct with respect to their specification. 
+The \coq\ manual \cite{Coq:manual} states the following about \coq:
+The \coq\ system is designed to develop mathematical proofs, and especially to write formal specifications, programs and to verify that programs are correct with respect to their specification. 
 It provides a specification language named Gallina. 
 Terms of Gallina can represent programs as well as properties of these programs and proofs of these properties. 
-Using the so-called Curry-Howard isomorphism, programs, properties and proofs are formalized in the same language called Calculus of Inductive Constructions, that is a $\lambda$-calculus with a rich type system. 
-All logical judgments in Coq are typing judgments. 
-The very heart of the Coq system is the type-checking algorithm that checks the correctness of proofs, i.e that a program complies to its specification. 
-Coq also provides an interactive proof assistant to build proofs using specific programs called tactics \cite{Coq:manual}.
+Using the so-called Curry-Howard isomorphism, programs, properties and proofs are formalized in the same language, which is a $\lambda$-calculus with a rich type system 
+called Calculus of Inductive Constructions. 
+All logical judgments in \coq\ are typing judgments. 
+The very heart of the \coq\ system is the type-checking algorithm that checks the correctness of proofs, i.e that a program complies to its specification. 
+\coq\ also provides an interactive proof assistant to build proofs using specific programs called tactics.
 
 
 
-\subsection{Non-structurally Recursive Functions}
-\coq\ allows us to define functions that do not recurse in a structural manner.
-We make use of \coq's \lstinline{Function} syntax to define functions whose termination is proven by 
-showing that a specified measure decreases in every recursive call.
-In our case, we will use the size of a finite set as the decreasing measure.
-When defining such a recursive functions, we have to prove that every recursive call reduces the size of the finite set.
+%\subsection{Non-structurally Recursive Functions}
+%\coq\ allows us to define functions that do not recurse in a structural manner.
+%We make use of \coq's \lstinline{Function} syntax to define functions whose termination is proven by 
+%showing that a specified measure decreases in every recursive call.
+%In our case, we will use the size of a finite set as the decreasing measure.
+%When defining such a recursive functions, we have to prove that every recursive call reduces the size of the finite set.
 
 
 \section{\ssreflect}
@@ -36,43 +38,15 @@ When defining such a recursive functions, we have to prove that every recursive 
 They were originally developed to support small-scale reflection. 
 However, most of them are of quite general nature and improve the functionality of \coq\ in most basic areas such as script layout and structuring, proof context management and rewriting \cite{gonthier:inria-00258384}.
 
-
-\subsection{Finite Types} %and Ordinals
-
-The most important feature of \ssreflect\ for our purpose are finite types.  
-Finite types are types that have a finite number of inhabitants.
-Their implementation is based on lists.
-The type of finite types is \lstinline{finType}.
-Every element of a finite type is contained in the associated (de-duplicated) list and vice versa.
-\ssreflect's support for finite types is based on canonical structures, instances of which come predefined for basic types and type constructors. 
-This allows us to easily combine basic finite types such as \lstinline{bool} with type constructors such as \lstinline{option} and \lstinline{sum}. 
-
-\ssreflect\ provides boolean versions of the universal and existential quantifiers on finite types, \lstinline{forallb} and \lstinline{existsb}.
-We can compute the number of elements in a finite type F with \lstinline{#|F|}.
-\lstinline{enum} gives a list of all items of a finite type. 
-
-We can also create finite types from lists.
-Instances of these can be specified with the \lstinline{SeqSub} constructor, 
-which takes as arguments an element of the list and a proof that this element is contained in the list.
-
-%Finite types also come with enumeration functions which provide a consistent ordering. 
-%The corresponding functions are \lstinline{enum_rank} and \lstinline{enum_val}. 
-%The input of \lstinline{enum_val} and the result of \lstinline{enum_rank} are ordinals, i.e. values in \lstinline{[0, \#|F|-1]}. 
-%The corresponding type can be written as \lstinline{I_#|F|}
-
-\subsection{Finite Sets}
-\ssreflect\ also supports finite sets, which are sets on finite types.
-Finite sets themselves are finite types, which enables us to use them in the construction of finite automata.
-The type of a finite set is \lstinline!{set T}!, where \lstinline{T} is a finite type.
-The function \lstinline{set1} constructs a singleton set containing its first argument. 
-The type of the resulting finite set can be inferred from the argument. 
-The union over finite sets can be expressed by \lstinline{\bigcup_(x | P x) F}, 
-which corresponds to the mathematical notation $\bigcup_{x \in X, P x} F$, with $X$ being the (finite) type of $x$.
-
+\ssreflect\ comes with an extensive library covering many mathematical concepts. 
+In fact, we barely scratch the surface of the library in this development. 
+The interested reader may convince herself/himself of the sheer size of the library at \url{http://coqfinitgroup.gforge.inria.fr/}.
 
 \subsection{Boolean Reflection}
 \ssreflect\ offers boolean reflections for decidable propositions. 
-This allows us to switch back and forth between equivalent boolean and propositional predicates.
+A term of type \lstinline{reflect P b} is a proof of the equivalence of the boolean statement \lstinline{b} and the proposition \lstinline{P}.
+\ssreflect\ has built-in support to change from boolean to propositional statements if they are equivalent. 
+
 
 \subsection{Boolean Predicates}
 \ssreflect\ has special type for boolean predicates, \lstinline{pred T := T -> bool}, where \lstinline{T} is a type.
@@ -93,13 +67,40 @@ which can be written as \lstinline{[preim f of p]}.
 
 There are also applicative (functional) versions of of \lstinline{predC}, \lstinline{predU}, \lstinline{predI}, \lstinline{predD}, 
 which are functions that take predicates as arguments and return predicates.
+\lstinline{pred1 x} represents the predicate \lstinline{[pred y | y == x]}.
+
+\subsection{Finite Types} %and Ordinals
+The most important feature of \ssreflect\ for our purpose are finite types.  
+Finite types are types that have a finite number of elements.
+The type of finite types is \lstinline{finType}.
+\ssreflect\ offers the following operations on finite types.
+We compute the number of elements for which a predicate \lstinline{p} on a finite type returns true with \lstinline{#|p|}.
+Additionally, we write \lstinline{#|F|} for the number of elements in the finite type \lstinline{F}.
+\ssreflect\ also provides boolean versions of the universal and existential quantifiers on finite types, \lstinline{forallb} and \lstinline{existsb}.
+\lstinline{enum F} gives a list of all items of the finite type \lstinline{F}. 
+Finite types are closed under basic operations such as \lstinline{option} and \lstinline{sum}.
+
+We can also create finite types from lists.
+Instances of these types can be specified with the \lstinline{SeqSub} constructor, 
+which takes as arguments an element of the list and a proof that this element is contained in the list.
+
+\subsection{Finite Sets}
+\ssreflect\ also supports finite sets, which are sets on finite types.
+Finite sets themselves are finite types, which enables us to use them in the construction of finite automata.
+Additionally, they provide the syntax for computing the number of elements in them.
+The type of a finite set is \lstinline!{set T}!, where \lstinline{T} is a finite type.
+The function \lstinline{set1} constructs a singleton set containing its first argument. 
+The type of the resulting finite set can be inferred from the argument. 
+The union over finite sets can be expressed by \lstinline{\bigcup_(x | P x) F}, 
+which corresponds to the mathematical notation $\bigcup_{x \in X, P x} F$, with $X$ being the (finite) type of $x$.
+
 
 \subsection{Equality}
 We can use \lstinline{f =1 g} to express that the functions \lstinline{f} and \lstinline{g} agree in all arguments.
 If we regard \lstinline{f} and \lstinline{g} as sets, we can write \lstinline{f =i g}, which is defined as \lstinline{forall x, x \in f = x \in g}.
-\coq's equality \lstinline{=} is intensional, which means that even if we have \lstinline{f =1 g}, we will not, in general, be able to proof \lstinline{f = g}.
-Thus, we will use \lstinline{=1} or \lstinline{=i} in \coq, when we write $=$ mathematically. 
-This expresses the notion of extensional equality that is usually assumed mathematically.
+\coq's equality \lstinline{=} is intensional, which means that even if we have \lstinline{f =1 g}, we are not, in general, be able to prove \lstinline{f = g}.
+Thus, we use \lstinline{=1} or \lstinline{=i} in \coq, when we write $=$ mathematically. 
+This expresses the notion of extensional equality of classical mathematics. 
 
 
 

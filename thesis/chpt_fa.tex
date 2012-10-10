@@ -72,6 +72,17 @@ We also prove that both criteria are equivalent.
 
 %\code{automata_dfa_accept}{}{automata_dfa_accept}
 
+\subsubsection{$\varepsilon$-Transitions}
+Non-deterministic finite automata with $\varepsilon$-transitions are based on the non-deterministic automata described above.
+In addition to all possible transitions of a normal NFA, they also allow for transitions that can be taken regardless of the input. 
+These transitions are marked with the $\varepsilon$ character. 
+They do not ``consume'' a character of the input and can be taken arbitrarily often.
+The main disadvantage is that the properties of $\varepsilon$-transitions do not warrant a one-to-one correspondence between
+run length and word length. 
+Specifically, runs may be much longer than their corresponding words. 
+Thus, induction on runs no longer directly translates to induction on the size of the word.
+To avoid nested inductions, we decided not to include $\varepsilon$-transitions in our formalization.
+
 \subsubsection{Equivalence of Automata}
 \begin{definition}
     We say that two automata are \textbf{equivalent} if and only if their languages are equal.
@@ -455,7 +466,7 @@ We also give a short overview of the automaton corresponding to \lstinline{Star}
 \subsection{Conc}
 The most common approach to build the concatenation automaton is to connect
 the final states of the first automaton to the starting state of the second automaton
-by an $\varepsilon$-translation. 
+by an $\varepsilon$-transition. 
 We do not allow $\varepsilon$-transitions in our automata. 
 The reason for this is that we do not want to lose the direct correspondence 
 of the length of the word to the length of its run on an automaton.

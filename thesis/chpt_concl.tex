@@ -7,35 +7,41 @@ Finally, we discuss opportunities for future work.
 \label{chap:conclusion}
 Theorem \ref{dfa_to_nfa} and Theorem \ref{nfa_to_dfa} 
 show the equivalence of deterministic and non-deterministic finite automata.
-\code{}{}{automata_dfa_to_nfa_correct_head}
-\codeblock{}{}{automata_nfa_to_dfa_correct_head}
+For this, we construct two functions \lstinline{dfa_to_nfa} and \lstinline{nfa_to_dfa} to convert between the two characterizations.
+\fcode{}{}{automata_dfa_to_nfa_correct_head}
+\fcodeblock{}{}{automata_nfa_to_dfa_correct_head}
 
 We show in Theorem \ref{re_to_dfa} that there is an equivalent DFA for every extended regular expression. 
+For this, we construct a function \lstinline{re_to_dfa} to compute an equivalent DFA from an extended regular expressions.
 %This is by far the most extensive proof of the entire development.
-\code{}{}{re_fa_re_to_dfa_correct_head}
+\fcode{}{}{re_fa_re_to_dfa_correct_head}
 
 Building on that, we prove the decidability of equivalence of regular expressions in Theorem \ref{re_equiv_correct} with the help of a decision procedure for equivalence of finite automata.
-\code{}{}{re_fa_re_equiv_correct_head}
+We give a function \lstinline{re_equiv} to decide the equivalence of regular expressions.
+\fcode{}{}{re_fa_re_equiv_correct_head}
 
 Theorem \ref{dfa_to_re} shows that we can give an equivalent regular expression for every automaton. 
+We construct a function \lstinline{dfa_to_re} to compute the regular expression.
+\fcode{}{}{transitive_closure_dfa_to_re_correct_head}
+
 Based on this and the results from previous chapters, we also show that extended and standard regular expressions are equivalent and, thus, that extended regular expressions are equivalent to regular languages.
+We give a function \lstinline{ext_re_to_std_re} which constructs an equivalent standard regular expression for every extended regular expression.
 %The proof of this theorem is quite algorithmic. 
 %Still, it is small in size.
-\code{}{}{transitive_closure_dfa_to_re_correct_head}
-\codeblock{}{}{transitive_closure_ext_re_to_std_re_standard_head}
-\codeblock{}{}{transitive_closure_ext_re_to_std_re_correct_head}
+\fcode{}{}{transitive_closure_ext_re_to_std_re_standard_head}
+\fcodeblock{}{}{transitive_closure_ext_re_to_std_re_correct_head}
 
-With Theorem \ref{dfa_to_myhill}, we prove that we can construct a Myhill relation on a language that is accepted by a DFA.
-\code{}{}{myhill_nerode_dfa_to_myhill_head}.
+With Theorem \ref{dfa_to_myhill}, we prove that we can construct a Myhill relation of a language given a DFA for that language.
+\fcode{}{}{myhill_nerode_dfa_to_myhill_head}.
 
 We prove in Theorem \ref{myhill_to_weak_nerode} that every Myhill relations is also a weak Nerode relation.
-\code{}{}{myhill_nerode_myhill_to_weak_nerode_head}
+\fcode{}{}{myhill_nerode_myhill_to_weak_nerode_head}
 
 Theorem \ref{weak_nerode_to_nerode} shows that, if there is a weak Nerode relation, the Nerode relation is of finite index.
-\code{}{}{myhill_nerode_weak_nerode_to_nerode_head}
+\fcode{}{}{myhill_nerode_weak_nerode_to_nerode_head}
 
-Finally, we prove in Theorem \ref{nerode_to_dfa} that, if the Nerode relation on a language is of finite index, we can construct a DFA that accepts this language.
-\code{}{}{myhill_nerode_nerode_to_dfa_correct_head}
+Finally, we prove in Theorem \ref{nerode_to_dfa} that, if we are given a Nerode relation of finite index for a language, we can construct a DFA that accepts this language.
+\fcode{}{}{myhill_nerode_nerode_to_dfa_correct_head}
 
 \section{\ssreflect}
 We make extensive use of \ssreflect's features in our development.
@@ -63,7 +69,7 @@ However, in some cases, it might be sufficient to explain a small subset of
 
 We also lose practical executability. 
 Specifically, the implementation underlying finite types does not lend itself to computation. 
-Since executability is not always a requirement, this restriction may not be relevant to some projects, as is the case with our development.
+Since practical executability is not always a requirement, this restriction may not be relevant to some projects, as is the case with our development.
 
 Based on this considerations, we believe that the use of \ssreflect\ is very beneficial to formalizations that do not require exectuability, especially if there is algorithmic content. 
 
@@ -76,14 +82,14 @@ Based on this considerations, we believe that the use of \ssreflect\ is very ben
 There a several possible extensions to our development.
 Additionally, there are some topics that are not so much extensions but rather candidates for future formalizations.
 
-\subsection{$\varepsilon$-Transitions}
+\subsection[$\varepsilon$-Transitions]{\texorpdfstring{$\varepsilon$-Transitions}{Epsilon-Transitions}}
 We have avoided $\varepsilon$-transitions in our formalization. 
 Non-deterministic finite automata with $\varepsilon$-transitions and regular expressions are equally expressive.
 They are, as we have shown, unnecessary to derive the results proven in this thesis.
 Nonetheless, it would be very interesting to add them to the list of formalized characterizations of regular languages.
 
 \subsection{Pumping Lemma}
-The Pumping Lemma \cite{BarHillelPerlesShamir61Formal} describe a sufficient condition for the non-regularity of a language. 
+The Pumping Lemma \cite{BarHillelPerlesShamir61Formal} gives a sufficient condition for the non-regularity of a language. 
 It is a well-known part of the theory of regular languages and, thus, a good candidate for an extension to our development.
 
 \subsection{Regular Grammars}
