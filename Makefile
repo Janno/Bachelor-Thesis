@@ -44,7 +44,7 @@ definitions: docs/definitions
 thesis/chapters: definitions
 	mkdir -p thesis/chapters
 
-thesis/thesis.pdf: thesis/*.tex thesis/vc.tex thesis/chapters ${CHPTS}
+thesis/thesis.pdf: thesis/*.tex thesis/chapters ${CHPTS}
 	cd thesis; latexmk -pdf thesis
 
 thesis: thesis/thesis.pdf

@@ -2,7 +2,7 @@
 \chapter{Finite Automata}
 \label{chap:FA}
 
-Another way of characterizing regular languages are finite automata (FA)\cite{DBLP:books/daglib/0011126}. 
+Another way of characterizing regular languages are finite automata. 
 We will show that the languages of finite automata are exactly those recognized by regular expressions.
 Furthermore, we will also derive a decision procedure for emptiness of an automaton's language.
 Based on that, we will give a decision procedure for equivalence of regular expressions.
@@ -10,7 +10,7 @@ Finally, we prove that extended regular expressions and standard regular express
 and, thereby, that extended regular expressions are equivalent to regular languages.
 
 \section{Definition}
-A finite automaton consists of
+A finite automaton \cite{DBLP:books/daglib/0011126} consists of
 \begin{enumerate}
     \item
         finite set of states $Q$, 
@@ -52,9 +52,9 @@ For functional $\delta$, we speak of \textbf{deterministic} finite automata (DFA
 In this case, we write $\delta$ as a function in our \coq\ development. 
 %This allows us to define the acceptance criterion in terms of the unique sequence of transitions on the automaton. 
 
-\code{dfa}{Deterministic Finite Automata}{automata_dfa}
-\codeblock{dfa_accept'}{}{automata_dfa_accept}
-\codeblock{dfa_lang}{}{automata_dfa_lang}
+\code{}{}{automata_dfa}
+\codeblock{}{}{automata_dfa_accept}
+\codeblock{}{}{automata_dfa_lang}
 
 
 Again, we avoid runs in our formalization of the acceptance criterion in favor of an acceptance criterion that is easier to work with in proofs.
@@ -692,7 +692,7 @@ which we estimated to be a considerable overhead. Thus, we decided against this 
 The third method, which we choose for our development, is due to Kleene \cite{KleeneNets}.
 It is known as the ``\textbf{transitive closure method}''.
 This method recursively constructs a regular expression that is equivalent to the given automaton.
-For the remainder of this chapter, we assume that we are given a DFA $A=(Q,s,F,\delta)$.
+For the remainder of this chapter, we assume that we are given a DFA $(Q,s,F,\delta)$.
 
 
 The idea of the transitive closure method is that we can give a regular expression to describe the path between any two states $x$ and $y$.
@@ -769,7 +769,7 @@ We will then pick $z \in X$ such that $z$ is the smallest element in $X$ w.r.t. 
 The formalization of $R$ is more involved than its mathematical definition. 
 We give some auxiliary definitions to keep the definition of $R$ as compact and readable as possible.
 \lstinline{nPlus} is $\sum$ on regular expressions.
-\lstinline{dfa_step_any} is the list of transitions from $x$ to $y$.
+\lstinline{dfa_step_any} is the list chars of that contains all transitions from $x$ to $y$.
 \lstinline{R0} covers the case of $X=\emptyset$.
 
 \code{}{}{transitive_closure_nPlus}

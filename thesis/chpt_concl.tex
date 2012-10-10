@@ -6,7 +6,7 @@ Finally, we discuss opportunities for future work.
 \section{Results}
 \label{chap:conclusion}
 Theorem \ref{dfa_to_nfa} and Theorem \ref{nfa_to_dfa} 
-show the equivalence of deterministic and non-deterministic finite automata.
+show that deterministic and non-deterministic finite automata are equally expressive.
 For this, we construct two functions \lstinline{dfa_to_nfa} and \lstinline{nfa_to_dfa} to convert between the two characterizations.
 \fcode{}{}{automata_dfa_to_nfa_correct_head}
 \fcodeblock{}{}{automata_nfa_to_dfa_correct_head}
@@ -24,14 +24,14 @@ Theorem \ref{dfa_to_re} shows that we can give an equivalent regular expression 
 We construct a function \lstinline{dfa_to_re} to compute the regular expression.
 \fcode{}{}{transitive_closure_dfa_to_re_correct_head}
 
-Based on this and the results from previous chapters, we also show that extended and standard regular expressions are equivalent and, thus, that extended regular expressions are equivalent to regular languages.
+Based on this and the results from previous chapters, we also show that extended and standard regular expressions are equally expressive and, thus, that extended regular expressions and regular languages are equally expressive.
 We give a function \lstinline{ext_re_to_std_re} which constructs an equivalent standard regular expression for every extended regular expression.
 %The proof of this theorem is quite algorithmic. 
 %Still, it is small in size.
 \fcode{}{}{transitive_closure_ext_re_to_std_re_standard_head}
 \fcodeblock{}{}{transitive_closure_ext_re_to_std_re_correct_head}
 
-With Theorem \ref{dfa_to_myhill}, we prove that we can construct a Myhill relation of a language given a DFA for that language.
+With Theorem \ref{dfa_to_myhill}, we prove that we can construct a Myhill relation for a language from a DFA for that language.
 \fcode{}{}{myhill_nerode_dfa_to_myhill_head}.
 
 We prove in Theorem \ref{myhill_to_weak_nerode} that every Myhill relations is also a weak Nerode relation.
