@@ -1,4 +1,3 @@
-
 \chapter{Finite Automata}
 \label{chap:FA}
 
@@ -685,7 +684,7 @@ The intuition of these unknown regular expressions is that they recognize the wo
 The system is solved by substitution and Arden's lemma \cite{DBLP:conf/focs/Arden61}.
 The regular expressions associated with the starting state recognizes the language of the automaton.
 
-Brzozowskis method requires infrastructure for algebraic equations and term rewriting, 
+Brzozowski's method requires infrastructure for algebraic equations and term rewriting, 
 which we estimated to be a considerable overhead. Thus, we decided against this method.
 
 
@@ -734,7 +733,7 @@ If $\sigma$ does not pass through $z$, it is covered by the regular expression f
 
 In order to define $R$ recursively, we need to pick an element $z \in X$ if $X \neq \emptyset$. 
 For this purpose, we assume an ordering on $Q$.
-We will then pick $z \in X$ such that $z$ is the smallest element in $X$ w.r.t. to this ordering. 
+We will then pick $z \in X$ such that $z$ is the smallest element in $X$ with respect to this ordering. 
 
 \begin{definition}
     \label{R}

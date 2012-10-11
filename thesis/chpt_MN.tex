@@ -19,7 +19,7 @@ by proving them equivalent to the existence of a (deterministic) finite automato
 Before we can state the Myhill-Nerode theorem, we need a number of auxiliary definitions. We roughly follow \cite{DBLP:books/daglib/0088160}.
 \begin{definition}
     Let $\equiv$ be an equivalence relation.
-    The \textbf{equivalence class} of $u \in \Sigma^*$ w.r.t. $\equiv$ is the set of all $v$ such that $u \equiv v$.
+    The \textbf{equivalence class} of $u \in \Sigma^*$ with respect to $\equiv$ is the set of all $v$ such that $u \equiv v$.
     It is denoted by $[u]_\equiv$.
 \end{definition}
 
@@ -38,8 +38,8 @@ as surjective functions from $\Sigma^*$ to a finite type $X$.
     Let $f: \Sigma^* \mapsto X$ be surjective.
     Let $u, v \in \Sigma^*$.
     $f$ is an \textbf{equivalence relation of finite index}. 
-    $u$ and $v$ are equivalent w.r.t. $f$ if and only if $f(u) = f(v)$.
-    $f(u)$ is the equivalence class of $u$ w.r.t. $f$.
+    $u$ and $v$ are equivalent with respect to $f$ if and only if $f(u) = f(v)$.
+    $f(u)$ is the equivalence class of $u$ with respect to $f$.
 \end{definition}
 
 \code{}{}{myhill_nerode_Fin_Eq_Cls}
@@ -113,7 +113,7 @@ We will later give a formal proof of this.
 \begin{definition}
     \label{suffix_equal}
     Let $u, v \in \Sigma^*$. Let $L$ be a language. We define the \textbf{Nerode relation} $\doteq_L$ for $L$ such that 
-    %We say that $u$ and $v$ are \textbf{invariant under concatenation} w.r.t. L if and only if
+    %We say that $u$ and $v$ are \textbf{invariant under concatenation} with respect to L if and only if
     \begin{equation*}
         u \doteq_L v \iff \forall w \in \Sigma^*. \; uw \in L \Leftrightarrow vw \in L. 
     \end{equation*}
