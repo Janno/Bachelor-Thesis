@@ -405,7 +405,6 @@ Section TransitiveClosure.
     rewrite !inE. instantiate (1:=x). by rewrite H0.
   Qed.
 
-  (* w1 \in L^k i k -> w2 \in L^k.+1 k j -> w1++w2 \in L^k.+1 i j *)
   Lemma L_catL X x y z w1 w2:
     w1 \in L^X x z ->
     w2 \in L^(z |: X) z y ->
@@ -416,7 +415,6 @@ Section TransitiveClosure.
     exact: setU11. 
   Qed.
 
-  (* w1 \in L^k.+1 i k -> w2 \in L^k k j -> w1++w2 \in L^k.+1 i j *)
   Lemma L_catR X x y z w1 w2:
     w1 \in L^(z |: X) x z ->
     w2 \in L^X z y ->
