@@ -1039,7 +1039,7 @@ The proof of Theorem \ref{dfa_to_re} was by far the most technically involved pr
 The mathematical content is rather straight-forward and intuitive.
 However, especially due to the need for the \lstinline{allbutlast} predicate,
 the implementation contains a lot of quite general infrastructure.
-In fact, a little more than one third of the implementation (200 out of 600 lines) is taken up by \lstinline{allbutlast}.
+In fact, a little more than one third of the implementation (150 out of 550 lines) is taken up by \lstinline{allbutlast}.
 
 
 \subsection{Extended Regular Expressions to Regular Languages}
@@ -1071,8 +1071,8 @@ to the definition of regular languages.
 
 \section*{Remarks}
 
-All in all, our formalization of the results presented in this chapter add up to 1,700 lines of code.
-About one half of that is due to the construction of finite automata. 
+All in all, our formalization of the results presented in this chapter add up to 1,400 lines of code.
+More than one half of that is due to the construction of finite automata. 
 Although most of these constructions are straight-forward, proving them correct requires a lot of attention to detail.
 Additionally, we opted to give a corresponding automaton for every \textit{extended} regular expression, which, 
 of course, adds to the expected size of the development.

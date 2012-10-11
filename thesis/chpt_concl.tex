@@ -45,7 +45,7 @@ Finally, we prove in Theorem \ref{nerode_to_dfa} that, if we are given a Nerode 
 
 \section{\ssreflect}
 We make extensive use of \ssreflect's features in our development.
-The formalization of finite automata depends crucially on finite types (and, to a lesser extend, finite sets).
+The formalization of finite automata depends crucially on finite types (and, to a lesser extent, finite sets).
 
 We also employ the \lstinline{reflect} paradigm whenever possible.
 It offers a very convenient way of working with propositional and boolean predicates at the same time.
@@ -71,7 +71,7 @@ We also lose practical executability.
 Specifically, the implementation underlying finite types does not lend itself to computation. 
 Since practical executability is not always a requirement, this restriction may not be relevant to some projects, as is the case with our development.
 
-Based on this considerations, we believe that the use of \ssreflect\ is very beneficial to formalizations that do not require executability, especially if there is algorithmic content. 
+Based on these considerations, we believe that the use of \ssreflect\ is very beneficial to formalizations that do not require executability, especially if there is algorithmic content. 
 
 %In our formalization, we only needed a small subset of \ssreflect's library. 
 %The interested reader can find the full extent of the project online%
@@ -80,14 +80,14 @@ Based on this considerations, we believe that the use of \ssreflect\ is very ben
 
 \section{Future Work}
 There a several possible extensions to our development.
-Additionally, there are some topics that are not so much extensions but rather candidates for future formalizations.
+Additionally, there are some topics that are quite extensions but rather candidates for future formalizations.
 %There is also a lot of potential in reducing the size of the development. 
 
 
 \subsection[$\varepsilon$-Transitions]{\texorpdfstring{$\varepsilon$-Transitions}{Epsilon-Transitions}}
 We have avoided $\varepsilon$-transitions in our formalization. 
 Non-deterministic finite automata with $\varepsilon$-transitions and regular expressions are equally expressive.
-They are, as we have shown, unnecessary to derive the results proven in this thesis.
+They are, as we have shown, unnecessary in order to derive the results proven in this thesis.
 Nonetheless, it would be very interesting to add them to the list of formalized characterizations of regular languages.
 
 \subsection{Pumping Lemma}
