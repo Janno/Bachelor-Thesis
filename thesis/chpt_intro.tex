@@ -17,7 +17,7 @@ We take classical proofs from \cite{DBLP:books/daglib/0088160} and translate the
 %Our formalization is done in the proof assistant \coq\ \cite{Coq:manual}. 
 We employ the proof assistant \coq\ \cite{Coq:manual} for our formalization.
 Additionally, we make use of the \ssreflect\ plugin \cite{gonthier:inria-00258384}. 
-\ssreflect\ offers an extended scripting language and provides support for finite types, which we need for formalizing finite automata. 
+\ssreflect\ offers an extended scripting language and provides support for finite types, which we use for formalizing finite automata. 
 It also comes with a lot of general infrastructure useful for our purpose.
 For every lemma and theorem proven in this thesis, we provide corresponding statements from the \coq\ development. 
 Our development does not depend on axioms.
@@ -70,7 +70,7 @@ but not executable in practice.
 
 Our development shows that \coq\ (particularly with \ssreflect) is well suited for this kind of formalization.
 Furthermore, we have also developed a new characterization derived from the Nerode relation and proven it equivalent to all other characterizations.
-Our development weighs in at about 3,500 lines of code.
+Our development weighs in at about 2,700 lines of code.
 
 
 \section{Outline}

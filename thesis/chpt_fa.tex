@@ -210,7 +210,7 @@ Therefore, we define a procedure to extract the connected component containing t
 \begin{definition}
     \label{A_c}
     Let $A = (Q, s, F, \delta)$ be a DFA.
-    We define $\mathrm{reachable1}$ such that for all x and y, 
+    We define $\mathrm{reachable1}$ such that for all $x$ and $y$, 
     $(x,y) \in \mathrm{reachable1} \iff \exists a, (x,a,y) \in \delta$.
     We define $\mathrm{reachable} := \{y \; | \; (s,y) \in \mathrm{reachable1}^*\}$, 
     where $\mathrm{reachable1}^*$ denotes the transitive closure of $\mathrm{reachable1}$.
@@ -811,7 +811,7 @@ The formalization of $L$ requires some infrastructure.
 To check the second condition of $L$, we want to be able to state properties of all but the last items in a run.
 We define a function \lstinline{belast} to remove the last element from a sequence. 
 Note that, mathematically, runs include the starting state.
-In our formaliziation, this is not the case.
+In our formalization, this is not the case.
 Thus, we do not need to remove the first state from a run to retrieve all states the run passes through.
 
 %\code{}{}{transitive_closure_belast}
