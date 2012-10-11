@@ -13,16 +13,17 @@ In their current form, they were first studied by Kleene \cite{KleeneNets}, who 
 The concept of deterministic finite automata was introduced before Kleene's invention of regular expressions by Huffman \cite{Huffman1954161} and Moore \cite{Moore56}. 
 Rabin and Scott later introduced the concept of non-deterministic finite automata \cite{Rabin:1959:FAD:1661907.1661909}, for which they were given the Turing award \cite{Ashenhurst:1987:ATA:27609}.
 
-Our formalization is done in the proof assistant \coq. 
-We make use of the \ssreflect\ plugin for \coq. 
-The most important aspect of \ssreflect\ is the support for finite types which we need for finite automata. 
-It also comes with a lot of useful, general infrastructure for our purpose.
-
 We take classical proofs from \cite{DBLP:books/daglib/0088160} and translate them to our constructive setting. 
-One of the most interesting parts of the formalization was to find a suitable representation of quotient types in \coq, which has no notion of quotient types.
-Our approach seems to work very well for our purpose.
+%Our formalization is done in the proof assistant \coq\ \cite{Coq:manual}. 
+We employ the proof assistant \coq\ \cite{Coq:manual} for our formalization.
+Additionally, we make use of the \ssreflect\ plugin \cite{gonthier:inria-00258384}. 
+\ssreflect\ offers an extended scripting language and provides support for finite types, which we need for formalizing finite automata. 
+It also comes with a lot of general infrastructure useful for our purpose.
 For every lemma and theorem proven in this thesis, we provide corresponding statements from the \coq\ development. 
 Our development does not depend on axioms.
+
+One of the most interesting parts of the formalization was to find a suitable representation of quotient types in \coq, which has no notion of quotient types.
+Our approach seems to work very well for our purpose.
 
 %The algorithmic parts of the development proved to be challenging.
 %The corresponding correctness proofs vary greatly in size and complexity depending on the implementation of the algorithm.
