@@ -1,0 +1,1 @@
+Lemma myhill_to_weak_nerode (L: language char): Myhill_Rel L -> Weak_Nerode_Rel L.

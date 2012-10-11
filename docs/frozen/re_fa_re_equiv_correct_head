@@ -1,0 +1,1 @@
+Lemma re_equiv_correct (r s: regular_expression char): re_equiv r s <-> r =i s.

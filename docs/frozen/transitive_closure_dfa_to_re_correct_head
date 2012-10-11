@@ -1,0 +1,1 @@
+Lemma dfa_to_re_correct (A: dfa): dfa_lang A =i (dfa_to_re A).

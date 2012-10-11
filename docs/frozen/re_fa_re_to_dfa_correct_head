@@ -1,0 +1,1 @@
+Lemma re_to_dfa_correct (r: regular_expression char) : dfa_lang (re_to_dfa r) =i r.

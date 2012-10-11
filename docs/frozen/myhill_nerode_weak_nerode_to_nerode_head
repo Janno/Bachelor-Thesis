@@ -1,0 +1,1 @@
+Lemma weak_nerode_to_nerode (L: language char): Weak_Nerode_Rel L -> Nerode_Rel L.

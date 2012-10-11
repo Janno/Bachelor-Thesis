@@ -1,0 +1,1 @@
+Lemma dfa_to_myhill (A: dfa): Myhill_Rel (dfa_lang A).

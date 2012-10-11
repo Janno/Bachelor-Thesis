@@ -1,0 +1,1 @@
+Lemma nfa_to_dfa_correct (A: nfa): nfa_lang A =i dfa_lang (nfa_to_dfa A).

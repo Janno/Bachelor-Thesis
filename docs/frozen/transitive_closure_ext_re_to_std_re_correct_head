@@ -1,0 +1,1 @@
+Lemma ext_re_to_std_re_correct (r: regular_expression char): (ext_re_to_std_re r) =i r.

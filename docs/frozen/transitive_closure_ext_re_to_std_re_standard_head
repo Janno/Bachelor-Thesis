@@ -1,0 +1,1 @@
+Lemma ext_re_to_std_re_standard (r: regular_expression char): standard char (ext_re_to_std_re r).

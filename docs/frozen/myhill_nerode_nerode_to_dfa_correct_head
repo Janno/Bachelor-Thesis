@@ -1,0 +1,2 @@
+Lemma nerode_to_dfa_correct (L: language char) (f_N: Nerode_Rel L): 
+    L =i dfa_lang (nerode_to_dfa f_N).
