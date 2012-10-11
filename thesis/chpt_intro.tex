@@ -5,7 +5,7 @@ Our goal is to give a concise formalization of the theory of regular languages.
 We include several different characterizations of regular languages and prove them equivalent.
 These include regular expressions, finite automata and the characterizations usually combined in the Myhill-Nerode theorem.
 All our proofs are constructive and, thus, constitute procedures to convert between these characterizations.
-Our formalization also includes decisions procedures for the equivalence of finite automata and regular expressions.
+Our formalization also includes decision procedures for the equivalence of finite automata and regular expressions.
 %    In addition, we also consider an additional characterization derived from Nerode relations.
 
 Regular languages are a well-studied class of formal languages. 
@@ -44,10 +44,10 @@ Their development is very concise with just over 1,000 lines of code.
 Being interested only in a correct (and efficient) tactic for deciding equivalences, they did not prove completeness and termination. 
 
 
-Another decision procedure for equivalence of regular expressions is developed by Braibant and Pous \cite{DBLP:journals/corr/abs-1105-4537}, with the goal of deciding Kleene algebras in \coq. Their formalization is based on matrices and weighs in at 19,000 lines of code. It encompasses finite automata, regular expressions and the Myhill-Nerode theorem.
+Another decision procedure for equivalence of regular expressions is developed by Braibant and Pous \cite{DBLP:journals/corr/abs-1105-4537}, with the goal of deciding Kleene algebras in \coq. Their formalization is based on matrices and comprises 19,000 lines of code. It encompasses finite automata, regular expressions and the Myhill-Nerode theorem.
 
 
-Moreira, Pereira and Sousa give a decision procedure for equivalence of regular expressions in \coq \cite{DBLP:conf/RelMiCS/MoreiraPS12}.
+Moreira, Pereira and Sousa give a decision procedure for equivalence of regular expressions in \coq\ \cite{DBLP:conf/RelMiCS/MoreiraPS12}.
 Their development is based on Antimirov's partial derivatives of regular expressions \cite{DBLP:journals/tcs/Antimirov96} and contains a refutation step to speed up inequality checking. It consists of 19,000 lines of code.
 
 
@@ -62,7 +62,7 @@ Their development consists of roughly 2,000 lines of code.
 
 \section{Contributions}
 Our formalization is done in constructive type theory.
-Thus, all our proofs are algorithms that are executable in theory.
+Thus, all our proofs are algorithms that are, in theory, executable.
 However, our focus is solely on clarity and simplicity.
 As a result, the algorithms and procedures given in this thesis 
 are very close to the mathematical definitions in \cite{DBLP:books/daglib/0088160}, 
@@ -77,7 +77,7 @@ Our development weighs in at about 2,700 lines of code.
 In Chapter \ref{chap:coq} we give a brief introduction to \coq\ and \ssreflect\ and introduce concepts that are relevant to our formalization.
 
 In Chapter \ref{chap:lang} we give basic definitions (words, languages, etc.). 
-We also introduce decidable languages, regular languages and regular expressions. 
+We also introduce decidable languages, regular languages, and regular expressions. 
 Furthermore, we prove the decidability of regular languages.
 
 In Chapter \ref{chap:FA} we introduce finite automata.

@@ -41,7 +41,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     The \textbf{concatenation} of two languages $L_1$ and $L_2$ is denoted $L_1 \cdot L_2$ and is defined as the set of words $w = w_1 w_2$ such that $w_1$ is in $L_1$ and $w_2$ is in $L_2$.
     The \textbf{Kleene closure} of a language $L$ is denoted $L^*$ and is defined as the set of words $w = w_1 \cdots w_k$ such that $w_1 \ldots w_k$ are in $L$. 
     Note that $\varepsilon \in L^*$ ($k=0$).
-    We define the \textbf{complement} of a language $L$ as $L \backslash \Sigma^*$, which we write as $\neg L$.
+    We define the \textbf{complement} of a language $L$ as $\Sigma^* \backslash L$, which we write as $\neg L$.
     Furthermore, we make use of the standard set operations \textbf{union} and \textbf{intersection}.
 
     
@@ -89,7 +89,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
     
     The implementation of \lstinline{star} makes use of a property of the Kleene closure, 
     which is that any nonempty word in $L^*$ can be seen as the concatenation of a nonempty word in $L$ and a (possibly empty) word in $L^*$.
-    This property allows us to implement star as a structurally recursive predicate.
+    This property allows us to implement \lstinline{star} as a structurally recursive predicate.
     The following lemma proves the correctness of this property.
 
     \begin{lemma}
@@ -221,7 +221,7 @@ Throughout the remaining document, we will assume a fixed alphabet $\Sigma$.
         \end{equation*}
     \end{definition}
 We will later show that equivalence of regular expressions is decidable.
-We take the implementation of regular expressions from Coquand and Siles's development (\cite{DBLP:conf/cpp/CoquandS11}), which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
+We take the implementation of regular expressions from Coquand and Siles's development \cite{DBLP:conf/cpp/CoquandS11}, which is also based on \ssreflect\ and comes with helpful infrastructure for our proofs.
 The semantics defined in Definition \ref{extregex} can be given as a boolean function.
 %They also give a decision function the language associated with a regular expression.
     

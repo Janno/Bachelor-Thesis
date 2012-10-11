@@ -46,6 +46,20 @@ We then show that the acceptance criterion given above corresponds to the mathem
 \code{nfa_run}{}{automata_nfa_run}
 \codeblock{nfa_run_accept}{}{automata_nfa_run_accept_head}
 
+
+\subsubsection{$\varepsilon$-Transitions}
+Non-deterministic finite automata with $\varepsilon$-transitions are based on the non-deterministic automata described above.
+In addition to all possible transitions of a normal NFA, they also allow for transitions that can be taken regardless of the input. 
+These transitions are marked with the $\varepsilon$ character. 
+They do not ``consume'' a character of the input and can be taken arbitrarily often.
+The main disadvantage is that the properties of $\varepsilon$-transitions do not warrant a one-to-one correspondence between
+run length and word length. 
+Specifically, runs may be much longer than their corresponding words. 
+Thus, induction on runs no longer directly translates to induction on the size of the word.
+To avoid nested inductions, we decided not to include $\varepsilon$-transitions in our formalization.
+
+Note that finite automata $\varepsilon$-transitions and finite automata without these transitions are equally expressive. 
+
 \subsection{Deterministic Finite Automata}
 For functional $\delta$, we speak of \textbf{deterministic} finite automata (DFA). 
 In this case, we write $\delta$ as a function in our \coq\ development. 
@@ -70,17 +84,6 @@ We also prove that both criteria are equivalent.
 %These will allow us to hide runs and runs as much as possible and instead work with a simple, inductive, boolean predicate.
 
 %\code{automata_dfa_accept}{}{automata_dfa_accept}
-
-\subsubsection{$\varepsilon$-Transitions}
-Non-deterministic finite automata with $\varepsilon$-transitions are based on the non-deterministic automata described above.
-In addition to all possible transitions of a normal NFA, they also allow for transitions that can be taken regardless of the input. 
-These transitions are marked with the $\varepsilon$ character. 
-They do not ``consume'' a character of the input and can be taken arbitrarily often.
-The main disadvantage is that the properties of $\varepsilon$-transitions do not warrant a one-to-one correspondence between
-run length and word length. 
-Specifically, runs may be much longer than their corresponding words. 
-Thus, induction on runs no longer directly translates to induction on the size of the word.
-To avoid nested inductions, we decided not to include $\varepsilon$-transitions in our formalization.
 
 \subsubsection{Equivalence of Automata}
 \begin{definition}
@@ -631,8 +634,8 @@ to form the star automaton.
 
 
 We give a procedure to build an equivalent DFA for every extended regular expression and prove it correct.
-Note that the operations are named after the type of arguments they take, 
-i.e. \lstinline{nfa_star} takes an NFA but returns a DFA,
+Note that the operations are named after the type of arguments they take, regardless of their return types.
+Thus, \lstinline{nfa_star} takes an NFA but returns a DFA,
 whereas \lstinline{nfa_conc} expects \textit{and} returns NFAs. 
 
 \code{}{}{re_fa_re_to_dfa}
@@ -643,7 +646,7 @@ whereas \lstinline{nfa_conc} expects \textit{and} returns NFAs.
 
  
 Based on our procedure to construct an equivalent automaton from a regular expression, we can decide equivalence of regular expressions. Given $r_1$ and $r_2$, we construct equivalent DFAs $A_1$ and $A_2$ as above.
-Based on our decision procedure for the equivalence of DFAs, we only need check if $A_1$ and $A_2$ are equivalent.
+Based on our decision procedure for the equivalence of DFAs, we only need to check if $A_1$ and $A_2$ are equivalent.
 
 \begin{theorem} 
     \label{re_equiv_correct}
@@ -682,13 +685,13 @@ This method is algebraic in nature and arrives at a regular expression by solvin
 Every state is assigned an unknown regular expression. 
 The intuition of these unknown regular expressions is that they recognize the words accepted in their associated state. 
 The system is solved by substitution and Arden's lemma \cite{DBLP:conf/focs/Arden61}.
-The regular expressions associated with the starting state recognizes the language of the automaton.
+The regular expression associated with the starting state recognizes the language of the automaton.
 
 Brzozowski's method requires infrastructure for algebraic equations and term rewriting, 
 which we estimated to be a considerable overhead. Thus, we decided against this method.
 
 
-The third method, which we choose for our development, is due to Kleene \cite{KleeneNets}.
+The third method, which we chose for our development, is due to Kleene \cite{KleeneNets}.
 It is known as the ``\textbf{transitive closure method}''.
 This method recursively constructs a regular expression that is equivalent to the given automaton.
 For the remainder of this chapter, we assume that we are given a DFA $(Q,s,F,\delta)$.

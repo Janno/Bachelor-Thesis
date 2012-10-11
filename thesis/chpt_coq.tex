@@ -38,13 +38,13 @@ The very heart of the \coq\ system is the type-checking algorithm that checks th
 They were originally developed to support small-scale reflection. 
 However, most of them are of quite general nature and improve the functionality of \coq\ in most basic areas such as script layout and structuring, proof context management and rewriting \cite{gonthier:inria-00258384}.
 
-\ssreflect\ comes with an extensive library covering many mathematical concepts. 
+\ssreflect\ comes with an extensive library \cite{gonthier:inria-00139131} covering many mathematical concepts leading up to finite group theory.
 In fact, we barely scratch the surface of the library in this development. 
 The interested reader may convince herself/himself of the sheer size of the library%
 \footnote{\url{http://coqfinitgroup.gforge.inria.fr/}}.
 
 \subsection{Boolean Reflection}
-\ssreflect\ offers boolean reflections for decidable propositions. 
+\ssreflect\ offers boolean reflections for decidable propositions, so called ``small-scale reflection''.
 A term of type \lstinline{reflect P b} is a proof of the equivalence of the boolean statement \lstinline{b} and the proposition \lstinline{P}.
 \ssreflect\ has built-in support to change from boolean to propositional statements if they are equivalent. 
 This allows us to always assume the most convenient perspective in our proofs.
@@ -75,32 +75,35 @@ which are functions that take predicates as arguments and return predicates.
 The most important feature of \ssreflect\ for our purpose are finite types.  
 Finite types are types that have a finite number of elements.
 The type of finite types is \lstinline{finType}.
-\ssreflect\ offers the following operations on finite types.
-We compute the number of elements for which a predicate \lstinline{p} on a finite type returns true with \lstinline{#|p|}.
-Additionally, we write \lstinline{#|F|} for the number of elements in the finite type \lstinline{F}.
-\ssreflect\ also provides boolean versions of the universal and existential quantifiers on finite types, \lstinline{forallb} and \lstinline{existsb}.
-\lstinline{enum F} gives a list of all items of the finite type \lstinline{F}. 
+\ssreflect\ offers a number of important operations on finite types.
 Finite types are closed under basic operations such as \lstinline{option} and \lstinline{sum}.
+\ssreflect\ provides boolean versions of the universal and existential quantifiers on finite types, \lstinline{[forall x, p x]} and \lstinline{[exists x, p x]},
+where \lstinline{p} is a boolean predicate.
+We compute the number of elements for which a predicate \lstinline{p} on a finite type returns true with \lstinline{#|p|}.
+\lstinline{enum p} gives a list of these elements.
+A finite type in the position of a predicate coerces to a predicate that is always true.
 
 We can also create finite types from lists.
 Instances of these types can be specified with the \lstinline{SeqSub} constructor, 
 which takes as arguments an element of the list and a proof that this element is contained in the list.
 
 \subsection{Finite Sets}
-\ssreflect\ also supports finite sets, which are sets on finite types.
-Finite sets themselves are finite types, which enables us to use them in the construction of finite automata.
-Additionally, they provide the syntax for computing the number of elements in them.
+\ssreflect\ also supports finite sets, which are sets over finite types.
+Finite sets themselves are finite types, which allows us to use them in the construction of finite automata.
+Additionally, they come with the same syntax for counting and enumerating their elements that we introduced for finite types.
 The type of a finite set is \lstinline!{set T}!, where \lstinline{T} is a finite type.
 The function \lstinline{set1} constructs a singleton set containing its first argument. 
 The type of the resulting finite set can be inferred from the argument. 
 The union over finite sets can be expressed by \lstinline{\bigcup_(x | P x) F}, 
 which corresponds to the mathematical notation $\bigcup_{x \in X, P x} F$, with $X$ being the (finite) type of $x$.
+More information about these so-called ``big operators'' can be found in \cite{bertot:inria-00331193}.
+
 
 
 \subsection{Equality}
 We can use \lstinline{f =1 g} to express that the functions \lstinline{f} and \lstinline{g} agree in all arguments.
 If we regard \lstinline{f} and \lstinline{g} as sets, we can write \lstinline{f =i g}, which is defined as \lstinline{forall x, x \in f = x \in g}.
-\coq's equality \lstinline{=} is intensional, which means that even if we have \lstinline{f =1 g}, we are not, in general, be able to prove \lstinline{f = g}.
+We need to do this because \coq's equality \lstinline{=} is intensional, which means that even if we have \lstinline{f =1 g}, we are not, in general, able to prove \lstinline{f = g}.
 Thus, we use \lstinline{=1} or \lstinline{=i} in \coq, when we write $=$ mathematically. 
 This expresses the notion of extensional equality of classical mathematics. 
 
