@@ -1,0 +1,80 @@
+\newcommand{\coq}{\textsc{Coq}}
+\newcommand{\ssreflect}{\textsc{SSReflect}}
+
+\newcommand{\lang}[1]{\mathcal{L}(#1)}
+\newcommand{\acc}[2]{\mathcal{L}_{#1}(#2)}
+\newcommand{\crep}[1]{cr(#1)}
+
+\newcommand{\last}[1]{ {#1}_{|{#1}|-1} }
+\newcommand{\belast}[1]{ {#1}_1 \ldots {#1}_{|{#1}|-2} } 
+
+\newcommand{\coderaw}[3]{
+        \lstinputlisting[label=#1,caption=#2,language=coq]{../../docs/definitions/#3}
+    }
+\newcommand{\code}[3]{
+
+       \noindent
+          \minipage{\linewidth} 
+             %\vspace{0.5\baselineskip}
+        \coderaw{#1}{#2}{#3}
+        \endminipage
+}
+
+\newcommand{\codeblock}[3]{
+       \noindent
+          \minipage{\linewidth} 
+    \vspace{-0.8em}
+        \coderaw{#1}{#2}{#3}
+             %\vspace{0.5\baselineskip}
+        \endminipage
+}
+
+\newcommand{\fcoderaw}[3]{
+        \lstinputlisting[label=#1,caption=#2,language=coq]{../docs/frozen/#3}
+    }
+\newcommand{\fcode}[3]{
+
+       \noindent
+          \minipage{\linewidth} 
+             %\vspace{0.5\baselineskip}
+        \fcoderaw{#1}{#2}{#3}
+        \endminipage
+}
+
+\newcommand{\fcodeblock}[3]{
+       \noindent
+          \minipage{\linewidth} 
+    \vspace{-0.8em}
+        \fcoderaw{#1}{#2}{#3}
+             %\vspace{0.5\baselineskip}
+        \endminipage
+}
+
+\mathchardef\mhyphen="2D
+\relpenalty=9999
+\binoppenalty=9999
+
+
+\newcounter{dummy} \numberwithin{dummy}{section}
+
+
+%\newtheorem{theorem}[dummy]{Theorem}
+%\newtheorem{lemma}[dummy]{Lemma}
+%\newtheorem{definition}[dummy]{Definition}
+%\newtheorem{corollary}[dummy]{Corollary}
+
+\newcommand{\atoz}[0]{a b c d e f g h i j k l m n o p q r s t u v w x y z}
+\newcommand{\AtoZ}[0]{A B C D E F G H I J K L M N O P Q R S T U V W X Y Z}
+
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+    \node[shape=circle,draw,inner sep=2pt] (char) {\vphantom{\atoz\AtoZ}#1};}}
+
+\newcommand*\tcircled[1]{\tikz[baseline=(char.base)]{
+    \node[shape=circle,draw,inner sep=0.5pt] (char) {\vphantom{\atoz\AtoZ}#1};}}
+
+
+
+\newcommand{\dotcup}{\ensuremath{\mathaccent\cdot\cup}}
+
+
+
