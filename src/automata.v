@@ -550,6 +550,13 @@ Section Reachability.
     move: (xchooseP (dfa_connected_repr_pred y)) => /eqP.
     rewrite H. by move => -> ->.
   Qed.
+
+  Lemma dfa_connected_size: #|A1| >= #|dfa_connected|.
+  Proof.
+    rewrite /dfa_connected /= /reachable card_seq_sub.
+    by rewrite -cardE max_card.
+    exact: enum_uniq.
+  Qed.
     
 End Reachability.
 

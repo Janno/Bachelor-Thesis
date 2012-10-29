@@ -177,10 +177,15 @@ Section MyhillNerode.
       move => H [f H1]. econstructor;
         first by eauto.
       move => u v. rewrite -H. eauto.
-    Qed.
+    Defined.
 
     Lemma dfa_to_myhill : Myhill_Rel (dfa_lang A).
     Proof. exact: myhill_lang_eq (dfa_connected_correct A) dfa_to_myhill'. Defined.
+
+    Lemma dfa_to_myhill_size : #|A| >= #|fin_type dfa_to_myhill|.
+    Proof.
+      exact: dfa_connected_size.
+    Qed.
 
   End DFA_To_Myhill.
   
@@ -207,6 +212,9 @@ Section MyhillNerode.
         weak_nerode_imply := myhill_suffix
       |}.
     Defined.
+
+    Lemma myhill_to_weak_nerode_size: #|fin_type f| = #|fin_type myhill_to_weak_nerode|.
+    Proof. by []. Qed.
     
   End Myhill_Weak_Nerode.
 
@@ -235,6 +243,9 @@ Section MyhillNerode.
       rewrite /dfa_lang /= -dfa_run_accept nerode_to_dfa_run in_simpl /=.
       by rewrite (cr_mem_L f w).
     Qed.
+
+    Lemma nerode_to_dfa_size: #|fin_type f| = #|nerode_to_dfa|.
+    Proof. by []. Qed.                                                
       
   End Nerode_To_DFA.
   
@@ -465,10 +476,10 @@ Section MyhillNerode.
     Lemma equiv_repr_refl x : x \in equiv_repr x.
     Proof. by rewrite in_set equiv_refl. Qed.
     
-    Definition X_min := map equiv_repr (enum (fin_type f_0)).
+    Definition X_min := undup (map equiv_repr (enum (fin_type f_0))).
 
     Lemma equiv_repr_mem x: equiv_repr x \in X_min.
-    Proof. apply/mapP. exists x => //. by rewrite mem_enum. Qed.
+    Proof. rewrite mem_undup. apply/mapP. exists x => //. by rewrite mem_enum. Qed.
 
     Definition f_min w := SeqSub (equiv_repr_mem (f_0 w)).
       
@@ -505,7 +516,8 @@ Section MyhillNerode.
     Lemma f_min_surjective: surjective f_min.
     Proof.
       move => [x Hx].
-      move/mapP: (Hx) => [y Hy Hxy].
+      have: x \in map equiv_repr (enum (fin_type f_0)) by rewrite mem_undup in Hx.
+      move/mapP => [y Hy Hxy].
       exists (cr f_0 y).
       rewrite /f_min.
       change (equiv_repr (f_0 (cr f_0 y)) == x).
@@ -523,8 +535,187 @@ Section MyhillNerode.
       |}.
     Defined.
 
+    Lemma weak_nerode_to_nerode_size: #|fin_type f_0| >= #|fin_type weak_nerode_to_nerode|.
+    Proof.
+      rewrite /= /X_min /= /equiv_repr card_seq_sub.
+        apply: leq_trans.
+          by apply size_undup.
+        by rewrite size_map -cardE.
+      exact: undup_uniq.
+    Qed.
+
   End Minimalization.
 
+  Lemma nerode_lang_eq L1 L2: L1 =i L2 -> Nerode_Rel L1 -> Nerode_Rel L2.
+  Proof. move => H [f Hf]. econstructor. move => u v. instantiate (1 := f).
+    split. move/Hf => Hs w. by rewrite -!H.
+    move => Hs. apply Hf => w. by rewrite !H.
+  Defined.
+
+  Lemma eq1i {X: Type} {p q: pred X}: p =1 q <-> p =i q.
+  Proof. split; move => H x. rewrite -!topredE /=. by move: (H x). move: (H x);
+    by rewrite -!topredE /=. Qed.
+
+  Lemma cons_uniqS {X: eqType} {x: X} {xr: seq X}: uniq (x::xr) -> x \notin xr.
+  Proof.
+    elim: xr x => [|y xr IHxr] x //.
+    move => /= /andP []. rewrite in_cons => /norP [].
+    move => H1 H2 /andP [] H3 H4.
+    apply/norP. by eauto.
+  Qed.
   
+  Lemma card_leq_inj (T T': finType) (f: T -> T'): injective f -> #|T| <= #|T'|.
+  Proof.
+    move Eq: #|T'| => n.
+    elim: n T T' f Eq => [|n IHn] T T' f Eq If //.
+      case: (pickP T).
+        move => x _.
+        move/card0_eq: Eq => H0.
+        have: (f x \in T') by [].
+        by rewrite H0.
+      move/eq1i => H1.
+      apply: eq_leq.
+      exact: eq_card0.
+
+    pose X := behead (enum T').
+    have UX: (uniq X).
+      apply: subseq_uniq.
+      rewrite /X -drop1.
+      apply suffix_subseq.
+      instantiate (1 := take 1 (enum T')).
+      rewrite cat_take_drop.
+      exact: enum_uniq.
+    have SX: (size X = n) by rewrite size_behead -cardE Eq.
+    have SssX: (#|seq_sub_finType X| = n) by rewrite card_seq_sub.
+    pose pY := fun y => f y \in X.
+    pose Y := (filter pY (enum T)).
+    have UY : uniq Y.
+      apply: subseq_uniq.
+      apply filter_subseq.
+      exact: enum_uniq.
+    have HYX: forall y, y \in Y -> f y \in X.
+      move => y. rewrite /Y.
+      by rewrite mem_filter => /andP [].
+    pose g  := fun Sy => match Sy with SeqSub y Hy => SeqSub (HYX y Hy) end.
+    have Ig: injective g.
+      move => [x Hx] [y Hy].
+      rewrite /g.
+      move => [] /If Hxy.
+      move: Hx Hy. rewrite Hxy => Hx Hy.
+      have: Hx = Hy by exact: bool_irrelevance.
+      by move => ->.
+    move ET: #|T| => s.
+    case: s ET => [|s] ET //.
+    move: (ET) => <-.
+    have: size Y <= #|T|.
+      rewrite /Y cardE.
+      apply size_subseq.
+      rewrite enumT.
+      exact: filter_subseq.
+    have/existsP: [ exists x, x :: X == enum T' ].
+      apply/existsP.
+      rewrite -(cat_take_drop 1 (enum T')) /X -drop1.
+      move: (Eq). rewrite cardE.
+      case: (enum T') => [|x xr] // _.
+      rewrite take_cons /= cat_take_drop drop0.
+      by exists x.
+    move => [x /eqP HX].
+    have HxX: x \notin X.
+      have: uniq (enum T') by exact: enum_uniq.
+      rewrite -HX.
+      exact: cons_uniqS.
+    have Hxz: forall z, reflect (z = x) (z \notin X).
+      move => z. apply: iffP. apply idP.
+        case_eq (z \in enum T') => //.
+          rewrite -HX. rewrite in_cons => /orP [/eqP ->|->] //.
+        by rewrite mem_enum //.
+      by move => ->.
+     
+    case: (altP (@existsP _ (fun y => f y == x))).
+      move => [y /eqP Hy].
+      have HyY: y \notin Y.
+        rewrite /Y. rewrite mem_filter mem_enum /pY Hy.
+        apply/nandP. by auto.
+      have Hyz: forall z, reflect (z = y) (f z \notin X).
+        move => z. apply: iffP. apply idP.
+          move/Hxz. rewrite -Hy. exact: If.
+        move => ->. by rewrite Hy.
+      have HY: enum Y = enum (predC1 y).
+        apply: eq_enum => z.
+        rewrite mem_filter.
+        rewrite inE /pY /pred1 /=.
+        apply/idP/idP.
+          by move/andP => [] /Hyz /eqP.
+        move/eqP/Hyz.
+        rewrite mem_enum. by move => ->.
+      have SYT: size Y = #|T|.-1.
+        move: UY. move/card_uniqP => <-.
+        rewrite cardE HY -cardE.
+        by rewrite cardC1.
+      have SssY: (#|seq_sub_finType Y| <= n).
+        apply: IHn; eassumption.
+      have SY: #|seq_sub_finType Y| = size Y by exact: card_seq_sub.
+      move: SssY. rewrite SY.
+      by rewrite -SX SYT ET.
+    rewrite negb_exists => /forallP H.
+    have HY: (Y = enum T).
+      rewrite /Y.
+      apply/all_filterP.
+      apply/allP.
+      move => z _. move: (H z).
+      by rewrite /pY => /eqP/Hxz.
+    have SYT: size Y = #|T| by rewrite HY -cardE.
+    have :(#|seq_sub_finType Y| <= n).
+      apply: IHn; eassumption.
+    have SY: #|seq_sub_finType Y| = size Y by exact: card_seq_sub.
+    rewrite SY SYT.
+    by move/leqW.
+  Qed.
+
+  Lemma nerode_lang_eq_size L1 L2 (f1: Nerode_Rel L1) (f2: Nerode_Rel L2): L1 =i L2 -> #|fin_type f1| = #|fin_type f2|.
+  Proof.
+    move => HL.
+    pose h : fin_type f1 -> fin_type f2 := fun x => (f2 (cr f1 x)).
+    pose j : fin_type f2 -> fin_type f1 := fun x => (f1 (cr f2 x)).
+    have Ih: (injective h).
+      move => x y.
+      rewrite /h.
+      move/nerode_equiv => H.
+      rewrite -(crK f1 x) -(crK f1 y).
+      apply/nerode_equiv.
+      move => w. rewrite !HL.
+      exact: H.
+    have Ij: (injective j).
+      move => x y.
+      rewrite /h.
+      move/nerode_equiv => H.
+      rewrite -(crK f2 x) -(crK f2 y).
+      apply/nerode_equiv.
+      move => w. rewrite -!HL.
+      exact: H.
+    apply/eqP.
+    move/card_leq_inj: Ih.
+    move/card_leq_inj: Ij.
+    by rewrite eqn_leq => -> ->.
+  Qed.
+  
+  Lemma nerode_minimal L (f: Nerode_Rel L) A: dfa_lang A =i L -> #|A| >= #|nerode_to_dfa f|.
+  Proof.
+    move => H.
+    rewrite -nerode_to_dfa_size.
+    move: (dfa_to_myhill_size A) => H1.
+    move: (myhill_to_weak_nerode_size (dfa_to_myhill A)) => H2.
+    rewrite H2 in H1. clear H2.
+    move: (weak_nerode_to_nerode_size (myhill_to_weak_nerode (dfa_to_myhill A))) => H2.
+    apply: leq_trans; last by apply H1.
+    apply: leq_trans; last by apply H2.
+    apply: eq_leq.
+    apply: nerode_lang_eq_size.
+    move => w. symmetry. exact: H.
+  Qed.
+    
+    
+    
+    
 
 End MyhillNerode.
